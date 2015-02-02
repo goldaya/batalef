@@ -1,0 +1,34 @@
+function [ rc ] = filterBuilder( K )
+%FILTERBUILDER Prompt user for filter configuration through Matlab's
+%filterbuilder, then filter the selected files.
+
+    if isempty(K)
+        return;
+    end
+    
+    filterObject = filterBuilderGetFilter();
+    if isempty(filterObject)
+        rc = 0;
+        return;
+    else
+        ok = zeros(length(K),1);
+        for i = 1:length(K)
+            ok = filterFile(K(i),filterObject);
+            if ~ok
+                failed = [failed,K(i)];
+                
+        end
+        if min(ok) > 0
+            rc = 2;
+        elseif max(ok) < 1
+            rc = 0;
+        else
+            rc = 1;
+        end
+    end
+    
+    mgRefreshFilesTable();
+
+
+end
+

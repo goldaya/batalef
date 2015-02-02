@@ -1,0 +1,2 @@
+1. TDOA
+2. status bar
