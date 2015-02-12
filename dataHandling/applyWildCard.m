@@ -1,11 +1,12 @@
-function [ rc, funcName ] = applyWildCard( K )
+function [ rc, funcName, failed ] = applyWildCard( K )
 %APPLYWILDCARD Summary of this function goes here
 %   Detailed explanation goes here
 
     global filesObject;
-    
+    failed = [];
     % must have files indexes
     if isempty(K)
+        rc = 3;
         return;
     end
 
@@ -17,14 +18,13 @@ function [ rc, funcName ] = applyWildCard( K )
     % abort when user canceled
     if isempty(A)
         funcName = [];
-        rc = 0;
+        rc = 4;
         return;
     else
         funcName = A{1};
     end
         
     % do
-    ok = zeros(length(K),1);
     for k = 1:length(K)
         TS = fileData(K(k),'TimeSeries');
         Fs = fileData(K(k),'Fs');
@@ -48,7 +48,7 @@ function [ rc, funcName ] = applyWildCard( K )
         [nSamples,newNChannels] = size(R{1});
         if newNChannels ~= nChannels
             msgbox('Number of channels should not change. Aborting.',strcat(['File ',num2str(K(k))]));
-            ok(k) = 0;
+            failed = [failed, K(k)];
         else
             rdata.data = R{1};
             rdata.Fs = R{2};
@@ -56,18 +56,20 @@ function [ rc, funcName ] = applyWildCard( K )
             rdata.nChannels = nChannels;
             rdata.status = strcat(['Wildcard: ',A{1}]);
             filesObject(K(k)).rawData = rdata;
-            ok(k) = 1;
         end
     end
     
-    if min(ok) > 0
-        rc = 2;
-    elseif max(ok) < 1
-        rc = 0;
-    else
-        rc = 1;
-    end    
+    switch length(failed)
+        case 0
+            rc = 0;
+        case length(K)
+            rc = 2;
+        otherwise
+            rc = 1;
+    end
     
-    mgRefreshFilesTable();
+    if rc < 2
+        mgRefreshFilesTable();
+    end
     
 end

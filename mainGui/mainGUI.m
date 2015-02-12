@@ -231,14 +231,16 @@ function rdataFilterMenu_Callback(hObject, eventdata, handles)
 
 % --------------------------------------------------------------------
 function rdataWildcardMenuItem_Callback(hObject, eventdata, handles)
-[rc, funcName] = applyWildCard(mgResolveFilesToWork());
+[rc, funcName, failed] = applyWildCard(mgResolveFilesToWork());
 switch rc
-    case 0
+    case 2
         msgbbox('Wildcard function was not applied');
     case 1
-        msgbox('Wildcard function applied to only some of the files');
-    case 2
+        msgbox(strcat(['Wildcard function was partially applied. Failed on: ', seq2string(failed)]));
+    case 0
         masgbox('Wild card function applied');
+    case 3
+        msgbox('No files to work on');
 end
 mgRefreshFilesTable();
 mgRefreshDisplay();
@@ -253,14 +255,17 @@ mgRefreshDisplay();
 
 % --------------------------------------------------------------------
 function rdataFilterButterMenuItem_Callback(hObject, eventdata, handles)
-rc = filterButter(mgResolveFilesToWork());
+[rc, failed] = filterButter(mgResolveFilesToWork());
 switch rc
-    case 0
+    case 2
         msgbox('Filter not applied');
     case 1
-        msgbox('Filter applied to some files only');
-    case 2
+        msgbox(strcat(['Filter failed on: ', seq2string(failed)]));
+    case 0
         msgbox('Filter applied');
+    case 3
+        msgbox('No files to filter');
+
 end
 mgRefreshDisplay();
 
@@ -269,12 +274,14 @@ mgRefreshDisplay();
 function rdataFilterBuilderMenuItem_Callback(hObject, eventdata, handles)
 rc = filterBuilder(mgResolveFilesToWork());
 switch rc
-    case 0
+    case 2
         msgbox('Filter not applied');
     case 1
-        msgbox('Filter applied to some files only');
-    case 2
+        msgbox(strcat(['Filter failed on: ', seq2string(failed)]));
+    case 0
         msgbox('Filter applied');
+    case 3
+        msgbox('No files to filter');
 end
 mgRefreshDisplay();
 

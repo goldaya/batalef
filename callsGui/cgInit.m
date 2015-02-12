@@ -5,6 +5,7 @@ function [ output_args ] = cgInit( input_args )
     handles = cgGetHandles();
     
     % align gui with main gui
+    %{
     mgOuter = get(control.mg.fig, 'OuterPosition');
     top = mgOuter(2) + mgOuter(4);
     right = getNextGuiX(handles.figure1);
@@ -12,6 +13,7 @@ function [ output_args ] = cgInit( input_args )
     pos(1) = right;
     pos(2) = top - pos(4) + 10;
     set(control.cg.fig, 'Position', pos);   
+    %}
     
     % default methods
     somAdminBuildList(control.cg.fig);

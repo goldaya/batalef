@@ -14,7 +14,7 @@ function [ fca ] = exportFileObject( K, withRawData )
             continue;
         end
         
-        fca{i} = filesObject(K);
+        fca{i} = filesObject(K(i));
         if withRawData
             if isempty(fca{i}.rawData.data)
                 fca{i}.rawData.data = audioRead(fileData(K(i),'Fullpath'));

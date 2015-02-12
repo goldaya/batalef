@@ -13,7 +13,11 @@ function [ out, add1, add2, add3 ] = getChannelCalls( k, j, varargin )
             
             case 'Matrix'
                 channelCalls = filesObject(k).channels(j).channelCalls;
-                out = cell2mat(channelCalls(:,1:12));
+                if ~isempty(channelCalls)
+                    out = cell2mat(channelCalls(:,1:12));
+                else
+                    out = [];
+                end
                 
             case 'Array'
                 out = filesObject(k).channels(j).channelCalls;
