@@ -21,6 +21,7 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     
     M = fileData(k,'Mics','Positions');
     G = fileData(k,'Mics','Gains','NoValidation',true);
+    U = fileData(k,'Mics','BeamUsage','NoValidation',true);
     
     % air absorption
     channelCalls = fileCallData(k,a,'ChannelCalls');    
@@ -61,6 +62,10 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     %
     AZ = 0-radtodeg(Csr(:,1));
     EL = radtodeg(Csr(:,2));
+    
+    Ps = Ps(U);
+    AZ = AZ(U);
+    EL = EL(U);
     
     leads = [AZ,EL,Ps];
     

@@ -96,7 +96,7 @@ function [ out, add1 ] = fileData( k, par, varargin )
                         out = logical(M(:,1));
                     case 'BeamUsage'
                         M = filesObject(k).mics.matrix;
-                        out = logical(M(:,1));
+                        out = logical(M(:,2));
                     case {'Gain','Gains'}
                         M = filesObject(k).mics.matrix;
                         out = M(:,6);

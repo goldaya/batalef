@@ -21,6 +21,7 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     
     M = fileData(k,'Mics','Positions');
     G = fileData(k,'Mics','Gains','NoValidation',true);
+    U = fileData(k,'Mics','BeamUsage','NoValidation',true);
     
     % air absorption
     channelCalls = fileCallData(k,a,'ChannelCalls');    
@@ -59,28 +60,24 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     Csr = Cs - G;
     
     %
-    AZ = Csr
+    AZ = 0-radtodeg(Csr(:,1));
+    EL = radtodeg(Csr(:,2));
     
-    leads = [Csr(:,1:2),Ps];
+    Ps = Ps(U);
+    AZ=AZ(U);
+    EL =EL(U);
+    
+    leads = [AZ,EL,Ps];
     
     % keep data in filesObject
     
-    [raw, interpolated] = bmAdminCompute( Ps, Csr(:,1:2) );
+    [raw, interpolated, azCoors, elCoors] = bmAdminCompute( Ps, [AZ, EL] );
     if withSave
+        filesObject(k).fileCalls{a}.beam.coordinates = [azCoors,elCoors];
         filesObject(k).fileCalls{a}.beam.leads = leads;
         filesObject(k).fileCalls{a}.beam.raw = raw;
         filesObject(k).fileCalls{a}.beam.interpolated = interpolated;
+        filesObject(k).fileCalls{a}.beam.micDirections = [AZ,EL];
     end
-    
-    %{
-    % pavel's visualization
-    minAz = min(Csr(:,1));
-    minEl = min(Csr(:,2));
-    AZ = Csr(:,1) - minAz;
-    EL = Csr(:,2) - minEl;
-    P = f_create_surf_matrix(Ps,M,2,[AZ,EL],false);
-    AzCoor = linspace(0,1,size(P,1)); 
-    ElCoor = linspace(0,1,size(P,2));
-    %}
-    
+        
 end
