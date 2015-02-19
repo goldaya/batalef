@@ -1,0 +1,15 @@
+function [  ] = initG(  )
+%INITG Update through git
+
+
+    % change working folder
+    batFolder = fileparts(which('batalef'));
+    currFolder = pwd;
+    pwd(batFolder);
+    
+    % dont do?
+    load('gitSettings.mat');
+    if gitS
+
+end
+

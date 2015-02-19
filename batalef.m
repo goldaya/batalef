@@ -1,4 +1,9 @@
-gitCheckout('master');
+%gitCheckout('master');
+
+%%%
+initG();
+
+
 disp(' ');
 disp('  Starting BATALEF');
 disp(' ');

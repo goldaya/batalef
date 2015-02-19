@@ -22,7 +22,7 @@ function varargout = mainGUI(varargin)
 
 % Edit the above text to modify the response to help mainGUI
 
-% Last Modified by GUIDE v2.5 05-Jan-2015 20:21:46
+% Last Modified by GUIDE v2.5 19-Feb-2015 22:02:46
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -567,3 +567,8 @@ else
     pan('off');
 end
 mpgKill();
+
+
+% --------------------------------------------------------------------
+function settingsGitUpdateMenuOtem_Callback(hObject, eventdata, handles)
+gitAskSettings();
