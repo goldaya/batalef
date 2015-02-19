@@ -1,3 +1,4 @@
+gitCheckout('master');
 disp(' ');
 disp('  Starting BATALEF');
 disp(' ');
