@@ -2,6 +2,7 @@ function [  ] = mgAddAxes( n )
 %MGADDAXES Add n axes objects, adjust GUI size and compos positions
 
     global control;
+    global c;
     handles = mgGetHandles();
     
     dGuiHeight = n*control.mg.axesHeight;
@@ -49,6 +50,11 @@ function [  ] = mgAddAxes( n )
     % 
     control.mg.nAxes = N + n;
     setParam('mainGUI:nAxes',N + n);
+    
+    % link ?
+    if control.mg.axesMode == c.link
+        mgLinkAxes( true );
+    end
 
 end
 

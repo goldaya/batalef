@@ -22,7 +22,7 @@ function varargout = mainGUI(varargin)
 
 % Edit the above text to modify the response to help mainGUI
 
-% Last Modified by GUIDE v2.5 05-Jan-2015 20:21:46
+% Last Modified by GUIDE v2.5 23-Feb-2015 00:51:08
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -567,3 +567,40 @@ else
     pan('off');
 end
 mpgKill();
+
+
+% --------------------------------------------------------------------
+function toggleAxesLink_ClickedCallback(hObject, eventdata, handles)
+global control;
+global c;
+set(handles.toggleAxesTight,'State','off')
+set(handles.toggleAxesKeep,'State','off')
+set(handles.toggleAxesLink,'State','on')
+control.mg.axesMode = c.link;
+mgLinkAxes( true )
+mgRefreshAxes();
+
+
+% --------------------------------------------------------------------
+function toggleAxesKeep_ClickedCallback(hObject, eventdata, handles)
+global control;
+global c;
+set(handles.toggleAxesTight,'State','off')
+set(handles.toggleAxesLink,'State','off')
+set(handles.toggleAxesKeep,'State','on')
+control.mg.axesMode = c.keep;
+mgLinkAxes( false )
+mgRefreshAxes();
+
+
+% --------------------------------------------------------------------
+function toggleAxesTight_ClickedCallback(hObject, eventdata, handles)
+global control;
+global c;
+set(handles.toggleAxesKeep,'State','off')
+set(handles.toggleAxesLink,'State','off')
+set(handles.toggleAxesTight,'State','on')
+control.mg.axesMode = c.tight;
+mgLinkAxes( false )
+mgRefreshAxes();
+
