@@ -1,7 +1,9 @@
 %gitCheckout('master');
 
 %%%
+disp(' ');
 initG();
+disp(' ');
 
 
 disp(' ');
