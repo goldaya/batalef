@@ -6,11 +6,13 @@ function [  ] = mgPlotChannel( k, j, axesName )
     [~,axobj] = mgGetHandles(axesName);
     
     [TS,T] = channelData(k,j,'TS');
+    %{
     if getParam('mainGUI:decimateDisplay')
        TS = resample( TS, control.mg.decimateDisplay.p, control.mg.decimateDisplay.q);
        rT = linspace(T(1),T(length(T)),length(TS));
        T = rT;
     end
+    %}
     
     % plot
     X = get(axobj,'Xlim');
