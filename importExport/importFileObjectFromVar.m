@@ -13,7 +13,16 @@ function [  ] = importFileObjectFromVar( varargin )
        varName = Ans{1};
     end
         
-    fobj = evalin('base',varName);
+    try
+        fobj = evalin('base',varName);
+    catch err
+        if strcmp(err.identifier, 'MATLAB:UndefinedFunction')
+            msgbox('No such variable in base workspace');
+            return;
+        else
+            throw(err);
+        end
+    end
     if isstruct(fobj)
         addFileObject( fobj );
     elseif iscell(fobj)

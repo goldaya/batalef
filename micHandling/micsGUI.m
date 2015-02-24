@@ -127,7 +127,18 @@ mcgChangePositions(M);
 function pbVar_Callback(hObject, eventdata, handles)
 global control;
 varName = inputdlg('Variable Name');
-M = evalin('base',varName{1});
+
+try
+    M = evalin('base',varName{1});
+catch err
+    if strcmp(err.identifier, 'MATLAB:UndefinedFunction')
+        msgbox('No such variable in base workspace');
+        return;
+    else
+        throw(err);
+    end
+end
+    
 if size(M,1)~=control.mcg.n
     errordlg('Mismatch in number of channels');
     return;
@@ -155,7 +166,16 @@ mcgChangeGains(G);
 % --- Executes on button press in pbGainVar.
 function pbGainVar_Callback(hObject, eventdata, handles)
 varName = inputdlg('Variable Name');
-G = evalin('base',varName{1});
+try
+    G = evalin('base',varName{1});
+catch err
+    if strcmp(err.identifier, 'MATLAB:UndefinedFunction')
+        msgbox('No such variable in base workspace');
+        return;
+    else
+        throw(err);
+    end
+end
 mcgChangeGains(G);
 
 
