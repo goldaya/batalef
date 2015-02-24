@@ -32,7 +32,7 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     [alpha, alpha_iso, c, c_iso] = air_absorption(FR,TM,RH,AP);
     
     % P at mics
-    Pm = fileCallData(k,a,'Power','Position','Peak');
+    Pm = fileCallData(k,a,'Value','Position','Peak');
     
     % P at source
     n = size(M,1);
@@ -64,14 +64,14 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     EL = radtodeg(Csr(:,2));
     
     Ps = Ps(U);
-    AZ = AZ(U);
-    EL = EL(U);
+    AZU = AZ(U);
+    ELU = EL(U);
     
-    leads = [AZ,EL,Ps];
+    leads = [AZU,ELU,Ps];
     
     % keep data in filesObject
     
-    [raw, interpolated, azCoors, elCoors] = bmAdminCompute( Ps, [AZ, EL] );
+    [raw, interpolated, azCoors, elCoors] = bmAdminCompute( Ps, [AZU, ELU] );
     if withSave
         filesObject(k).fileCalls{a}.beam.coordinates = [azCoors,elCoors];
         filesObject(k).fileCalls{a}.beam.leads = leads;

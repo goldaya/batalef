@@ -2,8 +2,9 @@ function fpgRefreshBeam(  )
 %FPGREFRESHBEAM Summary of this function goes here
 %   Detailed explanation goes here
 
+    global control;
     handles = fpgGetHandles();
-    axes(handles.axesBeam);
+    
     
     [k,~,~,a] = fpgGetCurrent();
     if a == 0
@@ -15,8 +16,11 @@ function fpgRefreshBeam(  )
     C = fileCallData(k,a,'Beam','Coordinates','NoValidation',true);
     M = fileCallData(k,a,'Beam','Mics','NoValidation',true);
     
+    
+    % clear / show beam
+    axes(handles.axesBeam);
+    cla;
     if isempty(P)
-        cla;
     else
         surf(C(:,1),C(:,2),P,'edgecolor','none');
         view(2);
@@ -28,6 +32,8 @@ function fpgRefreshBeam(  )
             text(M(i,1),M(i,2),maxP,num2str(i));
         end
         hold off;
+        % color legend
+        colorbar;
     end
     
 end

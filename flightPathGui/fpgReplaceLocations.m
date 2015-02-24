@@ -3,8 +3,37 @@ function fpgReplaceLocations( D )
 %input
     
     global filesObject;
+    k = fpgGetCurrent();
+    
+    % get the times to interpolate on
+    times = fileData(k,'Calls','Times');
+    Dt = D(:,1);
+    if max(Dt) < max(times) || min(Dt) > min(times)
+        msgbox('Interpolated time span is shorter than calls times span. Aborting.');
+        return;
+    end
+    
+    Dx = D(:,2);
+    Dy = D(:,3);
+    Dz = D(:,4);
+    % interpolation
+    Nx = spline(Dt,Dx,times);
+    Ny = spline(Dt,Dy,times);
+    Nz = spline(Dt,Dz,times);
+    
+    % keep
+    n = fileData(k,'Calls','Count');
+    for a = 1:n
+        filesObject(k).fileCalls{a}.location = [Nx(a),Ny(a),Nz(a)];
+    end
     
     
+    % refresh calls table
+    fpgRefreshFileCallsTable();
+    fpgRefresh3DRoute()
+    
+    
+    %{
     % check integrity of new data
     s = size(D);
     if s(2) == 3
@@ -31,9 +60,11 @@ function fpgReplaceLocations( D )
     end
     
     
+    
     % refresh calls table
     fpgRefreshFileCallsTable();
 
+    %}
 
 end
 

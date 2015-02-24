@@ -91,6 +91,13 @@ function [ out, add1 ] = fileData( k, par, varargin )
                     case 'Positions'
                         M = filesObject(k).mics.matrix;
                         out = M(:,3:5);
+                        if getParFromVarargin('LocalizationUsage',varargin)
+                            U = logical(M(:,1));
+                            out = out(U);
+                        elseif getParFromVarargin('BeamUsage',varargin)
+                            U = logical(M(:,1));
+                            out = out(U);
+                        end
                     case 'LocalizationUsage'
                         M = filesObject(k).mics.matrix;
                         out = logical(M(:,1));
@@ -166,7 +173,8 @@ function [ out, add1 ] = fileData( k, par, varargin )
                     n = length(filesObject(k).fileCalls);
                     out = zeros(n,1);
                     for a=1:n
-                        out(a) = fileCallData(k,a,'Time',varargin{2},'NoValidation', true);
+                        %out(a) = fileCallData(k,a,'Time',varargin{2},'NoValidation', true);
+                        out(a) = fileCallData(k,a,'Time','NoValidation', true);
                     end
                     
                 case 'Locations'
