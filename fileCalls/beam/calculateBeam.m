@@ -34,7 +34,7 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     % P at mics
     Pm = fileCallData(k,a,'Value','Position','Peak');
     
-    % P at source
+    % get spheric relative 
     n = size(M,1);
     Ps = zeros(n,1);
     Cs = zeros(n,3);
