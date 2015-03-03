@@ -238,7 +238,6 @@ fpgReplaceLocations(D);
 
 
 function textError_Callback(hObject, eventdata, handles)
-
 setParam('fileCalls:matching:triangleMaxError',1+(str2double(get(hObject,'String')))/100);
 
 % --- Executes during object creation, after setting all properties.

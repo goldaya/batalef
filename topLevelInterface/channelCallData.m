@@ -127,6 +127,9 @@ function [ out, out2 ] = channelCallData( k,j,s,par, varargin )
             
         case 'FileCall'
             out = getFileCall4ChannelCall(k,j,s);
+            
+        case 'Object'
+            out = channelCall(k,j,s);
                
     end
 

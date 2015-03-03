@@ -63,6 +63,8 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     AZ = 0-radtodeg(Csr(:,1));
     EL = radtodeg(Csr(:,2));
     
+    U = logical(U.*Pm);
+    
     Ps = Ps(U);
     AZU = AZ(U);
     ELU = EL(U);
@@ -72,6 +74,8 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     % keep data in filesObject
     
     [raw, interpolated, azCoors, elCoors] = bmAdminCompute( Ps, [AZU, ELU] );
+    %raw = 10*log10(raw);
+    %interpolated = 10*log10(interpolated);
     if withSave
         filesObject(k).fileCalls{a}.beam.coordinates = [azCoors,elCoors];
         filesObject(k).fileCalls{a}.beam.leads = leads;
