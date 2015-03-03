@@ -163,6 +163,8 @@ end
 
 % --------------------------------------------------------------------
 function toggleLinkaxes_OffCallback(hObject, eventdata, handles)
+mgLinkAxes(false);
+%{
 global control;
 handles = mgGetHandles();
 nAxes = appData('Axes','Count');
@@ -171,10 +173,13 @@ for i = 1:nAxes;
     linkaxes(handles.(axesName));
 end
 control.mg.linkAxes = false;
+%}
 
 
 % --------------------------------------------------------------------
 function toggleLinkaxes_OnCallback(hObject, eventdata, handles)
+mgLinkAxes(true);
+%{
 global control;
 handles = mgGetHandles();
 nAxes = appData('Axes','Count');
@@ -185,6 +190,7 @@ for i = 1:nAxes;
 end
 linkaxes(V);
 control.mg.linkAxes = true;
+%}
 
 
 % --------------------------------------------------------------------

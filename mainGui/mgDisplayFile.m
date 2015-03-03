@@ -8,7 +8,7 @@ function [  ] = mgDisplayFile( k )
     
     global control;
     if control.mg.k == k
-        control.mg.lockZook = true;
+        control.mg.lockZoom = true;
     else
         control.mg.lockZoom = false;
     end

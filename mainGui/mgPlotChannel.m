@@ -31,7 +31,8 @@ function [  ] = mgPlotChannel( k, j, axesName )
     % zoom
     axis(axobj,'tight');
     zoom(axobj,'reset');
-    if control.mg.axesMode == c.keep && control.mg.lockZoom
+    %if control.mg.axesMode == c.keep  && control.mg.lockZoom
+    if control.mg.lockZoom
         set(axobj,'Xlim',X);
         set(axobj,'Ylim',Y);
     end

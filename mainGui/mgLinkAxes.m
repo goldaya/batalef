@@ -1,6 +1,8 @@
 function mgLinkAxes( link )
 %MGLINKAXES Internal Link axes of graphs
-
+    
+    global control;
+    
     handles = mgGetHandles();
     nAxes = appData('Axes','Count');
     V = zeros(nAxes,1);
@@ -15,6 +17,8 @@ function mgLinkAxes( link )
     if link
         linkaxes(V);
     end
+    
+    control.mg.linkAxes = link;
 
 end
 

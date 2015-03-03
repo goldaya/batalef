@@ -52,9 +52,13 @@ function [  ] = mgAddAxes( n )
     setParam('mainGUI:nAxes',N + n);
     
     % link ?
+    mgLinkAxes(control.mg.linkAxes);
+    %{
     if control.mg.axesMode == c.link
         mgLinkAxes( true );
     end
+    %}
+    
 
 end
 

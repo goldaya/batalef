@@ -49,5 +49,8 @@ function [  ] = mgRemoveAxes( n )
     %
     control.mg.nAxes = M;
     setParam('mainGUI:nAxes',M);
+    
+    % link axes
+    mgLinkAxes(control.mg.linkAxes);
 end
 
