@@ -14,3 +14,4 @@ control.mg.Mpwpd.startVerticalLines = [];
 control.mg.Mpwpd.endVerticalLines = [];
 control.mg.callsMarks = [];
 control.mg.callsNumbers = [];
+control.mg.linkAxes = false;

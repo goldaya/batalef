@@ -22,8 +22,6 @@ function varargout = mainGUI(varargin)
 
 % Edit the above text to modify the response to help mainGUI
 
-% Last Modified by GUIDE v2.5 19-Feb-2015 22:02:46
-
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -163,6 +161,8 @@ end
 
 % --------------------------------------------------------------------
 function toggleLinkaxes_OffCallback(hObject, eventdata, handles)
+mgLinkAxes(false);
+%{
 global control;
 handles = mgGetHandles();
 nAxes = appData('Axes','Count');
@@ -171,10 +171,13 @@ for i = 1:nAxes;
     linkaxes(handles.(axesName));
 end
 control.mg.linkAxes = false;
+%}
 
 
 % --------------------------------------------------------------------
 function toggleLinkaxes_OnCallback(hObject, eventdata, handles)
+mgLinkAxes(true);
+%{
 global control;
 handles = mgGetHandles();
 nAxes = appData('Axes','Count');
@@ -185,6 +188,7 @@ for i = 1:nAxes;
 end
 linkaxes(V);
 control.mg.linkAxes = true;
+%}
 
 
 % --------------------------------------------------------------------
@@ -572,3 +576,38 @@ mpgKill();
 % --------------------------------------------------------------------
 function settingsGitUpdateMenuOtem_Callback(hObject, eventdata, handles)
 gitAskSettings();
+
+% --------------------------------------------------------------------
+function toggleAxesLink_ClickedCallback(hObject, eventdata, handles)
+global control;
+global c;
+set(handles.toggleAxesTight,'State','off')
+set(handles.toggleAxesKeep,'State','off')
+set(handles.toggleAxesLink,'State','on')
+control.mg.axesMode = c.link;
+mgLinkAxes( true )
+mgRefreshAxes();
+
+
+% --------------------------------------------------------------------
+function toggleAxesKeep_ClickedCallback(hObject, eventdata, handles)
+global control;
+global c;
+set(handles.toggleAxesTight,'State','off')
+set(handles.toggleAxesLink,'State','off')
+set(handles.toggleAxesKeep,'State','on')
+control.mg.axesMode = c.keep;
+mgLinkAxes( false )
+mgRefreshAxes();
+
+
+% --------------------------------------------------------------------
+function toggleAxesTight_ClickedCallback(hObject, eventdata, handles)
+global control;
+global c;
+set(handles.toggleAxesKeep,'State','off')
+set(handles.toggleAxesLink,'State','off')
+set(handles.toggleAxesTight,'State','on')
+control.mg.axesMode = c.tight;
+mgLinkAxes( false )
+mgRefreshAxes();

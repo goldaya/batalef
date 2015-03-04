@@ -19,6 +19,10 @@ function [  ] = initC(  )
     c.calculated    = 6;
     c.mix           = 7;
 
+    % main gui axes mode
+    c.link = 1;
+    c.keep = 2;
+    c.tight = 3;
     %
     c.numbered      = 8;
 

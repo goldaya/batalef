@@ -17,7 +17,7 @@ initC();
 disp('  Initializing global structures');
 
 %%%
-initB();
+initB();    
 
 disp(' ');
 disp('  Starting GUI...');

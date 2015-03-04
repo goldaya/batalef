@@ -43,6 +43,7 @@ function [  ] = initB(  )
     control.mg = [];
     control.mg.k = 0;
     control.mg.lockZoom = false;
+    control.mg.axesMode = c.tight;
     control.mg.channelsFilter = [];
     control.mg.nAxes = 1; % this value is for startup, dont change!
     control.mg.axesHeight = getParam('mainGUI:axesHeight');

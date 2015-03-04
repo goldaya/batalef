@@ -22,7 +22,7 @@ function varargout = flightPathGUI(varargin)
 
 % Edit the above text to modify the response to help flightPathGUI
 
-% Last Modified by GUIDE v2.5 16-Jan-2015 00:18:02
+% Last Modified by GUIDE v2.5 23-Feb-2015 21:49:38
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -132,30 +132,11 @@ function pbRemove_Callback(hObject, eventdata, handles)
 fpgDeleteFileCall();
 
 % --------------------------------------------------------------------
-function micsMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to micsMenu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --------------------------------------------------------------------
-function micsFileMenuItem_Callback(hObject, eventdata, handles)
-% hObject    handle to micsFileMenuItem (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --------------------------------------------------------------------
-function micsVarMenuItem_Callback(hObject, eventdata, handles)
-% hObject    handle to micsVarMenuItem (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
 
 % --- Executes on button press in pbMics.
 function pbMics_Callback(hObject, eventdata, handles)
-k = fpgGetCurrent();
-micsGUI(k);
+
 
 
 % --- Executes when selected cell(s) is changed in uitabFileCalls.
@@ -257,7 +238,6 @@ fpgReplaceLocations(D);
 
 
 function textError_Callback(hObject, eventdata, handles)
-
 setParam('fileCalls:matching:triangleMaxError',1+(str2double(get(hObject,'String')))/100);
 
 % --- Executes during object creation, after setting all properties.
@@ -266,3 +246,16 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 set(hObject,'String',num2str((getParam('fileCalls:matching:triangleMaxError')-1)*100));
+
+
+% --------------------------------------------------------------------
+function micAdminMenuItem_Callback(hObject, eventdata, handles)
+k = fpgGetCurrent();
+micsGUI(k);
+
+
+% --- Executes on button press in pbAcceptAll.
+function pbAcceptAll_Callback(hObject, eventdata, handles)
+fpgAcceptAll();
+msgbox('Accepted all calls');
+fpgRefresh();

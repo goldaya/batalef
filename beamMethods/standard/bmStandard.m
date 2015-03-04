@@ -38,5 +38,11 @@ function [ raw, interpolated ] = bmStandard( powers, micDirections, azCoors, elC
         
     % interpolation
     interpolated = inpaint_nans(M,1);
+    
+    %{
+    % logarithmic scale
+    interpolated = 10*log10(interpolated);
+    raw = 10*log10(raw);
+    %}
 end
 
