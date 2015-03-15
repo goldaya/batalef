@@ -14,6 +14,7 @@ disp(' ');
 addpath('git');
 load('user/gitSettings.mat')
 updateFromGit();
+clear gitSettings;
     
 % add batalef to path 
 disp(' ');
