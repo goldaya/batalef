@@ -5,7 +5,7 @@ function [  ] = updateFromGit(  )
     disp('  git update:');
     
     % dont do?
-    load('gitSettings.mat');
+    load('/user/gitSettings.mat');
     if ~strcmp(gitSettings.update,'Yes')
         disp('  git update disabled');
         return;
@@ -26,9 +26,9 @@ function [  ] = updateFromGit(  )
     end
 
     % pull from github
-    disp(strcat(['  Updating from git. Branch: ',gitSettings.barnch,' ; repo: ',gitSettings.repo]));
+    disp(strcat(['  Updating from git. Branch: ',gitSettings.branch,' ; repo: ',gitSettings.repo]));
     disp(' ');
-    gitPull(gitSettings.repo, gitSettings.barnch);
+    gitPull(gitSettings.repo, gitSettings.branch);
     disp(' ');
     disp('  git update finished');
 

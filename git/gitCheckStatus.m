@@ -1,7 +1,10 @@
-function [ rc, branch ] = gitCheckStatus(  )
+function [ rc, branch ] = gitCheckStatus( allowInit )
 %GITCHECKSTATUS Check if git and repository exist
 
     branch  = '';
+    if ~exist('allowInit','var')
+        allowInit = true;
+    end
     
     try
         a = evalc('git status');
@@ -19,7 +22,15 @@ function [ rc, branch ] = gitCheckStatus(  )
     end
     
     if strcmp(a(1:5),'fatal')
-        % no repo
+    % no repo
+        
+        % try to init repo
+        if strcmp(a(7:27),'Not a git repository') && allowInit
+            git init;
+            [ rc, branch ] = gitCheckStatus( false );
+            return;
+        end
+        
         rc = 2;
         return;
     end
