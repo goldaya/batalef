@@ -42,8 +42,8 @@ mics:depth:Y float 0.500000
 mics:depth:Z float 0.500000 
 peaks:percentile integer 95.000000 
 peaks:filter integer 14.000000 
-peaks:manual:zoom:time float 10.000000 
-peaks:manual:zoom:power float 0.100000 
+peaks:manual:window:time float 10.000000 
+peaks:manual:window:value float 0.100000 
 peaks:thresholdValue float 0.100000 
 peaks:thresholdPercentile float 95.000000 
 peaks:usePercentileThreshold integer 1.000000 
