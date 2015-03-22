@@ -115,6 +115,8 @@ function [ out, add1 ] = fileData( k, par, varargin )
                         add1 = round(out.*Fs);
                     case 'Subarrays'
                         out = filesObject(k).mics.subarrays;
+                    case 'Directivity'
+                        out = filesObject(k).mics.directivity;
                         
                 end
             else

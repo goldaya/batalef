@@ -61,6 +61,7 @@ function [  ] = createFileObject( n, path, name, rawData, spectralData, fileCall
         else
             filesObject(n).mics.matrix = mics;
             filesObject(n).mics.subarrays = [];
+            filesObject(n).mics.directivity = [];
         end
     elseif ~isempty(filesObject(n).channels)
         a1 = ones(length(filesObject(n).channels),2);
@@ -68,9 +69,11 @@ function [  ] = createFileObject( n, path, name, rawData, spectralData, fileCall
         a3 = ones(length(filesObject(n).channels),1);
         filesObject(n).mics.matrix = [a1, a2, a3];
         filesObject(n).mics.subarrays = [];
+        filesObject(n).mics.directivity = [];
     else
         filesObject(n).mics.matrix = [];
         filesObject(n).mics.subarrays = [];
+        filesObject(n).mics.directivity = [];
     end    
     
     %{

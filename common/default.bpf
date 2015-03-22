@@ -39,7 +39,10 @@ mainGUI:decimateDisplay integer 0.000000
 mics:minimalN integer 5.000000 
 mics:depth:X float 0.500000 
 mics:depth:Y float 0.500000 
-mics:depth:Z float 0.500000 
+mics:depth:Z float 0.500000
+mics:zero:X float 0
+mics:zero:Y float 0
+mics:zero:Z float 0
 peaks:percentile integer 95.000000 
 peaks:filter integer 14.000000 
 peaks:manual:window:time float 10.000000 

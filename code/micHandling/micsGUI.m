@@ -22,7 +22,7 @@ function varargout = micsGUI(varargin)
 
 % Edit the above text to modify the response to help micsGUI
 
-% Last Modified by GUIDE v2.5 26-Feb-2015 01:03:16
+% Last Modified by GUIDE v2.5 22-Mar-2015 20:31:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -86,6 +86,26 @@ set(micsTableObj,'Data',C);
 % keep number of channels
 control.mcg.n = size(M,1);
 
+% directivity
+D = fileData(K(1),'Mics','Directivity');
+if isempty(D)
+    D.use = 0;
+    D.zero = [0,0,0];
+    D.matrix = [];
+end
+c = cell(1,3);
+s = size(D.matrix,1);
+if s == 0
+    D.matrix = c;
+else
+    D.matrix(s+1,:) = c;   
+end
+set(handles.cbManageDirectivity,'Value',D.use);
+str = strcat('[',num2str(D.zero(1)),',',num2str(D.zero(2)),',',num2str(D.zero(3)),']');
+set(handles.textZeroVector,'String',str);
+set(handles.tableDirectivity,'Data',D.matrix);
+mcgDirectivityPlot();
+
 % --- Outputs from this function are returned to the command line.
 function varargout = micsGUI_OutputFcn(hObject, eventdata, handles) 
 global control;
@@ -126,11 +146,6 @@ if dontSave;
 else
     mcgKill();
 end
-
-
-% --------------------------------------------------------------------
-function setLocalizationParamsMenuItem_Callback(hObject, eventdata, handles)
-mcgParamsDialog();
 
 
 % --------------------------------------------------------------------
@@ -225,79 +240,74 @@ end
 mcgChangeDirectivity(D);
 
 
-% --- Executes on button press in cbManageDirectivity.
+function cbManageDirectivity_CreateFcn(hObject, eventdata, handles)
+
 function cbManageDirectivity_Callback(hObject, eventdata, handles)
-% hObject    handle to cbManageDirectivity (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of cbManageDirectivity
-
-
 
 function textZeroVector_Callback(hObject, eventdata, handles)
-% hObject    handle to textZeroVector (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of textZeroVector as text
-%        str2double(get(hObject,'String')) returns contents of textZeroVector as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function textZeroVector_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to textZeroVector (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
 
 
-
 function textMinN_Callback(hObject, eventdata, handles)
-% hObject    handle to textMinN (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of textMinN as text
-%        str2double(get(hObject,'String')) returns contents of textMinN as a double
 
 
 % --- Executes during object creation, after setting all properties.
 function textMinN_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to textMinN (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
+N = num2str(getParam('mics:minimalN'));
+set(hObject,'String',N);
 
 
 function textMinDepth_Callback(hObject, eventdata, handles)
-% hObject    handle to textMinDepth (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of textMinDepth as text
-%        str2double(get(hObject,'String')) returns contents of textMinDepth as a double
 
 
 % --- Executes during object creation, after setting all properties.
 function textMinDepth_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to textMinDepth (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+X = num2str(getParam('mics:depth:X'));
+Y = num2str(getParam('mics:depth:Y'));
+Z = num2str(getParam('mics:depth:Z'));
+str = strcat('[',X,',',Y,',',Z,']');
+set(hObject,'String',str);
+
+
+% --- Executes when entered data in editable cell(s) in tableDirectivity.
+function tableDirectivity_CellEditCallback(hObject, eventdata, handles)
+% hObject    handle to tableDirectivity (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
+%	Indices: row and column indices of the cell(s) edited
+%	PreviousData: previous data for the cell(s) edited
+%	EditData: string(s) entered by the user
+%	NewData: EditData or its converted form set on the Data property. Empty if Data was not changed
+%	Error: error string when failed to convert EditData to appropriate value for Data
+% handles    structure with handles and user data (see GUIDATA)
+
+% remove empty rows
+D = get(hObject,'Data');
+nan = cell2mat(cellfun(@(x) isempty(x)||isnan(x),D,'UniformOutput',false));
+D(all(nan,2),:) = [];
+
+% plot when matrix is consistent
+nan(all(nan,2),:) = [];
+if max(max(nan)) == 0
+    mcgDirectivityPlot();
+end
+
+% append empty row
+c = cell(1,3);
+s = size(D,1);
+if s == 0
+    D = c;
+else
+    D(s+1,:) = c;   
+end
+set(hObject,'Data',D);

@@ -5,12 +5,12 @@ function rc = mcgSave(  )
     global filesObject;
     global control;
     
-    [~,micsTableObj] = mcgGetHandles('tableMics');
-    D = get(micsTableObj,'Data');
+    handles = mcgGetHandles();
+    Data = get(handles.tableMics,'Data');
     
-    U = cell2mat(D(:,1:2));
-    P = cell2mat(D(:,3:5));
-    G = cell2mat(D(:,6));
+    U = cell2mat(Data(:,1:2));
+    P = cell2mat(Data(:,3:5));
+    G = cell2mat(Data(:,6));
     % check localization usability
     [rc, L] = checkMicsArrayForLocalization(P,U(:,1));
     switch rc
@@ -37,10 +37,43 @@ function rc = mcgSave(  )
     
     M = [U,P,G];
     
+    % array depth
+    V = str2num(get(handles.textMinDepth,'String'));
+    setParam('mics:depth:X',V(1));
+    setParam('mics:depth:Y',V(2));
+    setParam('mics:depth:Z',V(3));
+    N = str2double(get(handles.textMinN,'String'));
+    setParam('mics:minimalN',N);    
+    
+    % directivity
+    D.use = get(handles.cbManageDirectivity,'Value');
+    D.zero = str2num(get(handles.textZeroVector,'String'));
+    if isempty(D.zero) || length(D.zero) ~= 3
+        msgbox('Error in directivity zero vector');
+        return;
+    end
+    Dmat = get(handles.tableDirectivity,'Data');
+    nan = cell2mat(cellfun(@(x) isempty(x)||isnan(x),Dmat,'UniformOutput',false));
+    Dmat(all(nan,2),:) = [];
+    nan(all(nan,2),:) = [];
+    if max(max(nan)) > 0
+        msgbox('Error in directivity matrix');
+        return;
+    end
+    D.matrix = Dmat;
+    
+    %{
+    V = str2num(get(hObject,'String'));
+    setParam('mics:zero:X',V(1));
+    setParam('mics:zero:Y',V(2));
+    setParam('mics:zero:Z',V(3));
+    %}
+    
     K = control.mcg.K;
     for i = 1:length(K)
         filesObject(K(i)).mics.matrix = M;
         filesObject(K(i)).mics.subarrays = L;
+        filesObject(K(i)).mics.directivity = D;
     end
     
     if ishandle(control.fpg.fig)
