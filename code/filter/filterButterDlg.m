@@ -1,10 +1,11 @@
-function [ out ] = filterButterDlg( Fs )
+function [ out, cancel ] = filterButterDlg( Fs )
 %FILTERBUTTERDLG Summary of this function goes here
 %   Detailed explanation goes here
 
     global c;
     
     out = [];
+    cancel = false;
     
     Q{1} = 'Type: (Lowpass, Highpass, Bandpass, Bandstop)';
     switch getParam('filter:butter:type')
@@ -34,7 +35,10 @@ function [ out ] = filterButterDlg( Fs )
 
         % exit on cancel
         if isempty(A)
+            cancel = true;
             return;
+        else
+            cancel = false;
         end
 
         f1 = 1000*str2double(A{2});

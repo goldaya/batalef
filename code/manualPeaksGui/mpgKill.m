@@ -1,6 +1,5 @@
-function [ output_args ] = mpgKill( input_args )
-%MPGKILL Summary of this function goes here
-%   Detailed explanation goes here
+function mpgKill(  )
+%MPGKILL - INTERNAL - deassign axes functions and destroy manual peaks detection gui
 
 global control;
 h = control.mpg.fig;

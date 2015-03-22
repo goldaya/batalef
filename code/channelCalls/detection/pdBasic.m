@@ -1,6 +1,7 @@
-function [  ] = pdBasic( K )
+function [ cancel ] = pdBasic( K )
 %PDBASIC Detect calls using peak detection
 
+    cancel = true;
     if isempty(K)
         return;
     end
@@ -9,6 +10,8 @@ function [  ] = pdBasic( K )
     if ~do
         return;
     end
+    
+    cancel = false;
     
     % do for all specified files
     for i=1:length(K)

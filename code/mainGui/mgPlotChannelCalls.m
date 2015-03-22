@@ -34,7 +34,7 @@ function [  ] = mgPlotChannelCalls( k,j,axesName )
         set(control.mg.callsMarks.(axesName),'ButtonDownFcn',@mgMpClick);
         if getParam('mainGUI:showCalls') == c.numbered
             I = strtrim(cellstr(num2str(transpose(1:length(T)))));
-            control.mg.callsNumbers.(axesName) = text(T,V+0.05,I);
+            control.mg.callsNumbers.(axesName) = text(T,V,I);
             set(control.mg.callsNumbers.(axesName),'ButtonDownFcn',@mgMpClick);
         end        
         hold off;

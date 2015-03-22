@@ -12,9 +12,7 @@ disp(strcat(['  Changed working directory to: ',batFolder]));
 % update from git
 disp(' ');
 addpath('git');
-load('user/gitSettings.mat')
 updateFromGit();
-clear gitSettings;
     
 % add batalef to path 
 disp(' ');

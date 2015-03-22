@@ -315,9 +315,13 @@ mgGotoChannelCallsGui();
 
 % --------------------------------------------------------------------
 function callDetectionBasicMenuItem_Callback(hObject, eventdata, handles)
-pdBasic(mgResolveFilesToWork());
+canceled = pdBasic(mgResolveFilesToWork());
 mgRefreshChannelCallsDisplay();
-msgbox('Finished calls detection');
+if canceled
+    msgbox('Aborted');
+else
+    msgbox('Finished calls detection');
+end
 
 % --------------------------------------------------------------------
 function callDetectionPiecewiseMenuItem_Callback(hObject, eventdata, handles)
@@ -325,7 +329,12 @@ pwpdGUI();
 
 % --------------------------------------------------------------------
 function callDetectionManualMenuItem_Callback(hObject, eventdata, handles)
-mgMpInit();
+global control;
+if control.mg.k == 0
+    msgbox('No file on display');
+else
+    mgMpInit();
+end
 
 % --------------------------------------------------------------------
 function channelCallsShowMenu_Callback(hObject, eventdata, handles)
@@ -557,7 +566,7 @@ if strcmp(get(hObject,'State'),'on')
 else
     zoom('off');
 end
-mpgKill();
+%mpgKill();
 
 % --------------------------------------------------------------------
 function togglePan_ClickedCallback(hObject, eventdata, handles)
@@ -570,7 +579,7 @@ if strcmp(get(hObject,'State'),'on')
 else
     pan('off');
 end
-mpgKill();
+%mpgKill();
 
 
 % --------------------------------------------------------------------

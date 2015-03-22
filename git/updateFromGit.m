@@ -5,7 +5,15 @@ function [  ] = updateFromGit(  )
     disp('  git update:');
     
     % dont do?
-    load('/user/gitSettings.mat');
+    try
+        load('./user/gitSettings.mat');
+    catch err
+        if strcmp(err.identifier,'MATLAB:load:couldNotReadFile')
+            disp('  git update disabled - no gitSettings file');
+            return;    
+        end
+        throw(err);
+    end
     if ~strcmp(gitSettings.update,'Yes')
         disp('  git update disabled');
         return;

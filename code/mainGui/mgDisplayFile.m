@@ -21,5 +21,10 @@ function [  ] = mgDisplayFile( k )
     mgRefresh_textDisplayedFile();
     
     control.mg.lockZoom = true;
+    
+    % kill manual peak gui on file 0
+    if k == 0
+        mpgKill();
+    end
 end
 

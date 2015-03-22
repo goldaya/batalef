@@ -37,6 +37,7 @@ function [ rc, branch ] = gitCheckStatus( allowInit )
     
     % all ok
     rc = 0;
+    return;
     lSpace = strfind(a,' ');
     lChang = strfind(a,'Chang');
     branch = a(lSpace(2)+1:lChang(1)-2);

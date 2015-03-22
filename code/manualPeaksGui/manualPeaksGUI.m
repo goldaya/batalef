@@ -22,7 +22,7 @@ function varargout = manualPeaksGUI(varargin)
 
 % Edit the above text to modify the response to help manualPeaksGUI
 
-% Last Modified by GUIDE v2.5 12-Jan-2015 08:39:19
+% Last Modified by GUIDE v2.5 21-Mar-2015 15:42:11
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -103,3 +103,52 @@ mpgManualMark();
 % --- Executes on button press in pbDelete.
 function pbDelete_Callback(hObject, eventdata, handles)
 mpgRemovePeaks(  )
+
+
+% --- Executes on button press in pbDoForAllChannels.
+function pbDoForAllChannels_Callback(hObject, eventdata, handles)
+mpgDoForAllChannels();
+
+% --------------------------------------------------------------------
+function pbGetFocus_ClickedCallback(hObject, eventdata, handles)
+global control;
+mgSuInit(false);
+mgSoInit(false);
+mgTmInit(false);
+pan(control.mg.fig,'off');
+zoom(control.mg.fig,'off');
+mgMpInit();
+
+
+
+function textTimeWindow_Callback(hObject, eventdata, handles)
+global control;
+control.mpg.window.time = str2double(get(hObject,'String'));
+setParam('peaks:manual:window:time',control.mpg.window.time);
+mpgPlot(control.mpg.j,control.mpg.tc,control.mpg.vc);
+
+
+% --- Executes during object creation, after setting all properties.
+function textTimeWindow_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function textValueWindow_Callback(hObject, eventdata, handles)
+global control;
+control.mpg.window.value = str2double(get(hObject,'String'));
+setParam('peaks:manual:window:value',control.mpg.window.value);
+mpgPlot(control.mpg.j,control.mpg.tc,control.mpg.vc);
+
+% --- Executes during object creation, after setting all properties.
+function textValueWindow_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pbWindowFromZoom.
+function pbWindowFromZoom_Callback(hObject, eventdata, handles)
+mpgWindowFromZoom();

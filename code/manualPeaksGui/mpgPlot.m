@@ -3,13 +3,17 @@ function [  ] = mpgPlot( j, tc, vc )
 
     global control;
     handles = mpgGetHandles();
+    control.mpg.j  = j;
+    control.mpg.tc = tc;
+    control.mpg.vc = vc;
+    
     
     k = appData('Files','Displayed');
     Fs = fileData(k,'Fs');
     nSamples = fileData(k,'nSamples');
     
     % time window
-    It = tc + control.mpg.zoom.time.*[-1/2,1/2]./1000;
+    It = tc + control.mpg.window.time.*[-1/2,1/2]./1000;
     Ip = round(It.*Fs);
     if Ip(1) < 1
         Ip(1) = 1;
@@ -21,7 +25,7 @@ function [  ] = mpgPlot( j, tc, vc )
 
     
     % value Window
-    Iv = vc + control.mpg.zoom.power.*[-1/2,1/2];
+    Iv = vc + control.mpg.window.value.*[-1/2,1/2];
     
     % get envelope
     [wenv,T] = channelData( k, j, 'Envelope', Ip );
@@ -65,5 +69,11 @@ function [  ] = mpgPlot( j, tc, vc )
     
     control.mpg.mark = [];
     
+    % hide ticks
+    set(handles.axes1,'xtick',[])
+    set(handles.axes1,'xticklabel',[])
+    set(handles.axes1,'ytick',[])
+    set(handles.axes1,'yticklabel',[]) 
+
 end
 

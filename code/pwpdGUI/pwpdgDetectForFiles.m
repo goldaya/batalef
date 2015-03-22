@@ -9,6 +9,7 @@ function [  ] = pwpdgDetectForFiles(  )
     
     if ~do
         control.status = 'Idle';
+        msgbox('Aborted');
         return;
     end
     

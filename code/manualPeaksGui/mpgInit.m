@@ -1,8 +1,8 @@
-function [ output_args ] = mpgInit( input_args )
-%MPGINIT Summary of this function goes here
-%   Detailed explanation goes here
+function mpgInit()
+%MPGINIT - INTERNAL - Initialization script for manual peaks gui
 
     global control;
+    handles = mpgGetHandles();
     set(control.mpg.fig, 'Units','pixels');
     
     % align gui with main gui
@@ -17,9 +17,16 @@ function [ output_args ] = mpgInit( input_args )
     pos(2) = top - pos(4) + 10;
     set(control.mpg.fig, 'Position', pos);
     
-    % init zoom
-    control.mpg.zoom.power = getParam('peaks:manual:zoom:power');
-    control.mpg.zoom.time  = getParam('peaks:manual:zoom:time' );
+    % init window
+    control.mpg.window.value = getParam('peaks:manual:window:value');
+    control.mpg.window.time  = getParam('peaks:manual:window:time' );
+    set(handles.textTimeWindow,'String',num2str(control.mpg.window.time));
+    set(handles.textValueWindow,'String',num2str(control.mpg.window.value));
     
+    % hide ticks
+    set(handles.axes1,'xtick',[])
+    set(handles.axes1,'xticklabel',[])
+    set(handles.axes1,'ytick',[])
+    set(handles.axes1,'yticklabel',[])    
 end
 

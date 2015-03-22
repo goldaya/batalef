@@ -13,6 +13,8 @@ function gitPull( repo, branch )
     end
 
     % set remote origin
+    gitCommand = 'git remote add origin dummy';
+    eval(gitCommand);
     gitCommand = strcat(['git remote set-url origin ', repo]);
     eval(gitCommand);
     
