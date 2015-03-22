@@ -21,7 +21,7 @@ function [ pValue ] = getParam( pName )
     end
     
     % return value
-    fValue = control.params.values(idx);
+    fValue = control.params.values{idx};
     switch control.params.types{idx}
         case 'integer'
             pValue = int32(fValue);

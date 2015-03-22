@@ -26,7 +26,7 @@ function setParam( pName, pValue )
         throw(err);
     end
     
-    control.params.values(idx) = pValue;
+    control.params.values{idx} = pValue;
 
 end
 
