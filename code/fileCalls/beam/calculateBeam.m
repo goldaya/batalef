@@ -44,11 +44,12 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
         nD = length(D.cell{1});
         dAngle = zeros(nD,1);
         dGain  = zeros(nD,1);
+        dFR    = FR/1000;
         for i = 1:nD
-            dAngle(i) = D.cell{1}{i};
+            dAngle(i) = str2double(D.cell{1}{i});
             vF = D.cell{2}{i}{1}; % frequencies
             vG = D.cell{2}{i}{2}; % gain levels
-            dGain(i) = interp1(vF,vG,FR);
+            dGain(i) = interp1(vF,vG,dFR);
         end
         
     end    
@@ -77,8 +78,8 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
             [dBatAzimuth, dBatElevation,~] = cart2sph(-x,-y,-z);
 
             % find angles (Azimuth & Elevation) for each mic
-            dAzimuth   = abs(dZeroAzimuth - dBatAzimuth);   
-            dElevation = abs(dZeroElevation - dBatElevation);            
+            dAzimuth   = abs(rad2deg(dZeroAzimuth - dBatAzimuth));   
+            dElevation = abs(rad2deg(dZeroElevation - dBatElevation));            
             gAzimuth   = interp1(dAngle,dGain,dAzimuth);
             gElevation = interp1(dAngle,dGain,dElevation);
             Ps(j) = Ps(j)*10^((gAzimuth+gElevation)/10);
