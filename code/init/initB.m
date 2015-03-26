@@ -29,9 +29,15 @@ function [  ] = initB(  )
     control.pwpdg.fig = [];
 
 
-
+    % parameters
+    fid = fopen('./common/default.bpf');
+    C = textscan(fid, '%s %s %f'); % name, type, value(float)
+    fclose(fid);
+    C{3} = num2cell(C{3});
+    control.params.common = C;
     loadParametersFile('default.bpf');
     control.params.dialog = true;
+    
     control.askOverwrite = c.never;
 
     control.spectrum.method = getParam('spectrum:method');

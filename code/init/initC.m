@@ -27,6 +27,7 @@ function [  ] = initC(  )
     c.numbered      = 8;
 
     % methods
+    c.none          = 0;
     c.custom        = 12;
     c.hilbert       = 11; % envelope
     c.stft          = 13; % spectral

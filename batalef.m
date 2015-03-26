@@ -23,13 +23,6 @@ addpath(genpath(batFolder));
 disp('  Making sure /user does not miss anything');
 updateUserFromCommon();
 
-% restore working folder
-cd(currFolder);
-disp(' ');
-disp(strcat(['  Restored working directory to: ',batFolder]));
-clear currFolder;
-clear batFolder;
-
 % constants
 disp(' ');
 disp('  Initializing constants');
@@ -42,6 +35,13 @@ initB();
 % go gui :)
 disp('  Starting GUI...');
 mainGUI();
+
+% restore working folder
+cd(currFolder);
+disp(' ');
+disp(strcat(['  Restored working directory to: ',batFolder]));
+clear currFolder;
+clear batFolder;
 
 % FINISHED
 disp(' ');

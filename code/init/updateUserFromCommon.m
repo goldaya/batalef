@@ -1,7 +1,14 @@
 function updateUserFromCommon(  )
 %UPDATEUSERFROMCOMMON - INTERNAL - Make sure that "user" data contain needed data.
 
+    
     %%% defaults.bpf
+    % read common default file
+    fid = fopen('./common/default.bpf');
+    C = textscan(fid, '%s %s %f'); % name, type, value(float)
+    fclose(fid);
+    C{3} = num2cell(C{3});
+    
     % open current user default.bpf - use empty cells if non-existent
     fid = fopen('./user/default.bpf');
     if fid == -1
@@ -15,7 +22,7 @@ function updateUserFromCommon(  )
     end
     
     % enforce common default parameters
-    U = enforceCommonDefaults(U);
+    U = enforceCommonDefaults(U,C);
     
     % save updated parameters file
     fid = fopen('./user/default.bpf', 'wt');

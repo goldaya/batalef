@@ -93,6 +93,7 @@ if isempty(D)
     D.zero = [0,0,0];
     D.matrix = [];
 end
+mcgDirectivityPlot(D.matrix);
 c = cell(1,3);
 s = size(D.matrix,1);
 if s == 0
@@ -104,7 +105,7 @@ set(handles.cbManageDirectivity,'Value',D.use);
 str = strcat('[',num2str(D.zero(1)),',',num2str(D.zero(2)),',',num2str(D.zero(3)),']');
 set(handles.textZeroVector,'String',str);
 set(handles.tableDirectivity,'Data',D.matrix);
-mcgDirectivityPlot();
+
 
 % --- Outputs from this function are returned to the command line.
 function varargout = micsGUI_OutputFcn(hObject, eventdata, handles) 
@@ -299,7 +300,7 @@ D(all(nan,2),:) = [];
 % plot when matrix is consistent
 nan(all(nan,2),:) = [];
 if max(max(nan)) == 0
-    mcgDirectivityPlot();
+    mcgDirectivityPlot(D);
 end
 
 % append empty row

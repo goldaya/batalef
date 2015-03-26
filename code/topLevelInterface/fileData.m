@@ -120,7 +120,8 @@ function [ out, add1 ] = fileData( k, par, varargin )
                         
                 end
             else
-                out = fileData(k,'Mics','Positions','NoValidation',true);
+                out = filesObject(k).mics;
+                %out = fileData(k,'Mics','Positions','NoValidation',true);
             end
             
         case 'Channels'

@@ -5,7 +5,10 @@ function [  ] = fpgNextBaseCall(  )
     handles = fpgGetHandles();
     v = get(handles.ddBaseCall, 'Value' ) + 1;  
     S = get(handles.ddBaseCall, 'String' );
-    if v > max(size(S))
+    if strcmp(S,'N/A')
+        msgbox('No Call');
+        return;
+    elseif v > max(size(S))
         msgbox('Last base call for base channel')
     else
         fpgRefreshBaseCallsList();

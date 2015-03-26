@@ -23,7 +23,7 @@ function gitPull( repo, branch )
     eval(gitCommand);
     
     % change branch
-    gitCommand = strcat(['git checkout ', branch]);
+    gitCommand = strcat(['git checkout origin/', branch]);
     eval(gitCommand);
 
     %gitCommand = strcat(['git pull https://github.com/uido123/batalef.git ',branch]);

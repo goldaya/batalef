@@ -6,6 +6,10 @@ function [  ] = fpgAcceptCall(  )
     k = fpgGetCurrent();
     
     Seqs = get(handles.ddSeqs, 'UserData');
+    if isempty(Seqs)
+        msgbox('No call');
+        return;
+    end
     v = get(handles.ddSeqs, 'Value');
     
     a = addFileCall(k, Seqs{v});

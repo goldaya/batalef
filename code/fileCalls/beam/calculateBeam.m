@@ -22,6 +22,8 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     M = fileData(k,'Mics','Positions');
     G = fileData(k,'Mics','Gains','NoValidation',true);
     U = fileData(k,'Mics','BeamUsage','NoValidation',true);
+    D = fileData(k,'Mics','Directivity','NoValidation',true);
+
     
     % air absorption
     channelCalls = fileCallData(k,a,'ChannelCalls');    
@@ -30,6 +32,26 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     RH = getParam('airAbsorption:relativeHumidity');
     AP = getParam('airAbsorption:atmosphericPressure');
     [alpha, alpha_iso, c, c_iso] = air_absorption(FR,TM,RH,AP);
+    
+    % directivity
+    if D.use
+        % direction on each mic
+        % D.zero is direction zero of all mics
+        [dZeroAzimuth, dZeroElevation,~] = cart2sph(D.zero(1),D.zero(2),D.zero(3));
+        
+        % interpolate frequency's function by angle - get on angle-gain
+        % vector for the specific frequency
+        nD = length(D.cell{1});
+        dAngle = zeros(nD,1);
+        dGain  = zeros(nD,1);
+        for i = 1:nD
+            dAngle(i) = D.cell{1}{i};
+            vF = D.cell{2}{i}{1}; % frequencies
+            vG = D.cell{2}{i}{2}; % gain levels
+            dGain(i) = interp1(vF,vG,FR);
+        end
+        
+    end    
     
     % P at mics
     Pm = fileCallData(k,a,'Value','Position','Peak');
@@ -48,6 +70,19 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
         Cs(j,3) = r;
         %Ps(j) = Pm(j)*G(j)*r^2*(10^(r*alpha_iso/10));
         Ps(j) = Pm(j)*G(j)*10^(-r*alpha_iso/10);
+        
+        % directivity
+        if D.use && Ps(j) > 0
+            % -x,-y,-z are the bat location with respect to each mic
+            [dBatAzimuth, dBatElevation,~] = cart2sph(-x,-y,-z);
+
+            % find angles (Azimuth & Elevation) for each mic
+            dAzimuth   = abs(dZeroAzimuth - dBatAzimuth);   
+            dElevation = abs(dZeroElevation - dBatElevation);            
+            gAzimuth   = interp1(dAngle,dGain,dAzimuth);
+            gElevation = interp1(dAngle,dGain,dElevation);
+            Ps(j) = Ps(j)*10^((gAzimuth+gElevation)/10);
+        end
     end
 
     % get the center of the mic array
@@ -62,7 +97,7 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     %
     AZ = 0-radtodeg(Csr(:,1));
     EL = radtodeg(Csr(:,2));
-    
+   
     U = logical(U.*Pm);
     
     Ps = Ps(U);
@@ -71,7 +106,6 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     
     leads = [AZU,ELU,Ps];
     
-    % keep data in filesObject
     
     [raw, interpolated, azCoors, elCoors] = bmAdminCompute( Ps, [AZU, ELU] );
     %raw = 10*log10(raw);

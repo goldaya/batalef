@@ -10,6 +10,8 @@ function mcgChangeDirectivity( D )
     handles = mcgGetHandles();
     set(handles.tableDirectivity, 'Data', num2cell(D));
     
+    mcgDirectivityPlot(num2cell(D));
+    
 
 end
 

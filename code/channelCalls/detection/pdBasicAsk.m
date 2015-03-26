@@ -116,9 +116,10 @@ function [ do, percentile, minDistance, replace, channel, filter ] = pdBasicAsk(
     
     
     % keep values
-    if ~isempty(filter)
-        setParam('peaks:filter',filterType);
+    if isempty(filter)
+        filterType = c.none;
     end
+    setParam('peaks:filter',filterType);
     setParam('peaks:percentile',percentile);
     setParam('peaks:minDistance',minDistance);
     
