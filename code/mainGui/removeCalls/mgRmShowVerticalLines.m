@@ -1,14 +1,13 @@
-function [  ] = mgTmShowVerticalLines( time, type )
-%MGTMSHOWVERTICALLINES Summary of this function goes here
-%   Detailed explanation goes here
+function [  ] = mgRmShowVerticalLines( time, type )
+%MGRMSHOWVERTICALLINES
 
     global control;
     
     switch type
         case 'start'
-            vlineHandles = control.mg.tm.startVerticalLines;
+            vlineHandles = control.mg.Rm.startVerticalLines;
         case 'end'
-            vlineHandles = control.mg.tm.endVerticalLines;
+            vlineHandles = control.mg.Rm.endVerticalLines;
     end
     
     % first delete older lines
@@ -31,14 +30,14 @@ function [  ] = mgTmShowVerticalLines( time, type )
         X = get(axobj,'Xlim');
         Y = get(axobj,'Ylim');        
         hold(axobj,'on') ;
-        vlineHandles(i) = plot(axobj,[time,time],[-10,10],'r');
+        vlineHandles(i) = plot(axobj,[time,time],[-10,10],'r-.');
         set(axobj,'Xlim',X);
         set(axobj,'Ylim',Y); 
         switch type
             case 'start'
-                set(vlineHandles(i), 'ButtonDownFcn', @mgTmStart);
+                set(vlineHandles(i), 'ButtonDownFcn', @mgRmStart);
             case 'end'
-                set(vlineHandles(i), 'ButtonDownFcn', @mgTmEnd);
+                set(vlineHandles(i), 'ButtonDownFcn', @mgRmEnd);
         end
         hold(axobj,'off');
     end
@@ -46,9 +45,9 @@ function [  ] = mgTmShowVerticalLines( time, type )
     % keep
     switch type
         case 'start'
-            control.mg.tm.startVerticalLines = vlineHandles;
+            control.mg.Rm.startVerticalLines = vlineHandles;
         case 'end'
-            control.mg.tm.endVerticalLines = vlineHandles;
+            control.mg.Rm.endVerticalLines = vlineHandles;
     end
 
 end

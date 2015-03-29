@@ -2,6 +2,7 @@ function [dataOut, filterApplied] = applyFilterToData( dataIn, Fs, filter2use  )
 %APPLYFILTER Apply a filter to dataset
     
     global c;
+    %string = '';
     
     if isempty(filter2use)
         dataOut = dataIn;
@@ -16,6 +17,7 @@ function [dataOut, filterApplied] = applyFilterToData( dataIn, Fs, filter2use  )
                     filter2use.order, filter2use.f1, filter2use.f2);
                 dataOut = filter( filterObj , dataIn );
                 filterApplied = true;
+                %string = strcat('butterworth,',filter2use.type,',',filter2use.order,',', filter2use.f1,',', filter2use.f2);
         end
     else
         % try to filter

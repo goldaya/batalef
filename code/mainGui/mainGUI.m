@@ -193,13 +193,8 @@ control.mg.linkAxes = true;
 
 % --------------------------------------------------------------------
 function pbTimeMeasure_ClickedCallback(hObject, eventdata, handles)
-global control;
-zoom('off');
-pan('off');
-datacursormode('off');
-mgSuInit(false);
-mgSoInit(false);
-mgTmInit(~control.mg.tm.on);
+mgFunctionsOff();
+mgTmInit(true);
 
 
 % --------------------------------------------------------------------
@@ -209,13 +204,8 @@ mgRemoveFiles();
 
 % --------------------------------------------------------------------
 function pbShowSpectrum_ClickedCallback(hObject, eventdata, handles)
-global control;
-zoom('off');
-pan('off');
-datacursormode('off');
-mgSoInit(false);
-mgTmInit(false);
-mgSuInit(~control.mg.su.on);
+mgFunctionsOff();
+mgSuInit(true);
 
 
 % --------------------------------------------------------------------
@@ -390,13 +380,8 @@ mgDisplayDecimation(false);
 
 % --------------------------------------------------------------------
 function pbSpectrogram_ClickedCallback(hObject, eventdata, handles)
-global control;
-zoom('off');
-pan('off');
-datacursormode('off');
-mgTmInit(false);
-mgSuInit(false);
-mgSoInit(~control.mg.so.on);
+mgFunctionsOff();
+mgSoInit(true);
 
 
 % --------------------------------------------------------------------
@@ -557,29 +542,19 @@ mgDisplayFile(0);
 
 % --------------------------------------------------------------------
 function toggleZoom_ClickedCallback(hObject, eventdata, handles)
-mgSuInit(false);
-mgSoInit(false);
-mgTmInit(false);
-pan('off');
+mgFunctionsOff();
 if strcmp(get(hObject,'State'),'on')
     zoom('on');
-else
-    zoom('off');
 end
 %mpgKill();
 
 % --------------------------------------------------------------------
 function togglePan_ClickedCallback(hObject, eventdata, handles)
-mgSuInit(false);
-mgSoInit(false);
-mgTmInit(false);
-zoom('off');
+mgFunctionsOff();
 if strcmp(get(hObject,'State'),'on')
     pan('on');
-else
-    pan('off');
 end
-%mpgKill();
+
 
 
 % --------------------------------------------------------------------
@@ -620,3 +595,14 @@ set(handles.toggleAxesTight,'State','on')
 control.mg.axesMode = c.tight;
 mgLinkAxes( false )
 mgRefreshAxes();
+
+
+% --------------------------------------------------------------------
+function channelCallsClearIntervalMenuItem_Callback(hObject, eventdata, handles)
+mgFunctionsOff();
+mgRmInit(true);
+
+
+% --------------------------------------------------------------------
+function pbNop_ClickedCallback(hObject, eventdata, handles)
+mgFunctionsOff();

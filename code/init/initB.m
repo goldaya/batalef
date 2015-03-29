@@ -65,6 +65,9 @@ function [  ] = initB(  )
     control.mg.su.on = false;
     control.mg.Mpwpd.startVerticalLines = [];
     control.mg.Mpwpd.endVerticalLines = [];
+    control.mg.Rm.startVerticalLines = [];
+    control.mg.Rm.endVerticalLines = [];
+    control.mg.Rm.on = false;
     control.mg.callsMarks = [];
     control.mg.callsNumbers = [];
     

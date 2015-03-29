@@ -27,8 +27,12 @@ function [  ] = mgMpwpdShowVerticalLines( time, type )
     for i=1:nAxes
         axesName = strcat('axes',num2str(i));
         axobj = handles.(axesName);
+        X = get(axobj,'Xlim');
+        Y = get(axobj,'Ylim');        
         hold(axobj,'on') ;
         vlineHandles(i) = plot(axobj,[time,time],[-10,10],'b-.');
+        set(axobj,'Xlim',X);
+        set(axobj,'Ylim',Y); 
         switch type
             case 'start'
                 set(vlineHandles(i), 'ButtonDownFcn', @mgMpwpdStart);
