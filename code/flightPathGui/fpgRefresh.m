@@ -2,14 +2,14 @@ function [  ] = fpgRefresh( a )
 %FPGREFRESH Refresh screen items
 
     if ~exist('a','var')
-        [~,~,s,a] = fpgGetCurrent();
+        [~,a,~,s] = fpgGetCurrent();
     else
-        [~,~,s,~] = fpgGetCurrent();
+        [~,~,~,s] = fpgGetCurrent();
     end
     
     fpgRefreshBaseCallsList(s+1);
     fpgRefreshSeqList();
-    fpgRefreshFileCallsTable( a );
+    fpgRefreshFileCallsTable();
     fpgSelectFileCall( a );
     fpgRefresh3DRoute();
 

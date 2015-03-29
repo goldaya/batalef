@@ -9,7 +9,7 @@ function [  ] = fpgRefreshBaseCallsList( s )
         s = 1;
     end
     
-    [k,j] = fpgGetCurrent();
+    [k,~,j] = fpgGetCurrent();
     n = channelData(k,j,'Calls','Count');
     l = 0;          % dropdown list indexes
     S = cell(0,1);  % dropdown list strings

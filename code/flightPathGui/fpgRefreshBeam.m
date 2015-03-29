@@ -1,14 +1,12 @@
 function fpgRefreshBeam(  )
-%FPGREFRESHBEAM Summary of this function goes here
-%   Detailed explanation goes here
+%FPGREFRESHBEAM -INTERNAL- display beam on flight path & beam gui
 
-    global control;
     handles = fpgGetHandles();
     
     
-    [k,~,~,a] = fpgGetCurrent();
+    [k,a] = fpgGetCurrent();
     if a == 0
-        cla;
+        cla(handles.axesBeam);
         return;
     end
     

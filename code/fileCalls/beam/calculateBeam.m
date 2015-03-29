@@ -35,21 +35,17 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     
     % directivity
     if D.use
-        % direction on each mic
-        % D.zero is direction zero of all mics
-        [dZeroAzimuth, dZeroElevation,~] = cart2sph(D.zero(1),D.zero(2),D.zero(3));
-        
         % interpolate frequency's function by angle - get on angle-gain
         % vector for the specific frequency
         nD = length(D.cell{1});
-        dAngle = zeros(nD,1);
-        dGain  = zeros(nD,1);
-        dFR    = FR/1000;
+        dAngles = zeros(nD,1);
+        dGains  = zeros(nD,1);
+        dFR     = FR/1000;
         for i = 1:nD
-            dAngle(i) = str2double(D.cell{1}{i});
+            dAngles(i) = str2double(D.cell{1}{i});
             vF = D.cell{2}{i}{1}; % frequencies
             vG = D.cell{2}{i}{2}; % gain levels
-            dGain(i) = interp1(vF,vG,dFR);
+            dGains(i) = interp1(vF,vG,dFR);
         end
         
     end    
@@ -74,21 +70,16 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
         
         % directivity
         if D.use && Ps(j) > 0
-            % -x,-y,-z are the bat location with respect to each mic
-            [dBatAzimuth, dBatElevation,~] = cart2sph(-x,-y,-z);
-
-            % find angles (Azimuth & Elevation) for each mic
-            dAzimuth   = abs(rad2deg(dZeroAzimuth - dBatAzimuth));   
-            dElevation = abs(rad2deg(dZeroElevation - dBatElevation));            
-            gAzimuth   = interp1(dAngle,dGain,dAzimuth);
-            gElevation = interp1(dAngle,dGain,dElevation);
-            Ps(j) = Ps(j)*10^((gAzimuth+gElevation)/10);
+            % find angle for mic
+            dAngle = rad2deg(ang([-x,-y,-z],D.zero));
+            dGain = interp1(dAngles,dGains,dAngle);    
+            Ps(j) = Ps(j)*10^((dGain)/10);
         end
     end
 
     % get the center of the mic array
     Cmc = mean(M) - xBat; % Cartesizn center of mass
-    [az,el,r] = cart2sph(Cmc(1),Cmc(2),Cmc(3));
+    [az,el,~] = cart2sph(Cmc(1),Cmc(2),Cmc(3));
     
     % redirect spheric coordinates to center of mass
     g = ones(n,1);

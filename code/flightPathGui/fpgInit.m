@@ -1,6 +1,5 @@
 function [  ] = fpgInit( k )
-%FPGINIT Summary of this function goes here
-%   Detailed explanation goes here
+%FPGINIT -INTERNAL- initializiation script for flight path & beam gui
 
 
     global control;
@@ -20,6 +19,7 @@ function [  ] = fpgInit( k )
     bmAdminMethodSelectedInternal(control.beam.method, true);
     
     % refresh all other data
+    control.fpg.a = 0;
     fpgRefresh( 0 );
     
 end

@@ -22,7 +22,7 @@ function varargout = flightPathGUI(varargin)
 
 % Edit the above text to modify the response to help flightPathGUI
 
-% Last Modified by GUIDE v2.5 23-Feb-2015 21:49:38
+% Last Modified by GUIDE v2.5 29-Mar-2015 10:15:43
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -123,8 +123,8 @@ end
 function pbAccept_Callback(hObject, eventdata, handles)
 fpgAcceptCall();
 
-% --- Executes on button press in pbNext.
-function pbNext_Callback(hObject, eventdata, handles)
+% --- Executes on button press in pbBaseCallNext.
+function pbBaseCallNext_Callback(hObject, eventdata, handles)
 fpgNextBaseCall();
 
 % --- Executes on button press in pbRemove.
@@ -259,3 +259,67 @@ function pbAcceptAll_Callback(hObject, eventdata, handles)
 fpgAcceptAll();
 msgbox('Accepted all calls');
 fpgRefresh();
+
+
+
+function textIdx_Callback(hObject, eventdata, handles)
+
+
+
+% --- Executes during object creation, after setting all properties.
+function textIdx_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function pbPrev_Callback(hObject, eventdata, handles)
+[k,a] = fpgGetCurrent();
+N = fileData(k,'Calls','Count','NoValidation',true);
+if a == 1
+    % do nothing
+elseif a > N
+    fpgSelectFileCall( N )
+else
+    fpgSelectFileCall( a-1 )
+end
+
+function pbNext_Callback(hObject, eventdata, handles)
+[k,a] = fpgGetCurrent();
+N = fileData(k,'Calls','Count','NoValidation',true);
+if a >= N
+    fpgSelectFileCall( N )
+else
+    fpgSelectFileCall( a+1 )
+end
+    
+
+% --------------------------------------------------------------------
+function beamComputeMenuItem_Callback(~,~, handles)
+k = fpgGetCurrent();
+A = str2num(get(handles.textIdx,'String'));
+if ~isempty(A)
+    for i = 1:length(A)
+        calculateBeam(k,A(i));
+    end
+end
+msgbox('Finished beam computation')
+
+
+% --- Executes on button press in pbShowBeam.
+function pbShowBeam_Callback(hObject, eventdata, handles)
+A = str2num(get(handles.textIdx,'String'));
+if isempty(A)
+    fpgSelectFileCall( 0 );
+else
+    try
+        fpgSelectFileCall( A(1) )
+    catch err
+        if strcmp(err.identifier, 'bats:fileCalls:outOfRange')
+            msgbox(err.message);
+        else
+            throw(err);
+        end
+    end
+end

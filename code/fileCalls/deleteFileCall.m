@@ -1,13 +1,22 @@
-function [  ] = deleteFileCall( k, a )
-%DELETEFILECALL Summary of this function goes here
-%   Detailed explanation goes here
+function [  ] = deleteFileCall( k, A )
+%DELETEFILECALL Remove file call from file object
 
     global filesObject;
     
-    n = fileData(k, 'Calls', 'Count');
-    if n >= a
-        filesObject(k).fileCalls(a)=[];
+    % check not empty
+    if isempty(A)
+        return;
     end
+    
+    % check range
+    N = fileData(k, 'Calls', 'Count');
+    if N < max(A)
+        err = MException('bats:fileCalls:outOfRange','File calls out of range');
+        throw(err);
+    end
+    
+    % delete
+    filesObject(k).fileCalls(A)=[];
     
 end
 

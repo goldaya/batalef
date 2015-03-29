@@ -3,7 +3,7 @@ function seqs = fpgSuggestFileCalls(  )
 %   Detailed explanation goes here
 
     seqs = [];
-    [k,j,s] = fpgGetCurrent();
+    [k,~,j,s] = fpgGetCurrent();
     if isnan(s)
         return;
     end

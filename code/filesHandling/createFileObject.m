@@ -57,7 +57,14 @@ function [  ] = createFileObject( n, path, name, rawData, spectralData, fileCall
     if ( exist('mics', 'var') && ~isempty(mics) )
         % backward compatablity
         if isstruct(mics)
+            if ~isfield(mics,'directivity')
+                mics.directivity = [];
+            end
+            if ~isfield(mics,'subarray')
+                mics.subarray = [];
+            end
             filesObject(n).mics = mics;
+
         else
             filesObject(n).mics.matrix = mics;
             filesObject(n).mics.subarrays = [];
