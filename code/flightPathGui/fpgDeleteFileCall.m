@@ -1,4 +1,4 @@
-function [  ] = fpgDeleteFileCall(  )
+ function [  ] = fpgDeleteFileCall(  )
 %FPGDELETEFILECALL Deletes the currently selected file calls
   
     k = fpgGetCurrent();

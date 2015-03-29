@@ -35,7 +35,7 @@ function [  ] = initB(  )
     fclose(fid);
     C{3} = num2cell(C{3});
     control.params.common = C;
-    loadParametersFile('default.bpf');
+    loadParametersFile('./user/default.bpf');
     control.params.dialog = true;
     
     control.askOverwrite = c.never;

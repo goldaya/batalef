@@ -4,7 +4,7 @@ function fpgAcceptAll(  )
     timePointToUse = 'Start';
     
     % get current base
-    [k,j,~,~] = fpgGetCurrent;
+    [k,~,j,~] = fpgGetCurrent;
     
     % go over unassigned base calls
     n = channelData(k,j,'Calls','Count');

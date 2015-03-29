@@ -47,3 +47,7 @@ clear batFolder;
 disp(' ');
 disp('  Finished batalef startup');
 disp(' ');
+
+% warn against alteing files
+disp(' Save/alter files ONLY inside "user" folder.');
+disp(' DO NOT change other batalef files and directories !');

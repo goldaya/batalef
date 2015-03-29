@@ -9,7 +9,7 @@ function fpgInitUitab( fig )
     uitabColEditable = logical([1 1 0]);
     uitabColNames = {'Time','3D Location','Channel Calls'};
     uitabColFormats = {'numeric','numeric','char'};
-    uitabColWidths = {20,70,200,300};
+    uitabColWidths = {70,200,300};
     
     uitab = uitable('parent',handles.panelTable,...
                     'units',uitabUnits,...
