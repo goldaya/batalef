@@ -16,8 +16,14 @@ function [ out, out2 ] = channelCallData( k,j,s,par, varargin )
         end
     end 
     
-    cv = filesObject(k).channels(j).channelCalls(s,:);
-    Fs = fileData(k,'Fs');
+    type = getParFromVarargin( 'NoValidation', varargin );
+    if type == false
+        type = channelCall.features;
+    end
+
+    
+    call = channelCall(k,j,s,type,false);
+    
     
     if isempty(varargin)
         par2 = '';
@@ -30,106 +36,80 @@ function [ out, out2 ] = channelCallData( k,j,s,par, varargin )
         case 'Detection'
             switch par2
                 case 'Point'
-                    out = cv{1};
+                    out = channelCall.inPoints(call,call.DetectionTime);
                 case 'Time'
-                    out = cv{1}/Fs;
+                    out = call.DetectionTime;
                 case 'Value'
-                    out = cv{2};
+                    out = call.DetectionValue;
                 otherwise
-                    out.Point = cv{1};
-                    out.Time = cv{1}/Fs;
-                    out.Value = cv{2};
+                    out = call.Detection;
             end
                     
         case 'Start'
             switch par2
                 case 'Point'
-                    out = cv{6};
+                    out = channelCall.inPoints(call,call.StartTime);
                 case 'Time'
-                    out = cv{6}/Fs;
+                    out = call.StartTime;
                 case 'Value'
-                    out = cv{7};
+                    out = call.StartValue;
                 case 'Freq'
-                    out = cv{8};
+                    out = call.StartFreq;
                 case 'Power'
-                    out = cv{15};
+                    out = call.StartPower;
                 otherwise
-                    out.Point = cv{6};
-                    out.Time  = cv{6}/Fs;
-                    out.Value = cv{7};
-                    out.Freq  = cv{8};
-                    out.Power = cv{15};
+                    out = call.Start;
             end
            
         case 'End'
             switch par2
                 case 'Point'
-                    out = cv{9};
+                    out = channelCall.inPoints(call,call.EndTime);
                 case 'Time'
-                    out = cv{9}/Fs;
+                    out = call.EndTime;
                 case 'Value'
-                    out = cv{10};
+                    out = call.EndValue;
                 case 'Freq'
-                    out = cv{11};
+                    out = call.EndFreq;
                 case 'Power'
-                    out = cv{16};
+                    out = call.EndPower;
                 otherwise
-                    out.Point = cv{9};
-                    out.Time  = cv{9}/Fs;
-                    out.Value = cv{10};
-                    out.Freq  = cv{11};
-                    out.Power = cv{16};
+                    out = call.End;
             end          
            
         case 'Peak'
             switch par2
                 case 'Point'
-                    out = cv{3};
+                    out = channelCall.inPoints(call,call.PeakTime);
                 case 'Time'
-                    out = cv{3}/Fs;
+                    out = call.PeakTime;
                 case 'Value'
-                    out = cv{4};
+                    out = call.PeakValue;
                 case 'Freq'
-                    out = cv{5};
+                    out = call.PeakFreq;
                 case 'Power'
-                    out = cv{14};
+                    out = call.PeakPower;
                 otherwise
-                    out.Point = cv{3};
-                    out.Time  = cv{3}/Fs;
-                    out.Value = cv{4};
-                    out.Freq  = cv{5};
-                    out.Power = cv{14};
+                    out = call.Peak;
             end            
            
            
            
         case 'Duration'
-            switch par2
-                case 'Time'
-                    out = (cv{9}-cv(6))/Fs;
-                case 'Point'
-                    out = (cv{9}-cv{6});
-                otherwise
-                    out.Point = (cv{9}-cv{6});
-                    out.Time  = out.Point/Fs;
-            end
+            out = call.Duration;
            
         case 'Ridge'
-               out = cv{13};
+            out = call.Ridge;
            
 
         case 'TS'
-            if cv{9} > cv{6}
-                [out, out2] = channelData(k,j,'TimeSeries',[cv{6},cv{9}]);
-            else
-                out = [];
-            end
+            out = call.TimeSignal;
             
         case 'FileCall'
-            out = getFileCall4ChannelCall(k,j,s);
+            out = call.FileCall;
             
         case 'Object'
-            out = channelCall(k,j,s);
+            out = call;
                
     end
 

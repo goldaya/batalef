@@ -132,12 +132,11 @@ function [ out, add1 ] = fileData( k, par, varargin )
                 case 'Calls'
                     switch varargin{2}
                         case 'Matrix'
-                            Fs = fileData(k,'Fs','NoValidation',true);
                             N = fileData(k,'Channels','Count','NoValidation',true);
                             for j = 1:N
                                 n = channelData(k,j,'Calls','Count');
                                 M = channelData(k,j,'Calls','Matrix');
-                                M(:,1) = M(:,1)./Fs;
+                                M(:,1:2) = M(:,1)./Fs;
                                 M(:,3) = M(:,3)./Fs;
                                 M(:,6) = M(:,6)./Fs;
                                 M(:,9) = M(:,9)./Fs;

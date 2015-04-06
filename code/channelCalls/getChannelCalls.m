@@ -18,7 +18,7 @@ function [ out, add1, add2, add3 ] = getChannelCalls( k, j, varargin )
                 else
                     out = [];
                 end
-                
+                 
             case 'Array'
                 out = filesObject(k).channels(j).channelCalls;
             
@@ -26,20 +26,18 @@ function [ out, add1, add2, add3 ] = getChannelCalls( k, j, varargin )
                 out = size(filesObject(k).channels(j).channelCalls, 1);
                 
             case 'Detections'
-                I = getSamplesInterval(k,varargin);
-                if ~isempty(filesObject(k).channels(j).channelCalls)
-                    points = cell2mat(filesObject(k).channels(j).channelCalls(:,1));
-                    values = cell2mat(filesObject(k).channels(j).channelCalls(:,2));
-                    times = points./channelData(k,j,'Fs','NoValidation',true);
-                    indexes = 1:length(points);
+                I = getTimeInterval(k,varargin);
+                if ~isempty(filesObject(k).channels(j).calls)
+                    times  = filesObject(k).channels(j).calls.detection(:,1);
+                    values = filesObject(k).channels(j).calls.detection(:,2);
+                    indexes = 1:length(times);
                     
-                    logicalA = points >= I(1);
-                    logicalB = points <= I(2);
+                    logicalA = times >= I(1);
+                    logicalB = times <= I(2);
                     logicalI = logical(logicalA.*logicalB);
-                    out = points(logicalI);
+                    out  = times(logicalI);
                     add1 = values(logicalI);
-                    add2 = times(logicalI);
-                    add3 = indexes(logicalI);
+                    add2 = indexes(logicalI);
                 end                
             case 'Peaks'
                 if ~isempty(filesObject(k).channels(j).channelCalls)

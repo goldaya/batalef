@@ -1,7 +1,5 @@
 function [  ] = mgGetChannelCallsMatrix(  )
-%MGGETCHANNELCALLSMATRIX Summary of this function goes here
-%   Detailed explanation goes here
-
+%MGGETCHANNELCALLSMATRIX Output channel calls data to matrix
     K = mgResolveFilesToWork();
     if isempty(K)
         return;

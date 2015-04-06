@@ -2,6 +2,8 @@ function [  ] = removeChannelCalls( k, j, varargin )
 %REMOVECHANNELCALLS Remove channel calls. this does not affect file
 %calls
 
+    throwup();
+
     global filesObject;
     
     % validateFileChannelIndex(k,j);

@@ -1,419 +1,500 @@
 classdef channelCall < handle
-    %CHANNELCALL Summary of this class goes here
-    %   Detailed explanation goes here
+    %CHANNELCALL manipulating channel calls data (get/set, load/save ...)
     
-    properties ( SetAccess = private )
+    
+    properties ( Constant )
+       new       = 0;
+       changed   = 1;
+       unchanged = 2;
+       unknown   = 3;
+       features        = 4;
+       forLocalization = 5;
+       forBeam         = 6;
+    end
+    
+    properties ( SetAccess = private, Hidden = true )
        k
        j
        s
        Fs
-       Lock
-       Saved
-       Ridge
-       Spectrum
+       TS % Time Signal Values
+       T  % Time Signal Time-coordiantes
     end
        
-    properties ( Access = private, Hidden = true )
-       cDetection
-       cStart
-       cPeak
-       cEnd        
+    properties ( Access = public )
+        Detection
+        Start
+        Peak
+        End        
+        Spectrum
+        Ridge
+        Status = channelCall.unknown;
+        Type   = channelCall.unknown;
+        IPI
     end
     
     properties (Dependent)
-       DetectionPoint
-       DetectionTime
-       DetectionValue
-       PeakPoint
-       PeakValue
-       PeakTime
-       PeakFreq
-       PeakPower
-       StartPoint
-       StartTime
-       StartValue
-       StartFreq
-       StartPower
-       EndPoint
-       EndValue
-       EndTime
-       EndFreq
-       EndPower
-       Duration
-       nPoints
-       ipiPoints
-       ipiTime
-       MaxFreq
+        FileIdx
+        ChannelIdx
+        CallIdx
+        DetectionTime
+        DetectionValue
+        PeakValue
+        PeakTime
+        PeakFreq
+        PeakPower
+        StartTime
+        StartValue
+        StartFreq
+        StartPower
+        EndValue
+        EndTime
+        EndFreq
+        EndPower
+        FileCall
+        Duration
+        MaxFreq
+        TimeSignal
     end
     
-    methods
-        function me = channelCall(k,j,s)
-            me.k = k;
-            me.j = j;
-            me.s = s;
-            me.load();
+    methods (Static)
+        
+        function validateClass(obj)
+            % raise exception if class differs from channelCall
+            if ~isa(obj,'channelCall')
+                err = MException('bats:classes:wrongClass','Use of class "channelCall" with wrong object type');
+                throw(err)
+            end
+        end
+        
+        function val = inPoints(obj,time)
+            % translate time coordinate into points coordinate
+            % (approximation)
+            channelCall.validateClass(obj);
+            val = round(time.*obj.Fs);
+        end
+        
+        function val = inTime(obj,points)
+            % translate points coordinates into time
+            channelCall.validateClass(obj);
+            val = points.*obj.Fs;
+        end
+        
+        function idx = addCalls(k,j,newCalls)
+            global filesObject;
+            
+            newCalls = sortrows(newCalls);
+            detections      = filesObject(k).channels(j).calls.detection;
+            features        = filesObject(k).channels(j).calls.features;
+            forLocalization = filesObject(k).channels(j).calls.forLocalization;
+            forBeam         = filesObject(k).channels(j).calls.forBeam;
+            
+            n = size(detections,1);
+            emptyCell = cell(1,13);
+            for i = 1:size(newCalls,1)
+                idx(i) = find(detections(:,1)>newCalls(i,1),1);
+                % add call to detections matrix
+                detections = [detections(1:idx(i)-1);newCalls(i,:);detections(idx(i):n)];
+                
+                % push features up
+                features = [features(1:idx(i)-1,:);emptyCell;features(idx(i):n,:)];
+                
+                % push features for localiztion up
+                forLocalization = [forLocalization(1:idx(i)-1,:);emptyCell;forLocalization(idx(i):n,:)];
+                
+                % push features for beam up
+                forBeam = [forBeam(1:idx(i)-1,:);emptyCell;forBeam(idx(i):n,:)];
+                
+                %
+                n = n + 1 ;
+                
+            end
+            
+            filesObject(k).channels(j).calls.detection       = detections;
+            filesObject(k).channels(j).calls.features        = features;
+            filesObject(k).channels(j).calls.forLocalization = forLocalization;
+            filesObject(k).channels(j).calls.forBeam         = forBeam;
+            
+        end
+        
+        function removeCalls(K,J,calls)
+            
+            % resolve calls
+            if ~exist('calls','var')
+                calls = [];
+            end
+            
+            if isempty(calls)
+                criteria = 'all';
+            elseif size(calls,2) == 1
+                criteria = 'index';
+            elseif size(calls,2) == 2
+                criteria = 'between';
+            end
+            
+            % resolve files to work on
+            if ~exist('K','var') || isempty(K)
+                K = 1:appData('Files','Count');
+            end
+
+            for k = 1:length(K)
+                % resolve channels to work on
+                N = fileData(K(k),'Channels','Count');
+                if ~exist('J','var') || isempty(J)
+                    Jk = 1:N;
+                else
+                    Jk = J(J<=N);
+                end
+            
+                for j = 1:length(Jk)
+                     
+                end
+
+            end
+        end
+        
+    end
+    
+    methods (Hidden = true)
+        function val = evalu(me,str)
+            val = eval(str);
+        end
+    end
+    
+    methods (Access = public)
+        % constructor
+        function me = channelCall(k,j,s,type,empty)
+            me.k    = k;
+            me.j    = j;
+            me.s    = s;
+            me.Type = type;
             me.Fs = fileData(me.k, 'Fs');
+            if s == 0 || empty
+                me.Status = channelCall.new;
+            else
+                me.load();
+            end
             
         end
         
         function load(me)
-            me.cDetection   = channelCallData(me.k, me.j, me.s, 'Detection');
-            me.cStart       = channelCallData(me.k, me.j, me.s, 'Start');
-            me.cPeak        = channelCallData(me.k, me.j, me.s, 'Peak');
-            me.cEnd         = channelCallData(me.k, me.j, me.s, 'End');
-            me.Ridge        = channelCallData(me.k, me.j, me.s, 'Ridge');
+            % load call data from global structures
+            global filesObject;
             
-            % mark as saved / unsaved
-            if me.cStart.Point==0
-                me.Saved = false;
-            else
-                me.Saved = true;
+            if me.Status == me.new
+                return;
             end
+            
+            try
+                dv = filesObject(me.k).channels(me.j).calls.detection(me.s,:);
+                cv = filesObject(me.k).channels(me.j).calls.(me.Type)(me.s,:);
+            catch err
+                me.Status = me.new;
+                return;
+            end
+            
+            % status
+            me.Status = me.unchanged;
+            
+            % detection
+            me.Detection.Time  = dv(1);
+            me.Detection.Value = dv{2};
+            
+            % start
+            me.Start.Time  = cv{1};
+            me.Start.Value = cv{2};
+            me.Start.Freq  = cv{3};
+            me.Start.Power = cv{4};
+            
+            % peak
+            me.Peak.Time  = cv{5};
+            me.Peak.Value = cv{6};
+            me.Peak.Freq  = cv{7};
+            me.Peak.Power = cv{8};            
+            
+            % end
+            me.End.Time  = cv{ 9};
+            me.End.Value = cv{10};
+            me.End.Freq  = cv{11};
+            me.End.Power = cv{12};            
+            
+            % ridge
+            me.Ridge = cv{13};
+
+            % IPI - should improve this method
+            if me.s == 1 || me.Status == me.new
+                me.IPI = [];
+            else
+                lastCall = channelCall(me.k,me.j,me.s-1);
+                me.IPI = me.Start.Time - lastCall.StartTime;
+            end            
+        end
+        
+        function loadTS(me)
+            % load TimeSignal of call into object's internal data
+            [me.TS, me.T] = channelData(me.k,me.j,'TimeSeries',me.inPoints(me,[me.Start.Time, me.End.Time]));
         end
         
         
         function save(me)
-            changeChannelCall(me.k,me.j,me.s,...
-                'StartPoint',me.cStart.Point, 'StartValue', me.cStart.Value, 'StartFreq', me.cStart.Freq,'StartPower',me.cStart.Power,...
-                'PeakPoint', me.cPeak.Point, 'PeakValue', me.cPeak.Value, 'PeakFreq', me.cPeak.Freq,'PeakPower',me.cPeak.Power,...
-                'EndPoint', me.cEnd.Point, 'EndValue', me.cEnd.Value, 'EndFreq', me.cEnd.Freq,'EndPower',me.cEnd.Power,...
-                'Lock', me.Lock, 'Ridge', me.Ridge );                
-            % mark as saved
-            me.Saved = true;
-        end
-        
-        function clearOldData(me)
-            me.cStart.Point = [];
-            me.cStart.Value = [];
-            me.cStart.Freq = [];
-            me.cStart.Power = [];
-            me.cEnd.Point = [];
-            me.cEnd.Value = [];
-            me.cEnd.Freq = [];
-            me.cEnd.Power = [];
-            me.cPeak.Freq = [];
-            me.cPeak.Power = [];
-            me.Ridge = [];
-            me.Spectrum.P = [];
-            me.Spectrum.F = [];
-        end
-        
-        function forceCallBoundries(me, startPoint, endPoint)
-            % clean old data
-            me.clearOldData();
+            % save data to global structures
             
-            % set new bpundries
-            me.cStart.Point = startPoint;
-            me.cEnd.Point = endPoint;
-            
-            % get values and find peak
-            dataset = channelData(me.k,me.j,'Envelope','Interval',[startPoint,endPoint]);
-            me.cStart.Value = dataset(3);
-            me.cEnd.Value = dataset(length(dataset)-3);
-            [mval,argmax]=max(dataset);
-            me.cPeak.Point = argmax + startPoint - 1;
-            me.cPeak.Value = mval;
-            
-            % mark unsaved
-            me.Saved = false;
-        end
-        
-        function [peakPoint] = findPeak( me, callWindow, dataset )
-            if isscalar(callWindow)
-                dp = round( callWindow/1000 * me.Fs );
-                a = round( me.cDetection.Point - dp/2 );
-                b = round( me.cDetection.Point + dp/2 );
-            else
-                a = callWindow(1);
-                b = callWindow(2);
-            end
-            if ~exist('dataset','var') || isempty(dataset)
-                dataset = channelData(me.k, me.j, 'Envelope', [a,b]);
-            end
-            [valmax, argmax] = max(dataset);
-            me.cPeak.Point = a + argmax;
-            me.cPeak.Value = valmax;
-            peakPoint = me.cPeak.Point;            
-            % mark as unsaved
-            me.Saved = false;
-        end
-        
-        
-        function [startPoint, endPoint] = realiseCallInterval(me, data, offset, startValue, endValue, gapTolerance )
-            % clear old data
-            me.clearOldData();
-            % find start point
-            peakPoint = me.cPeak.Point - offset;
-            startPoint = peakPoint;
-            gap = 0;
-            for a=-peakPoint:-1
-                i = -a;
-                % if value is lower than threshold, take gap
-                if data(i)<startValue
-                    gap = gap + 1;
-                else
-                    startPoint = i;
-                    gap = 0;
-                end
-
-                if gap > gapTolerance
-                     break;
-                end
-            end
-            me.cStart.Point = startPoint + offset;
-            me.cStart.Value = data(startPoint);
-
-            % find end point
-            endPoint = peakPoint;
-            gap = 0;
-            for i=peakPoint:length(data)
-                % if value is lower than threshold, take gap
-                if data(i)<endValue
-                    gap = gap + 1;
-                else
-                    endPoint = i;
-                    gap = 0;
-                end
-
-                if gap > gapTolerance
-                     break;
-                end
-            end
-            me.cEnd.Point = endPoint + offset;
-            me.cEnd.Value = data(endPoint);
-            
-            % mark as unsaved
-            me.Saved = false;
-        end
-        
-        function collectFromScreen(me)
-            handles = pdgGetHandles();
-            me.cStart.Point     = str2double(get(handles.textStartPoint, 'String'));
-            me.cEnd.Point       = str2double(get(handles.textEndPoint, 'String'));
-            me.Lock             = get(handles.cbLock, 'Value');
-            me.cStart.Freq      = str2double(get(handles.textStartFreq, 'String'));
-            me.cPeak.Freq       = str2double(get(handles.textPeakFreq, 'String'));
-            me.cEnd.Freq        = str2double(get(handles.textEndFreq, 'String'));            
-        end
-        
-        function [F,T,P,startT,endT] = computeSpectralData(me,callWindow)% window, overlap, nfft, callWindow)
-            %ppad = round(padding/1000*me.Fs);
-            a = callWindow(1);%max(0,me.cStart.Point-ppad);
-            b = callWindow(2);%min(fileData(me.k,'nSamples'), me.cEnd.Point+ppad);
-            dataset = channelData(me.k, me.j, 'TimeSeries', [a, b]);
-            spec = somAdminCompute(dataset, me.Fs);
-            T = spec.T;
-            F = spec.F;
-            P = spec.P;
-
-            peakTime = me.cPeak.Point/me.Fs;
-            startTime = me.StartTime;
-            endTime = me.EndTime;
-            T = T + (a/me.Fs);
-            
-            % get the closest coordinate to peak
-            t1 = min(T(T>=peakTime));
-            t2 = max(T(T<=peakTime));
-            d1 = t1-peakTime;
-            d2 = peakTime-t2;
-            if isempty(t1)
-                pP = P(:,T==t2);
-            elseif isempty(t2)
-                pP = P(:,T==t1);
-            elseif d1 > d2
-                pP = P(:,T==t2);
-            else
-                pP = P(:,T==t1);
+            if me.Status == me.unchanged
+                return;
             end
             
-            % get the closest coordinate to start
-            t1 = min(T(T>=startTime));
-            t2 = max(T(T<=startTime));
-            d1 = t1-startTime;
-            d2 = startTime-t2;
-            if isempty(t1)
-                startT = t2;
-            elseif isempty(t2)
-                startT = t1;
-            elseif d1 > d2
-                startT = t2;
-            else
-                startT = t1;
+            global filesObject;
+    
+            % add call when new
+            if me.Status == me.new
+                S = channelCall.add([me.Detection.Time, me.Detection.Value]);
+                me.s = S(1);
             end
-            sP = P(:,T==startT);
             
-            % get the closest coordinate to end
-            t1 = min(T(T>=endTime));
-            t2 = max(T(T<=endTime));
-            d1 = t1-endTime;
-            d2 = endTime-t2;
-            if isempty(t1)
-                endT = t2;
-            elseif isempty(t2)
-                endT = t1;
-            elseif d1 > d2
-                endT = t2;
-            else
-                endT = t1;
-            end
-            eP = P(:,T==endT);
+            % build data structures
+            dv = cell(1,2);
+            cv = cell(1,13);
+            dv{ 1} = me.Detection.Time;
+            dv{ 2}  = me.Detection.Value;
+            cv{ 1} = me.Start.Time;
+            cv{ 2}  = me.Start.Value;
+            cv{ 3}  = me.Start.Freq;
+            cv{ 4} = me.Start.Power;
+            cv{ 5} = me.Peak.Time;
+            cv{ 6}  = me.Peak.Value;
+            cv{ 7}  = me.Peak.Freq;
+            cv{ 8} = me.Peak.Power;
+            cv{ 9} = me.End.Time;
+            cv{10} = me.End.Value;
+            cv{11} = me.End.Freq;
+            cv{12} = me.End.Power;
+            cv{13} = me.Ridge;
             
+            % save
+            filesObject(me.k).channels(me.j).calls.detection(me.s,:) = dv;
+            filesObject(me.k).channels(me.j).calls.(me.Type)(me.s,:) = cv;
             
-            % put highest freq in start/peak/end times
-            [me.cPeak.Power, argmax] = max(pP);
-            me.cPeak.Freq  = F(argmax); %F(pP==max(pP));
-            [me.cStart.Power, argmax] = max(sP);
-            me.cStart.Freq = F(argmax); %F(sP==max(sP));
-            [me.cEnd.Power, argmax] = max(eP);
-            me.cEnd.Freq   = F(argmax); %F(eP==max(eP));  
+            % set status
+            me.Status = me.unchanged;
             
         end
 
-        function [ridge] = computeRidge(me)
-            try
-                TSdataset = channelData(me.k, me.j, 'TS', [me.cStart.Point,me.cEnd.Point]);
-                ridge = rdgmAdminCompute(TSdataset, me.Fs);
-                ridge(:,1) = ridge(:,1) + me.StartTime;
-            catch err
-                err.message; % dummy line
-                ridge = [];
+        function remove(me)
+            % remove file call associated with this channel call
+            if me.FileCall ~= 0
+                deleteFileCall(me.k,me.FileCall);
+                % should change this after developing file calls objects
             end
-            me.Ridge = ridge;
+            
+            % reindex later channel calls in file calls
+            % to be developed after file call objects.
+            
+            % remove call from global structure, by call index
+            global filesObject;
+            filesObject(me.k).channels(me.j).calls.detection(me.s,:)       = [];
+            filesObject(me.k).channels(me.j).calls.features(me.s,:)        = [];
+            filesObject(me.k).channels(me.j).calls.forLocalization(me.s,:) = [];
+            filesObject(me.k).channels(me.j).calls.forBeam(me.s,:)         = [];
+            
+            
+            me.Status = me.new;
         end
         
-        function [P,F] = computeSpectrum(me)
-            dataset = channelData(me.k, me.j, 'TimeSeries', [me.cStart.Point, me.cEnd.Point]);
-            spec = sumAdminCompute(dataset,me.Fs);
-            P = spec.P;
-            F = spec.F;
-            me.Spectrum.P = P;
-            me.Spectrum.F = F;
+    end
+    
+    
+    % properties SET/GET
+    methods
+        
+        % indexes
+        function val = get.FileIdx(me)
+            val = me.k;
+        end
+        function val = get.ChannelIdx(me)
+            val = me.j;
+        end
+        function val = get.CallIdx(me)
+            val = me.s;
         end
         
-        % properties SET/GET
-        function val = get.DetectionPoint(me)
-            val = me.cDetection.Point;
-        end
+        % detection time
         function val = get.DetectionTime(me)
-            val = me.cDetection.Point/me.Fs;
+            val = me.Detection.Time;
         end
+        function set.DetectionTime(me, val)
+            if me.Detection.Time ~= val
+                me.Detection.Time = val;
+                me.Status = me.changed;
+            end
+        end
+        
+        % detection value (envelope value)
         function val = get.DetectionValue(me)
-            val = me.cDetection.Value;
+            val = me.Detection.Value;
         end
-        function val = get.PeakPoint(me)
-           val = me.cPeak.Point; 
+        function set.DetectionValue(me,val)
+            if me.Detection.Value ~= val
+                me.Detection.Value = val;
+                me.Status = me.changed;
+            end
         end
+        
+        % peak time
         function val = get.PeakTime(me)
-            val = me.cPeak.Point/me.Fs;
+            val = me.Peak.Time;
         end
+        function set.PeakTime(me,val)
+            if me.Peak.Time ~= val
+                me.Peak.Time = val;
+                me.Status = me.changed;
+            end
+        end
+        
+        % peak value
         function val = get.PeakValue(me)
-            val = me.cPeak.Value;
+            val = me.Peak.Value;
         end
+        function set.PeakValue(me,val)
+            if me.Peak.Value ~= val
+                me.Peak.Value = val;
+                me.Status = me.changed;
+            end
+        end
+        
+        % peak frequency
         function val = get.PeakFreq(me)
-            val = me.cPeak.Freq;
+            val = me.Peak.Freq;
         end
+        function set.PeakFreq(me,val)
+            if me.Peak.Freq ~= val
+                me.Peak.Freq = val;
+                me.Status = me.changed;
+            end
+        end
+        
+        % peak power
         function val = get.PeakPower(me)
-            val = me.cPeak.Power;
+            val = me.Peak.Power;
         end        
-        function val = get.StartPoint(me)
-           val = me.cStart.Point; 
-        end
+        function set.PeakPower(me,val)
+            if me.Peak.Power ~= val
+                me.Peak.Power = val;
+                me.Status = me.changed;
+            end
+        end           
+        
+        % start time
         function val = get.StartTime(me)
-            val = me.cStart.Point/me.Fs;
+            val = me.Start.Time;
         end
+        function set.StartTime(me,val)
+            if me.Start.Time ~= val
+                me.Start.Time = val;
+                me.Status = me.changed;
+            end
+        end
+        
+        % start value
         function val = get.StartValue(me)
-            val = me.cStart.Value;
+            val = me.Start.Value;
         end
+        function set.StartValue(me,val)
+            if me.Start.Value ~= val
+                me.Start.Value = val;
+                me.Status = me.changed;
+            end
+        end
+        
+        % start frequency
         function val = get.StartFreq(me)
-            val = me.cStart.Freq;
+            val = me.Start.Freq;
         end
+        function set.StartFreq(me,val)
+            if me.Start.Freq ~= val
+                me.Start.Freq = val;
+                me.Status = me.changed;
+            end
+        end
+        
+        % start power
         function val = get.StartPower(me)
-            val = me.cStart.Power;
+            val = me.Start.Power;
         end
-        function val = get.EndPoint(me)
-           val = me.cEnd.Point; 
-        end
+        function set.StartPower(me,val)
+            if me.Start.Power ~= val
+                me.Start.Power = val;
+                me.Status = me.changed;
+            end
+        end           
+        
+        % end time
         function val = get.EndTime(me)
-            val = me.cEnd.Point/me.Fs;
+            val = me.End.Time;
         end
+        function set.EndTime(me,val)
+            if me.End.Time ~= val
+                me.End.Time = val;
+                me.Status = me.changed;
+            end
+        end
+        
+        % end value
         function val = get.EndValue(me)
-            val = me.cEnd.Value;
+            val = me.End.Value;
         end
+        function set.EndValue(me,val)
+            if me.End.Value ~= val
+                me.End.Value = val;
+                me.Status = me.changed;
+            end
+        end
+        
+        % end frequency
         function val = get.EndFreq(me)
-            val = me.cEnd.Freq;
+            val = me.End.Freq;
         end
+        function set.EndFreq(me,val)
+            if me.End.Freq ~= val
+                me.End.Freq = val;
+                me.Status = me.changed;
+            end
+        end   
+        
+        % end power
         function val = get.EndPower(me)
-            val = me.cEnd.Power;
+            val = me.End.Power;
         end
-        function val = get.Saved(me)
-            val = me.Saved;
+        function set.EndPower(me,val)
+            if me.End.Power ~= val
+                me.End.Power = val;
+                me.Status = me.changed;
+            end
+        end   
+        
+        % File Call
+        function val = get.FileCall(me)
+            val = getFileCall4ChannelCall(me.k,me.j,me.s);
         end
-        function val = get.Lock(me)
-            val = me.Lock;
-        end        
-        function val = get.Ridge(me)
-            val = me.Ridge;
-        end
+        
+        % maximal frequency
         function out = get.MaxFreq(me)
             [out.P,argmax] = max(me.Spectrum.P);
             out.F = me.Spectrum.F(argmax);
         end
         
-        function set.DetectionPoint(me, val)
-            me.cDetection.Point = val;
-        end
-        function set.PeakPoint(me,val)
-           me.cPeak.Point = val; 
-        end
-        function set.PeakValue(me,val)
-            me.cPeak.Value = val;
-        end
-        function set.PeakFreq(me,val)
-            me.cPeak.Freq = val;
-        end
-        function set.StartPoint(me,val)
-           me.cStart.Point = val;
-        end
-        function set.StartValue(me,val)
-            me.cStart.Value = val;
-        end
-        function set.StartFreq(me,val)
-            me.cStart.Freq = val;
-        end
-        function set.EndPoint(me,val)
-           me.cEnd.Point = val; 
-        end
-        function set.EndValue(me,val)
-            me.cEnd.Value = val;
-        end
-        function set.EndFreq(me,val)
-            me.cEnd.Freq = val;
-        end   
-
-        function set.Lock(me, val)
-            me.Lock = val;
-        end
-        
+        % duration of call
         function val = get.Duration(me)
-            val = (me.cEnd.Point - me.cStart.Point + 1)/me.Fs;
+            val = me.End.Time - me.Start.Time;
         end
-        function val = get.nPoints(me)
-            val = me.cEnd.Point - me.cStart.Point + 1;
-        end
-        function val = get.ipiPoints(me)
-            if me.s == 1
-                val = [];
-            else
-                lastCall = channelCall(me.k,me.j,me.s-1);
-                val = me.cStart.Point - lastCall.StartPoint;
+
+        % Time Signal
+        function val = get.TimeSignal(me)
+            if isempty(me.TS)
+                me.loadTS();
             end
-        end
-        function val = get.ipiTime(me)
-            p = me.ipiPoints();
-            val = p/me.Fs;
+            val = [me.T, me.TS];
         end
         
     end
     
 end
-
