@@ -45,7 +45,11 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
             dAngles(i) = str2double(D.cell{1}{i});
             vF = D.cell{2}{i}{1}; % frequencies
             vG = D.cell{2}{i}{2}; % gain levels
-            dGains(i) = interp1(vF,vG,dFR);
+            if length(vF) < 2
+                dGains(i) = vG(1);
+            else
+                dGains(i) = interp1(vF,vG,dFR,'linear','extrap');
+            end
         end
         
     end    

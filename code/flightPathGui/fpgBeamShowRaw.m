@@ -1,7 +1,7 @@
 function fpgBeamShowRaw(  )
 %FPGBEAMSHOWRAW 
 
-    [k,~,~,a] = fpgGetCurrent();
+    [k,a] = fpgGetCurrent();
     if a==0
         return;
     end
