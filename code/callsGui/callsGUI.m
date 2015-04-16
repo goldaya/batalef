@@ -544,7 +544,7 @@ function ddType_Callback(hObject, eventdata, handles)
 global control;
 D = get(hObject,'UserData');
 v = get(hObject,'Value' );
-control.cg.t = D(v);
+control.cg.t = D{v};
 
 % --- Executes during object creation, after setting all properties.
 function ddType_CreateFcn(hObject, eventdata, handles)

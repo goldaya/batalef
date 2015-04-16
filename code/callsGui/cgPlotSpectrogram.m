@@ -5,41 +5,30 @@ function cgPlotSpectrogram(  )
     global control;
     handles = cgGetHandles();
 
-    [a,b] = cgGetPlotingPoints();
-    try
-        [F,T,P,startT, endT] = control.cg.call.computeSpectralData([a,b]);
-        doPlot = true;
-    catch err
-        cla(handles.axesWindowSpec);
-        doPlot = false;
-    end
-    
-    if doPlot
-    R = control.cg.call.Ridge;
-    if ~isempty(R)
-        X = R(:,1);
-        Y = R(:,2);
-        plotRidge = true;
-    else
-        plotRidge = false;
-    end
+
+    S = control.cg.call.Spectrograma;
     
     % plot spectrogram
-    if ismatrix(P)
+    if ismatrix(S.P)
         try
-            control.cg.spectrogramSurf = surf(handles.axesWindowSpec,T,F,P,'edgecolor','none');
+            control.cg.spectrogramSurf = surf(handles.axesWindowSpec,S.T,S.F,S.P,'edgecolor','none');
             axis(handles.axesWindowSpec, 'tight');
 
             Zlim = get(handles.axesWindowSpec, 'ZLim');
             Ylim = get(handles.axesWindowSpec, 'YLim');
             
-            if plotRidge
+            R = control.cg.call.Ridge;
+            if ~isempty(R)
+                X = R(:,1);
+                Y = R(:,2);                
                 Z = zeros(length(X),1) + Zlim(2);
                 hold(handles.axesWindowSpec,'on');
                 plot3(handles.axesWindowSpec,X,Y,Z,'LineWidth',2,'Color','white');
                 hold(handles.axesWindowSpec, 'off');
             end
             
+            startT = control.cg.call.StartTime;
+            endT = control.cg.call.EndTime;
             lineStart = line([startT,startT],Ylim,[Zlim(2),Zlim(2)],'LineWidth',3,'Color','white');
             set(lineStart,'Parent',handles.axesWindowSpec);
             lineEnd = line([endT,endT],Ylim,[Zlim(2),Zlim(2)],'LineWidth',3,'Color','white');
@@ -52,13 +41,9 @@ function cgPlotSpectrogram(  )
             err.identifier
             err.message
         end
+    else
+        cla(handles.axesWindowSpec);
     end
-    end
-    
-    % put spectral info on screen
-    set(handles.textStartFreq, 'String', control.cg.call.StartFreq);
-    set(handles.textPeakFreq, 'String', control.cg.call.PeakFreq);
-    set(handles.textEndFreq, 'String', control.cg.call.EndFreq);   
 
 end
 

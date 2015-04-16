@@ -3,6 +3,7 @@ function [  ] = cgDoForAll( K, J )
 %   Detailed explanation goes here
 
     handles = cgGetHandles();
+    [~,~,~,t] = cgGetCurrent;
     
     % overwrite existing data?
     overwrite = questdlg('There might be previously extracted calls. Overwrite existing calls data? (If you choose " No " unprocessed calls will be processed)','Overwrite?','Yes','No','No');
@@ -13,14 +14,13 @@ function [  ] = cgDoForAll( K, J )
     end
     
     % keep some values to use
-    startRelativeThreshold = 1 - get(handles.sliderStartDiff, 'Value');
-    endRelativeThreshold = 1 - get(handles.sliderEndDiff, 'Value');
-    rawGapTolerance = str2double(get(handles.textGap, 'String'))/1000;
+    dt = str2double(get(handles.textCallWindow, 'String'))/1000 ;
+    startThreshold = str2double(get(handles.textStartDiff,'String'));
+    endThreshold   = str2double(get(handles.textEndDiff,  'String'));
+    gapTolerance = str2double(get(handles.textGap, 'String'))/1000;
+
     
     for k = 1:length(K)
-        Fs = fileData(K(k),'Fs');
-        gapTolerance = rawGapTolerance*Fs;
-        dp = round( str2double(get(handles.textCallWindow, 'String'))/1000 * Fs );
         if isempty(J)
             Jbar = 1:fileData(K(k),'Channels','Count');
         else
@@ -29,9 +29,10 @@ function [  ] = cgDoForAll( K, J )
         end
         for j = 1:length(Jbar)
             for s=1:channelData(K(k),Jbar(j),'Calls','Count')
-                call = channelCall(K(k),Jbar(j),s);
+                call = channelCall(K(k),Jbar(j),s,t,false);
                 if ~call.Saved || overwrite
-                    call = calculateCall(call,overwrite,dp,startRelativeThreshold,endRelativeThreshold,gapTolerance);
+                    window = [call.DetectionTime-dt/2, call.DetectionTime+dt/2];
+                    call = channelCallAnalyze(K(k),Jbar(j),s,t,window,[],[],startThreshold,endThreshold,gapTolerance,true,true);
                     call.save();
                 end
             end

@@ -13,7 +13,7 @@ function call = channelCallComputeSpectralData( call, dataset, Fs )
         t1 = min(T(T>=call.PeakTime));
         t2 = max(T(T<=call.PeakTime));
         d1 = t1-call.PeakTime;
-        d2 = peakTime-t2;
+        d2 = call.PeakTime-t2;
         if isempty(t1)
             pP = P(:,T==t2);
         elseif isempty(t2)
@@ -30,7 +30,7 @@ function call = channelCallComputeSpectralData( call, dataset, Fs )
         t1 = min(T(T>=call.StartTime));
         t2 = max(T(T<=call.StartTime));
         d1 = t1-call.StartTime;
-        d2 = startTime-t2;
+        d2 = call.StartTime-t2;
         if isempty(t1)
             startT = t2;
         elseif isempty(t2)

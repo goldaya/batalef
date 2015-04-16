@@ -10,6 +10,7 @@ function [  ] = cgCalculateCall(  )
     % window to work in
     dt = str2double(get(handles.textCallWindow, 'String'))/1000 ;
     window = [call.DetectionTime-dt/2, call.DetectionTime+dt/2];
+    control.cg.window = window;
     
     % parameters for call interval realization
     startThreshold = str2double(get(handles.textStartDiff,'String'));
@@ -17,7 +18,7 @@ function [  ] = cgCalculateCall(  )
     gapTolerance = str2double(get(handles.textGap, 'String'))/1000;
     
     % analyze call
-    call = channelCallAnalyze(k,j,s,t,window,[],startThreshold,endThreshold,gapTolerance,true,true);
+    call = channelCallAnalyze(k,j,s,t,window,[],[],startThreshold,endThreshold,gapTolerance,true,true);
     control.cg.call = call;
     
 

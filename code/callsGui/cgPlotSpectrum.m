@@ -4,15 +4,13 @@ function cgPlotSpectrum(  )
 
     global control;
     handles = cgGetHandles();
-    try
-        [P,F] = control.cg.call.computeSpectrum();
-    catch err
-        P = [];
-    end
-    if isempty(P)
+    
+    S = control.cg.call.SpectralData;
+    
+    if isempty(S.P)
         cla(handles.axesCallSpectrum);
     else
-        plot(handles.axesCallSpectrum, F, P);
+        plot(handles.axesCallSpectrum, S.F, S.P);
     end
     ylabel(handles.axesCallSpectrum, {'Spectrum','Gain: dB'});
     xlabel(handles.axesCallSpectrum, 'Frequency: Hz');

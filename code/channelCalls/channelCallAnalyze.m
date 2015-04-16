@@ -1,9 +1,9 @@
-function call = channelCallAnalyze( k,j,s,type,window, dataset, startThreshold, endThreshold, gapTolerance, computeSpectral, computeRidge )
+function call = channelCallAnalyze( k,j,s,type,window, dataset,envDataset, startThreshold, endThreshold, gapTolerance, computeSpectral, computeRidge )
 %CHANNELCALLANALYZE Summary of this function goes here
 %   Detailed explanation goes here
 
     % init call object
-    call = channelCall(k,j,s,type,true);
+    call = channelCall(k,j,s,type,false);
     Fs = call.Fs;
         
     if isempty(dataset)
@@ -11,7 +11,9 @@ function call = channelCallAnalyze( k,j,s,type,window, dataset, startThreshold, 
     end
     
     % get envelope
-    envDataset = envmAdminCompute(dataset,Fs);
+    if isempty(envDataset)
+        envDataset = envmAdminCompute(dataset,Fs);
+    end
     
 %%% find peak %%%
     [peakValue, peakPoint] = max(envDataset);
@@ -44,7 +46,7 @@ function call = channelCallAnalyze( k,j,s,type,window, dataset, startThreshold, 
     endValue = peakValue * 10^(endThreshold/10);
     endPoint = peakPoint;
     gap = 0;
-    for i=peakPoint:length(data)
+    for i=peakPoint:length(envDataset)
         % if value is lower than threshold, take gap
         if envDataset(i)<endValue
             gap = gap + 1;
@@ -62,7 +64,7 @@ function call = channelCallAnalyze( k,j,s,type,window, dataset, startThreshold, 
     
 %%% spectral data %%%
     if computeSpectral
-        call.Spectrograma = somAdminCompute(dataset, me.Fs);
+        call.Spectrograma = somAdminCompute(dataset, Fs);
         call.Spectrograma.T = call.Spectrograma.T + window(1);
 
         call = channelCallComputeSpectralData(call,dataset,Fs);
@@ -72,7 +74,7 @@ function call = channelCallAnalyze( k,j,s,type,window, dataset, startThreshold, 
     
 %%% ridge %%%
     if computeRidge
-        call = channelCallComputeRidge(call, dataset, Fs);
+        call = channelCallComputeRidge(call, dataset(startPoint:endPoint), Fs);
     else
         call.Ridge = [];
     end

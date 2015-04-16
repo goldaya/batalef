@@ -93,7 +93,8 @@ classdef channelCall < handle
             forBeam         = filesObject(k).channels(j).calls.forBeam;
             
             n = size(detections,1);
-            emptyCell = cell(1,13);
+            emptyCell = num2cell(zeros(1,13));
+            emptyCell{13} = [];
             idx = zeros(size(newCalls,1),1);
             for i = 1:size(newCalls,1)
                 index = find(detections(:,1)>newCalls(i,1),1);
@@ -196,7 +197,9 @@ classdef channelCall < handle
     end
     
     methods (Access = public)
-        % constructor
+        
+        % CONSTRUCTOR %%%%%
+        
         function me = channelCall(k,j,s,type,empty)
             me.k    = k;
             me.j    = j;
@@ -221,18 +224,18 @@ classdef channelCall < handle
             me.Peak.Power = 0;
             
             % end
-            me.End.Time  = cv{ 9};
-            me.End.Value = cv{10};
-            me.End.Freq  = cv{11};
-            me.End.Power = cv{12};            
+            me.End.Time  = 0;
+            me.End.Value = 0;
+            me.End.Freq  = 0;
+            me.End.Power = 0;            
             
             % ridge
-            me.Ridge = cv{13};            
+            me.Ridge = [];            
             
             if s == 0
                 me.Status = channelCall.new;
-            elseif empty
-                me.Status = channelCall.unknown;
+            %elseif empty
+            %    me.Status = channelCall.unknown;
             else
                 me.load();
             end
@@ -243,9 +246,9 @@ classdef channelCall < handle
             % load call data from global structures
             global filesObject;
             
-            if me.Status == me.new
-                return;
-            end
+            %if me.Status == me.new
+            %    return;
+            %end
             
             try
                 dv = filesObject(me.k).channels(me.j).calls.detection(me.s,:);
@@ -287,7 +290,7 @@ classdef channelCall < handle
             if me.s == 1 || me.Status == me.new
                 me.IPI = [];
             else
-                lastCall = channelCall(me.k,me.j,me.s-1);
+                lastCall = channelCall(me.k,me.j,me.s-1,me.Type,false);
                 me.IPI = me.Start.Time - lastCall.StartTime;
             end            
         end
@@ -314,10 +317,10 @@ classdef channelCall < handle
             end
             
             % build data structures
-            dv = cell(1,2);
+            dv = zeros(1,2);
             cv = cell(1,13);
-            dv{ 1} = me.Detection.Time;
-            dv{ 2}  = me.Detection.Value;
+            dv( 1) = me.Detection.Time;
+            dv( 2)  = me.Detection.Value;
             cv{ 1} = me.Start.Time;
             cv{ 2}  = me.Start.Value;
             cv{ 3}  = me.Start.Freq;
