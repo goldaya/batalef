@@ -26,14 +26,14 @@ function [  ] = mgPlotChannelCalls( k,j,axesName )
     if getParam('mainGUI:showCalls') > c.no && ...
             channelData(k,j,'Calls','Count') > 0
 
-        [~,V,T] = channelData(k,j,'Calls','Detections');
+        [T,V,idx] = channelData(k,j,'Calls','Detections');
         [~,axobj] = mgGetHandles(axesName);
         axes(axobj)
         hold on;
         control.mg.callsMarks.(axesName) = plot(T,V,'r*');
         set(control.mg.callsMarks.(axesName),'ButtonDownFcn',@mgMpClick);
         if getParam('mainGUI:showCalls') == c.numbered
-            I = strtrim(cellstr(num2str(transpose(1:length(T)))));
+            I = strtrim(cellstr(num2str(transpose(idx))));
             control.mg.callsNumbers.(axesName) = text(T,V,I);
             set(control.mg.callsNumbers.(axesName),'ButtonDownFcn',@mgMpClick);
         end        

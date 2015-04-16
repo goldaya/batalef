@@ -32,7 +32,7 @@ function [ cancel ] = pdBasic( K )
                 dataset = channelData(k,j,'Envelope','Filter',filter);
                 threshold = prctile(dataset,percentile);
                 peaks = pdBasicCore(dataset, Fs, threshold, minDistance,0);
-                addChannelCalls(k,j,[peaks.points,peaks.values],replace,true);
+                addChannelCalls(k,j,[peaks.times,peaks.values],replace);
             end
         end
     end

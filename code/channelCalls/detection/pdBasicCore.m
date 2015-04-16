@@ -30,6 +30,7 @@ function peaks = pdBasicCore( dataset, Fs, threshold, minDistance, npeaks )
     % sort ascending by point index
     Q = sortrows([L V]);
     peaks.points = Q(:,1);
+    peaks.times  = Q(:,1)./Fs;
     peaks.values = Q(:,2);
 
 end

@@ -3,7 +3,7 @@ function [ timeInterval ] = getTimeInterval( k, thing )
 
     nSamples = fileData(k,'nSamples');
     Fs = fileData(k,'Fs');
-    length = nSamples * Fs;
+    length = nSamples / Fs;
     
     timeInterval = getParFromVarargin('Interval',thing);
     
@@ -11,7 +11,7 @@ function [ timeInterval ] = getTimeInterval( k, thing )
     elseif ~isempty(thing) && size(thing{1},1)==1 && size(thing{1},2)==2
         timeInterval = thing{1};
     else
-        timeInterval = [1, length];
+        timeInterval = [0, length];
     end
     
     

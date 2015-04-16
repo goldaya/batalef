@@ -2,7 +2,7 @@ function cgRefreshStats()
 %CGREFRESHSTATS - INTERNAL - in call data gui, refresh call statistical
 %data
 
-global control;
+    global control;
     call = control.cg.call;
     handles = cgGetHandles();
     

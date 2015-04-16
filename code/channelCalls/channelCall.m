@@ -31,6 +31,8 @@ classdef channelCall < handle
         Status = channelCall.unknown;
         Type   = channelCall.unknown;
         IPI
+        SpectralData
+        Spectrograma
     end
     
     properties (Dependent)
@@ -55,6 +57,7 @@ classdef channelCall < handle
         Duration
         MaxFreq
         TimeSignal
+        Saved
     end
     
     methods (Static)
@@ -91,10 +94,17 @@ classdef channelCall < handle
             
             n = size(detections,1);
             emptyCell = cell(1,13);
+            idx = zeros(size(newCalls,1),1);
             for i = 1:size(newCalls,1)
-                idx(i) = find(detections(:,1)>newCalls(i,1),1);
+                index = find(detections(:,1)>newCalls(i,1),1);
+                if isempty(index)
+                    idx(i) = n + 1;
+                else
+                    idx(i) = index;
+                end
+                
                 % add call to detections matrix
-                detections = [detections(1:idx(i)-1);newCalls(i,:);detections(idx(i):n)];
+                detections = [detections(1:idx(i)-1,:);newCalls(i,:);detections(idx(i):n,:)];
                 
                 % push features up
                 features = [features(1:idx(i)-1,:);emptyCell;features(idx(i):n,:)];
@@ -117,21 +127,19 @@ classdef channelCall < handle
             
         end
         
-        function removeCalls(K,J,calls)
+        function removeCalls(K,J,M)
+            % M == []        -> remove all calls
+            % size(M,2) == 1 -> vector of indexes of calls to remove
+            % size(M,2) == 2 -> time interval to clear of calls
+            
+            
+            global filesObject;
             
             % resolve calls
-            if ~exist('calls','var')
-                calls = [];
+            if ~exist('M','var')
+                M = [];
             end
-            
-            if isempty(calls)
-                criteria = 'all';
-            elseif size(calls,2) == 1
-                criteria = 'index';
-            elseif size(calls,2) == 2
-                criteria = 'between';
-            end
-            
+                       
             % resolve files to work on
             if ~exist('K','var') || isempty(K)
                 K = 1:appData('Files','Count');
@@ -148,6 +156,32 @@ classdef channelCall < handle
             
                 for j = 1:length(Jk)
                      
+                    Sn = channelData(K(k),Jk(j),'Calls','Count');
+                    calls = filesObject(K(k)).channels(Jk(j)).calls;
+                    if isempty(M) % remove alll
+                        calls.detection      = zeros(0,2);
+                        calls.features        = cell(0,13);
+                        calls.forLocalization = cell(0,13);
+                        calls.forBeam         = cell(0,13);
+                        
+                    elseif size(M,2) == 1 % by index
+                        I = M(M<Sn);
+                        calls.detection(I,:)       = [];
+                        calls.features(I,:)        = [];
+                        calls.forLocalization(I,:) = [];
+                        calls.forBeam(I,:)         = [];
+                        
+                    elseif size(M,2) == 2 % between times
+                        I = 1:Sn;
+                        I = I(logical((calls.detection(:,1)<=M(2)).*(calls.detection(:,1) >= M(1))));
+                        calls.detection(I,:)       = [];
+                        calls.features(I,:)        = [];
+                        calls.forLocalization(I,:) = [];
+                        calls.forBeam(I,:)         = [];                        
+                    
+                    end
+                    filesObject(K(k)).channels(Jk(j)).calls = calls;
+                
                 end
 
             end
@@ -169,8 +203,36 @@ classdef channelCall < handle
             me.s    = s;
             me.Type = type;
             me.Fs = fileData(me.k, 'Fs');
-            if s == 0 || empty
+            
+            % detection
+            me.Detection.Time  = 0;
+            me.Detection.Value = 0;
+            
+            % start
+            me.Start.Time  = 0;
+            me.Start.Value = 0;
+            me.Start.Freq  = 0;
+            me.Start.Power = 0;
+            
+            % peak
+            me.Peak.Time  = 0;
+            me.Peak.Value = 0;
+            me.Peak.Freq  = 0;
+            me.Peak.Power = 0;
+            
+            % end
+            me.End.Time  = cv{ 9};
+            me.End.Value = cv{10};
+            me.End.Freq  = cv{11};
+            me.End.Power = cv{12};            
+            
+            % ridge
+            me.Ridge = cv{13};            
+            
+            if s == 0
                 me.Status = channelCall.new;
+            elseif empty
+                me.Status = channelCall.unknown;
             else
                 me.load();
             end
@@ -198,7 +260,7 @@ classdef channelCall < handle
             
             % detection
             me.Detection.Time  = dv(1);
-            me.Detection.Value = dv{2};
+            me.Detection.Value = dv(2);
             
             % start
             me.Start.Time  = cv{1};
@@ -247,7 +309,7 @@ classdef channelCall < handle
     
             % add call when new
             if me.Status == me.new
-                S = channelCall.add([me.Detection.Time, me.Detection.Value]);
+                S = channelCall.addCalls([me.Detection.Time, me.Detection.Value]);
                 me.s = S(1);
             end
             
@@ -493,6 +555,15 @@ classdef channelCall < handle
                 me.loadTS();
             end
             val = [me.T, me.TS];
+        end
+        
+        % Saved
+        function val = get.Saved(me)
+            if me.Status == me.unchanged
+                val = true;
+            else
+                val= false;
+            end
         end
         
     end

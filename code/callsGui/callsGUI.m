@@ -22,7 +22,7 @@ function varargout = callsGUI(varargin)
 
 % Edit the above text to modify the response to help callsGUI
 
-% Last Modified by GUIDE v2.5 11-Dec-2014 18:19:54
+% Last Modified by GUIDE v2.5 06-Apr-2015 20:04:10
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -69,23 +69,35 @@ if isempty(control.cg.fig) || ~ishandle(control.cg.fig)
 end
 
 % indexes
-if isempty(varargin)
-    control.cg.k = 1;
-else
-    control.cg.k = varargin{1};
-    if length(varargin)==1
+defProcType = 'features';
+switch nargin
+    case 3 % 3 regular + 0 varargin
+        control.cg.k = 1;
         control.cg.j = 1;
-    	control.cg.s = 1;
-    else
+        control.cg.s = 1;
+        control.cg.t = defProcType;    
+    case 4 % 1 varagin
+        control.cg.k = varargin{1};
+        control.cg.j = 1;
+        control.cg.s = 1;
+        control.cg.t = defProcType;    
+    case 5
+        control.cg.k = varargin{1};
         control.cg.j = varargin{2};
-        if length(varargin)==2
-            control.cg.s = 1;
-        else
-            control.cg.s = varargin{3};
-        end
-    end
+        control.cg.s = 1;
+        control.cg.t = defProcType;    
+    case 6
+        control.cg.k = varargin{1};
+        control.cg.j = varargin{2};
+        control.cg.s = varargin{3};
+        control.cg.t = defProcType;
+    case 7
+        control.cg.k = varargin{1};
+        control.cg.j = varargin{2};
+        control.cg.s = varargin{3};
+        control.cg.t = varargin{4};
+    otherwise
 end
-
 cgShowCall();
 
 
@@ -525,3 +537,27 @@ global control;
 if isfield(control.cg,'spectrogramSurf') && ishandle(control.cg.spectrogramSurf)
     set(control.cg.spectrogramSurf,'ButtonDownFcn',@cgManualCallRealization);
 end
+
+
+% --- Executes on selection change in ddType.
+function ddType_Callback(hObject, eventdata, handles)
+global control;
+D = get(hObject,'UserData');
+v = get(hObject,'Value' );
+control.cg.t = D(v);
+
+% --- Executes during object creation, after setting all properties.
+function ddType_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+global control;
+D{1} = 'features';
+D{2} = 'forLocalization';
+D{3} = 'forBeam';
+set(hObject,'UserData',D);
+v = find(strcmp(control.cg.t,D));
+if isempty(v)
+    v = 1;
+end
+set(hObject,'Value',v);

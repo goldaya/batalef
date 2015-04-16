@@ -22,6 +22,7 @@ function [  ] = mpgPlot( j, tc, vc )
         Ip(2) = nSamples;
     end
     control.mpg.Ip = Ip;
+    control.mpg.It = It;
 
     
     % value Window
@@ -44,12 +45,12 @@ function [  ] = mpgPlot( j, tc, vc )
     end
     
     % get existing peaks
-    [peaksPoints, peaksValues] = channelData( k, j, 'Calls', 'Detections' );
-    peaksValues = peaksValues(peaksPoints >= Ip(1) & peaksPoints <= Ip(2));
-    peaksPoints = peaksPoints(peaksPoints >= Ip(1) & peaksPoints <= Ip(2));
-    peaksPoints = peaksPoints(peaksValues >= Iv(1) & peaksValues <= Iv(2));
-    peaksValues = peaksValues(peaksValues >= Iv(1) & peaksValues <= Iv(2));
-    control.mpg.zoomExistingPeaks.points = peaksPoints;
+    [peaksTimes, peaksValues] = channelData( k, j, 'Calls', 'Detections' );
+    peaksValues = peaksValues( peaksTimes >=  It(1) & peaksTimes  <= It(2));
+    peaksTimes = peaksTimes(   peaksTimes >=  It(1) & peaksTimes  <= It(2));
+    peaksTimes = peaksTimes(   peaksValues >= Iv(1) & peaksValues <= Iv(2));
+    peaksValues = peaksValues( peaksValues >= Iv(1) & peaksValues <= Iv(2));
+    control.mpg.zoomExistingPeaks.times  = peaksTimes;
     control.mpg.zoomExistingPeaks.values = peaksValues;    
     
     % plot
@@ -59,7 +60,7 @@ function [  ] = mpgPlot( j, tc, vc )
     if ~isempty(control.mpg.zoomPeak)
         control.mpg.hMark = plot(handles.axes1, control.mpg.zoomPeak(1), control.mpg.zoomPeak(2), 'g*');
     end
-    control.mpg.hExisting = plot(handles.axes1, peaksPoints/Fs, peaksValues, 'r*');
+    control.mpg.hExisting = plot(handles.axes1, peaksTimes, peaksValues, 'r*');
     hold(handles.axes1, 'off');
     set(handles.axes1, 'xLim', It);
     set(handles.axes1, 'yLim', Iv);  

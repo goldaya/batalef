@@ -3,16 +3,6 @@ function [ K ] = mgResolveFilesToWork(  )
 %   Detailed explanation goes here
 
     K = appData('Files','Selected');
-    
-    %{
-    handles = mgGetHandles();
-    v = get(handles.tabFiles, 'UserData');
-    if isempty(v)
-        K = [];
-    else
-        K = v(:,1);
-    end;
-    %}
 
 end
 

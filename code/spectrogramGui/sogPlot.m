@@ -35,7 +35,7 @@ function [  ] = sogPlot(  )
         title(axobj,strcat(['Channel ',num2str(J(i))]));
         
         % add channel calls
-        [~,~,times,indexes] = channelData(k,J(i),'Calls','Detections','Interval',control.sog.span);
+        [times,~,indexes] = channelData(k,J(i),'Calls','Detections','Interval',control.sog.span./Fs);
         if ~isempty(times)
             N = length(times);
             Ylim = get(axobj,'Ylim');

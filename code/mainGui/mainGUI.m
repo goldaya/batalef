@@ -361,7 +361,8 @@ mgRefreshChannelCallsDisplay();
 
 % --------------------------------------------------------------------
 function channelCallsClearAllMenuItem_Callback(hObject, eventdata, handles)
-removeFilesAllChannelCalls(mgResolveFilesToWork());
+%removeFilesAllChannelCalls(mgResolveFilesToWork());
+channelCall.removeCalls(mgResolveFilesToWork(),[],[]);
 mgRefreshChannelCallsDisplay();
 
 

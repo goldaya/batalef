@@ -4,18 +4,8 @@ function mpgRemovePeaks(  )
    
     global control;
     
-    %{
-    % get peaks to remove
-    p2r = control.mpg.zoomExistingPeaks.points; % peaks to remove locations
-    if isempty(p2r)
-        return;
-    end
-    m = min(p2r);
-    M = max(p2r);
-    %}
-    
     % remove peaks-to-remove from existing peaks
-    removeChannelCalls(control.mpg.k, control.mpg.j, 'DetectionBetween', control.mpg.Ip);
+    channelCall.removeCalls(control.mpg.k, control.mpg.j, control.mpg.It);
     
     % refresh peaks on display
     mgRefreshChannelCallsDisplay( );

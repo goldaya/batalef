@@ -26,7 +26,8 @@ function [  ] = pdPiecewise( k,I,percentile,minDistance,channel,filter,replace )
                 threshold = prctile(dataset,percentile);
                 peaks = pdBasicCore(dataset, Fs, threshold, minDistance,0);
                 peaks.points = peaks.points + I(i,1) - 1;
-                addChannelCalls(k,j,[peaks.points,peaks.values],false,true);
+                peaks.times = peaks.times ./ Fs;
+                channelCall.addCalls(k,j,[peaks.times,peaks.values],false);
             end
         end
     end

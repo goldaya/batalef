@@ -1,11 +1,11 @@
-function [ out, add1, add2, add3 ] = getChannelCalls( k, j, varargin )
+function [ out1, out2, out3, out4 ] = getChannelCalls( k, j, varargin )
 
     global filesObject;
     
-        out  = [];
-        add1 = [];
-        add2 = [];
-        add3 = [];
+        out1 = [];
+        out2 = [];
+        out3 = [];
+        out4 = [];
         
         par = varargin{1};
         
@@ -14,16 +14,13 @@ function [ out, add1, add2, add3 ] = getChannelCalls( k, j, varargin )
             case 'Matrix'
                 channelCalls = filesObject(k).channels(j).channelCalls;
                 if ~isempty(channelCalls)
-                    out = cell2mat(channelCalls(:,1:12));
+                    out1 = cell2mat(channelCalls(:,1:12));
                 else
-                    out = [];
+                    out1 = [];
                 end
                  
-            case 'Array'
-                out = filesObject(k).channels(j).channelCalls;
-            
             case 'Count'
-                out = size(filesObject(k).channels(j).channelCalls, 1);
+                out1 = size(filesObject(k).channels(j).calls.detection, 1);
                 
             case 'Detections'
                 I = getTimeInterval(k,varargin);
@@ -35,32 +32,28 @@ function [ out, add1, add2, add3 ] = getChannelCalls( k, j, varargin )
                     logicalA = times >= I(1);
                     logicalB = times <= I(2);
                     logicalI = logical(logicalA.*logicalB);
-                    out  = times(logicalI);
-                    add1 = values(logicalI);
-                    add2 = indexes(logicalI);
+                    out1 = times(logicalI);
+                    out2 = values(logicalI);
+                    out3 = indexes(logicalI);
                 end                
             case 'Peaks'
                 if ~isempty(filesObject(k).channels(j).channelCalls)
-                    out = cell2mat(filesObject(k).channels(j).channelCalls(:,3));
-                    add1 = cell2mat(filesObject(k).channels(j).channelCalls(:,4));
+                    out1 = cell2mat(filesObject(k).channels(j).channelCalls(:,3));
+                    out2 = cell2mat(filesObject(k).channels(j).channelCalls(:,4));
                 end
             
             case 'FileCalls'
                 if ~isempty(filesObject(k).channels(j).channelCalls)
-                    out = cell2mat(filesObject(k).channels(j).channelCalls(:,12));
+                    out1 = cell2mat(filesObject(k).channels(j).channelCalls(:,12));
                 end
                 
             case 'TS'
                 n = getChannelCalls(k,j,'Count');
-                out = cell(n,1);
+                out1 = cell(n,1);
                 for s=1:n
                     [TS,T] = channelCallData(k,j,s,'TS');
-                    out{s} = [T,TS]; 
+                    out1{s} = [T,TS]; 
                 end
-                
-            case 'Ridge'
-                out = filesObject(k).channels(j).channelCalls(:,13);
-         
                 
             otherwise
                 err = MException('bats:getChannelCalls:wrongParameter','The parameter "%s" is undefined for function "getChannelCalls"', par);

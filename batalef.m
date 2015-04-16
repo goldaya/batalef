@@ -39,7 +39,7 @@ mainGUI();
 % restore working folder
 cd(currFolder);
 disp(' ');
-disp(strcat(['  Restored working directory to: ',batFolder]));
+disp(strcat(['  Restored working directory to: ',currFolder]));
 clear currFolder;
 clear batFolder;
 

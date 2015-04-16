@@ -12,8 +12,7 @@ function [  ] = mpgAddPeak( point )
     % remove existing mark
     mpgRemoveMark();
     
-    Fs = fileData(control.mpg.k,'Fs');
-    addChannelCalls(control.mpg.k, control.mpg.j,[round(point(1).*Fs), point(2)]);
+    channelCall.addCalls(control.mpg.k, control.mpg.j, point);
     control.mpg.mark = point;
     mgRefreshChannelCallsDisplay( );
     

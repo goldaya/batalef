@@ -4,8 +4,8 @@ function [  ] = cgShowCall(  )
 
 
     global control;
-    [k,j,s] = cgGetCurrent();
-    handles = cgGetHandles();
+    [k,j,s,t] = cgGetCurrent();
+    handles   = cgGetHandles();
     
     
     % indexes
@@ -20,7 +20,7 @@ function [  ] = cgShowCall(  )
         strcat(['/ ',num2str(channelData(k,j,'Calls','Count'))]));    
     
     % create call object
-    control.cg.call = channelCall(k,j,s);
+    control.cg.call = channelCall(k,j,s,t,false);
     
     % plots, measurments, etc
     cgRefresh();

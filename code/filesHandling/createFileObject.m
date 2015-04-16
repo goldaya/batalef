@@ -17,8 +17,6 @@ function [  ] = createFileObject( n, path, name, rawData, spectralData, fileCall
     % raw data (basic data) + channels
     if ( exist('rawData', 'var') && ~isempty(rawData) )
         filesObject(n).rawData = rawData;
-        %filesObject(n).rawData.Fs = rawData.Fs;
-        %filesObject(n).rawData.nSamples = rawData.nSamples;
         
         % channels data
         filesObject(n).channels = struct;
@@ -28,8 +26,11 @@ function [  ] = createFileObject( n, path, name, rawData, spectralData, fileCall
             end
             filesObject(n).channels = channels;
         else
-            for i = 1 : rawData.nChannels
-            filesObject(n).channels(i).channelCalls = [];
+            for j = 1 : rawData.nChannels
+                filesObject(n).channels(j).calls.detection       = zeros(0, 2);
+                filesObject(n).channels(j).calls.features        = cell( 0,13);
+                filesObject(n).channels(j).calls.forLocalization = cell( 0,13);
+                filesObject(n).channels(j).calls.forBeam         = cell( 0,13);
             end
         end
         % other channel specific stuff        
@@ -86,23 +87,5 @@ function [  ] = createFileObject( n, path, name, rawData, spectralData, fileCall
         filesObject(n).mics.directivity = [];
     end    
     
-    %{
-    if ( exist('micPositions', 'var') && ~isempty(micPositions) )
-        filesObject(n).micPositions = micPositions;
-    elseif ~isempty(filesObject(n).channels)
-        filesObject(n).micPositions = zeros(length(filesObject(n).channels),3);
-    else
-        filesObject(n).micPositions = [];
-    end    
-    
-    % Microphone Gains
-    if ( exist('micGains', 'var') && ~isempty(micGains) )
-        filesObject(n).micGains = micGains;
-    elseif ~isempty(filesObject(n).channels)
-        filesObject(n).micGains = zeros(length(filesObject(n).channels),1);
-    else
-        filesObject(n).micGains = [];
-    end        
-    %}
 end
 
