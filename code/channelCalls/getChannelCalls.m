@@ -12,12 +12,20 @@ function [ out1, out2, out3, out4 ] = getChannelCalls( k, j, varargin )
         switch par
             
             case 'Matrix'
-                channelCalls = filesObject(k).channels(j).channelCalls;
+                channelCalls = filesObject(k).channels(j).calls;
                 if ~isempty(channelCalls)
-                    out1 = cell2mat(channelCalls(:,1:12));
+                    detections = channelCalls.detection;
+                    features = cell2mat(channelCalls.features(:,1:12));
+                    out1 = [features,detections];
                 else
                     out1 = [];
                 end
+                
+            case 'ForLocalization'
+                out1 = filesObject(k).channels(j).calls.forLocalization;
+                
+            case 'Ridge'
+                out1 = filesObject(k).channels(j).calls.features(:,13);
                  
             case 'Count'
                 out1 = size(filesObject(k).channels(j).calls.detection, 1);

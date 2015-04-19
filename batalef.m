@@ -13,6 +13,14 @@ disp(strcat(['  Changed working directory to: ',batFolder]));
 disp(' ');
 addpath('git');
 updateFromGit();
+
+% version
+disp(' ');
+disp(' ');
+load('./common/vers.mat');
+disp(strcat(['  VERSION : ',vers]));
+clear vers;
+disp(' ');
     
 % add batalef to path 
 disp(' ');

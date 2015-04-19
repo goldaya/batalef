@@ -22,7 +22,7 @@ function varargout = callsGUI(varargin)
 
 % Edit the above text to modify the response to help callsGUI
 
-% Last Modified by GUIDE v2.5 06-Apr-2015 20:04:10
+% Last Modified by GUIDE v2.5 19-Apr-2015 15:14:06
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -98,6 +98,10 @@ switch nargin
         control.cg.t = varargin{4};
     otherwise
 end
+cgInitIndexes();
+set(handles.textFileIndex, 'String', control.cg.k);
+set(handles.textChannelIndex, 'String', control.cg.j);
+set(handles.textCallIndex, 'String', control.cg.s); 
 cgShowCall();
 
 
@@ -188,7 +192,7 @@ s = s + 1;
 cgGotoCall(k,j,s);
 
 function textCallWindow_Callback(hObject, eventdata, handles)
-cgRefresh()
+cgShowCall()
 
 function textCallWindow_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -201,7 +205,7 @@ function textStartDiff_Callback(hObject, eventdata, handles)
 dB = str2double(get(hObject, 'String'));
 s = 1-10^(dB/10);
 set(handles.sliderStartDiff, 'Value', s);
-cgRefresh()
+cgShowCall()
 
 
 function textStartDiff_CreateFcn(hObject, eventdata, handles)
@@ -213,7 +217,7 @@ end
 function sliderStartDiff_Callback(hObject, eventdata, handles)
 dB = 10*log10(1-get(hObject,'Value'));
 set(handles.textStartDiff,'String',num2str(dB));
-cgRefresh()
+cgShowCall()
 
 
 function sliderStartDiff_CreateFcn(hObject, eventdata, handles)
@@ -227,7 +231,7 @@ function textEndDiff_Callback(hObject, eventdata, handles)
 dB = str2double(get(hObject, 'String'));
 s = 1-10^(dB/10);
 set(handles.sliderEndDiff, 'Value', s);
-cgRefresh()
+cgShowCall()
 
 function textEndDiff_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -238,7 +242,7 @@ end
 function sliderEndDiff_Callback(hObject, eventdata, handles)
 dB = 10*log10(1-get(hObject,'Value'));
 set(handles.textEndDiff,'String',num2str(dB));
-cgRefresh()
+cgShowCall()
 
 
 function sliderEndDiff_CreateFcn(hObject, eventdata, handles)
@@ -259,7 +263,7 @@ if gap > mGap
 end
 % setParam('callsGUI:gap', gap);
 set(handles.sliderGap, 'Value', str2double(get(hObject, 'String')));
-cgRefresh()
+cgShowCall()
 
 
 function textGap_CreateFcn(hObject, eventdata, handles)
@@ -273,7 +277,7 @@ function sliderGap_Callback(hObject, eventdata, handles)
 gap = get(hObject, 'Value');
 setParam('callsGUI:gap', gap);
 set(handles.textGap, 'String', num2str(gap));
-cgRefresh()
+cgShowCall()
 
 
 function sliderGap_CreateFcn(hObject, eventdata, handles)
@@ -408,7 +412,7 @@ function uipanel4_SelectionChangeFcn(hObject, eventdata, handles)
 %	EventName: string 'SelectionChanged' (read only)
 %	OldValue: handle of the previously selected object or empty if none was selected
 %	NewValue: handle of the currently selected object
-cgRefresh()
+cgShowCall()
 
 
 % --------------------------------------------------------------------
@@ -471,27 +475,13 @@ end
 
 % --- Executes on button press in pbRedraw.
 function pbRedraw_Callback(hObject, eventdata, handles)
-cgRefresh();
-
+cgShowCall();
 
 
 function textDeltaTime_Callback(hObject, eventdata, handles)
-% hObject    handle to textDeltaTime (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of textDeltaTime as text
-%        str2double(get(hObject,'String')) returns contents of textDeltaTime as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function textDeltaTime_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to textDeltaTime (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
@@ -499,12 +489,6 @@ end
 
 % --- Executes during object creation, after setting all properties.
 function textDeltaPoints_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to textDeltaPoints (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
@@ -545,6 +529,7 @@ global control;
 D = get(hObject,'UserData');
 v = get(hObject,'Value' );
 control.cg.t = D{v};
+cgShowCall();
 
 % --- Executes during object creation, after setting all properties.
 function ddType_CreateFcn(hObject, eventdata, handles)
@@ -556,8 +541,17 @@ D{1} = 'features';
 D{2} = 'forLocalization';
 D{3} = 'forBeam';
 set(hObject,'UserData',D);
-v = find(strcmp(control.cg.t,D));
-if isempty(v)
+if isfield(control.cg,'t')
+    v = find(strcmp(control.cg.t,D));
+    if isempty(v)
+        v = 1;
+    end
+else
     v = 1;
 end
 set(hObject,'Value',v);
+
+
+% --- Executes on button press in pbRemoveCall.
+function pbRemoveCall_Callback(hObject, eventdata, handles)
+cgRemoveCall();

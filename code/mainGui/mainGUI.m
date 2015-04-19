@@ -607,3 +607,8 @@ mgRmInit(true);
 % --------------------------------------------------------------------
 function pbNop_ClickedCallback(hObject, eventdata, handles)
 mgFunctionsOff();
+
+
+% --------------------------------------------------------------------
+function fcGetBeamsDataMenuItem_Callback(hObject, eventdata, handles)
+mgGetFileCallsBeamsData();

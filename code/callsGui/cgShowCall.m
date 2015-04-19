@@ -1,29 +1,26 @@
-function [  ] = cgShowCall(  )
-%CGSHOWCALL Show a call based on "current" indexes. to switch call use
-%"cgGotoCall"
+function cgShowCall(  )
+%CGSHOWCALL -INTERNAL- show call on gui
 
 
     global control;
-    [k,j,s,t] = cgGetCurrent();
-    handles   = cgGetHandles();
+    handles = cgGetHandles();
     
+    % get the right call
+    control.cg.call = channelCall(control.cg.k,control.cg.j,control.cg.s,control.cg.t,false);
+  
+    % window to work in
+    dt = str2double(get(handles.textCallWindow, 'String'))/1000 ;
+    window = control.cg.call.DetectionTime + ([-0.5, 0.5].*dt);
+    control.cg.window = window;
     
-    % indexes
-    set(handles.textFileIndex, 'String', k);
-    set(handles.textFilesTotal, 'String' ,...
-        strcat(['/ ',num2str(appData('Files','Count'))]));
-    set(handles.textChannelIndex, 'String', j);
-    set(handles.textChannelsTotal, 'String' ,...
-        strcat(['/ ',num2str(fileData(k,'Channels','Count'))]));    
-    set(handles.textCallIndex, 'String', s);
-    set(handles.textCallsTotal, 'String' ,...
-        strcat(['/ ',num2str(channelData(k,j,'Calls','Count'))]));    
+    % recalculate call boundries
+    if get(handles.rbValuesCalculated, 'Value')
+        % calculate call data from GUI !
+        cgCalculateCall();
+    end
     
-    % create call object
-    control.cg.call = channelCall(k,j,s,t,false);
-    
-    % plots, measurments, etc
-    cgRefresh();
-    
+    % put on gui
+    cgPlotsAndStats();
+
 end
 

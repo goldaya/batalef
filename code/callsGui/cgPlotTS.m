@@ -10,13 +10,18 @@ function [  ] = cgPlotTS( dataset, T )
     spoint = find((T<=call.StartTime),1,'last');
     epoint = find((T<=call.EndTime),1,'last');    
     
-    if length(T) > 1 && epoint > spoint
-        plot(handles.axesCallTS, T(spoint:epoint),dataset(spoint:epoint));
-    else
+    try
+        if isempty(spoint) || isempty(epoint)
+            cla(handles.axesCallTS);
+        else
+            plot(handles.axesCallTS, T(spoint:epoint),dataset(spoint:epoint));
+            axis(handles.axesCallTS, 'tight');  
+            ylabel(handles.axesCallTS, {'Time Series','Signal Power'});
+            xlabel(handles.axesCallTS, {'Time: seconds'});
+        end
+    catch err
         cla(handles.axesCallTS);
     end
-    axis(handles.axesCallTS, 'tight');
-    ylabel(handles.axesCallTS, {'Time Series','Signal Power'});
-    xlabel(handles.axesCallTS, {'Time: seconds'});
+
 
 end

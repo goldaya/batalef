@@ -4,8 +4,8 @@ function [ channelOut ] = updateChannelStructure( channel, Fs )
     % channel calls cell array
     if isfield(channel,'channelCalls')
         M = cell2mat(channel.channelCalls(:,[1:11,14:16]));
-        calls.detections = [M(:,1)./Fs,M(:,2)];
-        calls.features   = zeros(size(M,1),13);
+        calls.detection = [M(:,1)./Fs,M(:,2)];
+        calls.features  = zeros(size(M,1),13);
         calls.features(:, 1) = M(:, 6)./Fs;  % start time
         calls.features(:, 2) = M(:, 7) ;     % start value
         calls.features(:, 3) = M(:, 8) ;     % start freq
@@ -24,6 +24,10 @@ function [ channelOut ] = updateChannelStructure( channel, Fs )
         calls.features = num2cell(calls.features);
         
         calls.features(:,13) = channel.channelCalls(:,13) ;     % ridge
+        emptyCell = num2cell(zeros(size(M,1),13));
+        emptyCell(:,13) = {[]};
+        calls.forLocalization = emptyCell;
+        calls.forBeam = emptyCell;
         
         channelOut.calls = calls;
         

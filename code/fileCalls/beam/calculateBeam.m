@@ -55,7 +55,7 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     end    
     
     % P at mics
-    Pm = fileCallData(k,a,'Value','Position','Peak');
+    Pm = fileCallData(k,a,'Value','Position','Peak','CallDataType','forBeam');
     
     % get spheric relative 
     n = size(M,1);
@@ -96,14 +96,14 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
    
     U = logical(U.*Pm);
     
-    Ps = Ps(U);
+    PsU = Ps(U);
     AZU = AZ(U);
     ELU = EL(U);
     
-    leads = [AZU,ELU,Ps];
+    leads = [AZU,ELU,PsU];
     
     
-    [raw, interpolated, azCoors, elCoors] = bmAdminCompute( Ps, [AZU, ELU] );
+    [raw, interpolated, azCoors, elCoors] = bmAdminCompute( PsU, [AZU, ELU] );
     %raw = 10*log10(raw);
     %interpolated = 10*log10(interpolated);
     if withSave
@@ -112,6 +112,7 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
         filesObject(k).fileCalls{a}.beam.raw = raw;
         filesObject(k).fileCalls{a}.beam.interpolated = interpolated;
         filesObject(k).fileCalls{a}.beam.micDirections = [AZ,EL];
+        filesObject(k).fileCalls{a}.beam.used = U;
     end
         
 end

@@ -1,4 +1,4 @@
-function call = channelCallAnalyze( k,j,s,type,window, dataset,envDataset, startThreshold, endThreshold, gapTolerance, computeSpectral, computeRidge )
+function call = channelCallAnalyze( k,j,s,type,window, dataset,envDataset, startThreshold, endThreshold, gapTolerance, forcedBoundries, computeSpectral, computeRidge )
 %CHANNELCALLANALYZE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -20,46 +20,57 @@ function call = channelCallAnalyze( k,j,s,type,window, dataset,envDataset, start
     call.PeakTime  = peakPoint/Fs + window(1);
     call.PeakValue = peakValue;
     
+    
 %%% find start and end of call %%%
-    maxGapInPoints = round(gapTolerance*Fs);
-    startValue = peakValue * 10^(startThreshold/10);
-    startPoint = peakPoint;
-    gap = 0;
-    for a=-peakPoint:-1
-        i = -a;
-        % if value is lower than threshold, take gap
-        if envDataset(i)<startValue
-            gap = gap + 1;
-        else
-            startPoint = i;
-            gap = 0;
+    if isempty(forcedBoundries)
+        maxGapInPoints = round(gapTolerance*Fs);
+        startValue = peakValue * 10^(startThreshold/10);
+        startPoint = peakPoint;
+        gap = 0;
+        for a=-peakPoint:-1
+            i = -a;
+            % if value is lower than threshold, take gap
+            if envDataset(i)<startValue
+                gap = gap + 1;
+            else
+                startPoint = i;
+                gap = 0;
+            end
+            if gap > maxGapInPoints
+                break;
+            end
         end
-        if gap > maxGapInPoints
-            break;
-        end
-    end
-    
-    call.StartTime  = startPoint/Fs + window(1);
-    call.StartValue = envDataset(startPoint);
 
-    % find end point 
-    endValue = peakValue * 10^(endThreshold/10);
-    endPoint = peakPoint;
-    gap = 0;
-    for i=peakPoint:length(envDataset)
-        % if value is lower than threshold, take gap
-        if envDataset(i)<endValue
-            gap = gap + 1;
-        else
-            endPoint = i;
-            gap = 0;
+        call.StartTime  = startPoint/Fs + window(1);
+
+
+        % find end point 
+        endValue = peakValue * 10^(endThreshold/10);
+        endPoint = peakPoint;
+        gap = 0;
+        for i=peakPoint:length(envDataset)
+            % if value is lower than threshold, take gap
+            if envDataset(i)<endValue
+                gap = gap + 1;
+            else
+                endPoint = i;
+                gap = 0;
+            end
+            if gap > maxGapInPoints
+                break;
+            end
         end
-        if gap > maxGapInPoints
-            break;
-        end
+
+        call.EndTime  = endPoint/Fs + window(1);
+
+    else
+        call.StartTime = forcedBoundries(1);
+        call.EndTime = forcedBoundries(2);
+        startPoint = max([floor((forcedBoundries(1) - window(1))*Fs),1]);
+        endPoint = max([floor((forcedBoundries(2) - window(1))*Fs),1]);
     end
     
-    call.EndTime  = endPoint/Fs + window(1);
+    call.StartValue = envDataset(startPoint);
     call.EndValue = envDataset(endPoint);    
     
 %%% spectral data %%%
@@ -67,7 +78,7 @@ function call = channelCallAnalyze( k,j,s,type,window, dataset,envDataset, start
         call.Spectrograma = somAdminCompute(dataset, Fs);
         call.Spectrograma.T = call.Spectrograma.T + window(1);
 
-        call = channelCallComputeSpectralData(call,dataset,Fs);
+        call = channelCallComputeSpectralData(call,dataset,Fs,startPoint,endPoint);
     else
         % clear spectral data
     end

@@ -1,17 +1,8 @@
-function [  ] = cgRefresh(  )
-%CGREFRESH Refresh all sliders, plots and stuff
-
+function cgPlotsAndStats(  )
+%CGPLOTSANDSTATS -INTERNAL- Reresh the plots and stats on the calls gui
 
     global control;
-    handles = cgGetHandles();
-    
-    % recalculate call boundries
-    if get(handles.rbValuesCalculated, 'Value') || ( get(handles.rbValuesMix,'Value') && ~control.cg.call.Saved )
-        % calculate call data from GUI !
-        cgCalculateCall();
-    end
-    
-    % put on gui
+
     % stats
     cgRefreshStats();
     
@@ -31,7 +22,5 @@ function [  ] = cgRefresh(  )
     cgPlotSpectrogram();
     cgPlotSpectrum();
 
-    
-    
 end
 

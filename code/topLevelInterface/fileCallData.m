@@ -18,7 +18,12 @@ function [ out1 ] = fileCallData( k, a, par, varargin )
     if ~pos
         pos = 'Start';
     end
-            
+       
+    callDataType = getParFromVarargin('CallDataType',varargin);
+    if ~callDataType
+        callDataType = 'features';
+    end
+    
     switch par
         case 'Data'
             out1 = filesObject(k).fileCalls{a};
@@ -30,7 +35,10 @@ function [ out1 ] = fileCallData( k, a, par, varargin )
             out1 = filesObject(k).fileCalls{a}.time;
 
         case 'Location'
-            out1 = filesObject(k).fileCalls{a}.location;            
+            out1 = filesObject(k).fileCalls{a}.location;    
+            
+        case 'BeamStructure'
+            out1 = filesObject(k).fileCalls{a}.beam;    
             
         case 'Power'
             CC = filesObject(k).fileCalls{a}.channelCalls;
@@ -46,7 +54,7 @@ function [ out1 ] = fileCallData( k, a, par, varargin )
             out1 = zeros(length(CC),1);
             for i = 1:length(CC)
                 if CC(i) > 0
-                    out1(i) = channelCallData(k,i,CC(i),pos,'Value');
+                    out1(i) = channelCallData(k,i,CC(i),pos,'Value','CallDataType',callDataType);
                 end
             end
             

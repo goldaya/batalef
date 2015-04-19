@@ -8,6 +8,18 @@ function cgPlotSpectrogram(  )
 
     S = control.cg.call.Spectrograma;
     
+    % when the object is displayed without first analyzing (e.g. in
+    % imported file objects)
+    if isempty(S)
+        % compute spectrogram
+        wip = control.cg.call.inPoints(control.cg.call,control.cg.window);
+        dataset = channelData(control.cg.call.FileIdx,control.cg.call.ChannelIdx,'TS','Interval',wip,'Filter',control.cg.filter);
+        S = somAdminCompute(dataset, control.cg.call.Fs);
+        S.T = S.T + control.cg.window(1);
+    else
+        
+    end
+    
     % plot spectrogram
     if ismatrix(S.P)
         try

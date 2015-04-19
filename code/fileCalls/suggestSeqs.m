@@ -5,7 +5,7 @@ function [ R ] = suggestSeqs( s,j,k, timePointToUse )
     R = suggestSeqs2(s,j,k,timePointToUse);
     return;
     
-    refPoint = channelCallData(k,j,s,timePointToUse,'Point');
+    refPoint = channelCallData(k,j,s,timePointToUse,'Point','CallDataType','forLocalization');
         
     [~,MdP] = fileData(k,'Mics','MaxDiff');
     

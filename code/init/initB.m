@@ -74,5 +74,7 @@ function [  ] = initB(  )
     control.sog.tm.startVerticalLines = [];
     control.sog.tm.endVerticalLines = [];
     control.sog.tm.on = false;
+    
+    control.cg.filter = [];
 
 end

@@ -1,6 +1,9 @@
 function [  ] = cgGotoCall( k,j,s )
 %CGGOTOCALL Jump to call if exist
 
+    global control;
+    handles = cgGetHandles();
+
     if ~isscalar(k)
         s = k(3);
         j = k(2);
@@ -28,10 +31,15 @@ function [  ] = cgGotoCall( k,j,s )
        return;
     end
     
-    global control;
+
     control.cg.k = k;
     control.cg.j = j;
     control.cg.s = s;
+    
+    % refresh indexes on gui
+    set(handles.textFileIndex, 'String', k);
+    set(handles.textChannelIndex, 'String', j);
+    set(handles.textCallIndex, 'String', s);    
     
     cgShowCall();
 

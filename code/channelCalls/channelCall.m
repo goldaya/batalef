@@ -7,9 +7,9 @@ classdef channelCall < handle
        changed   = 1;
        unchanged = 2;
        unknown   = 3;
-       features        = 4;
-       forLocalization = 5;
-       forBeam         = 6;
+       features        = 'features';
+       forLocalization = 'forLocalization';
+       forBeam         = 'forBeam';
     end
     
     properties ( SetAccess = private, Hidden = true )
@@ -345,6 +345,8 @@ classdef channelCall < handle
         end
 
         function remove(me)
+            % handle file calls. to be developed
+            %{
             % remove file call associated with this channel call
             if me.FileCall ~= 0
                 deleteFileCall(me.k,me.FileCall);
@@ -353,6 +355,7 @@ classdef channelCall < handle
             
             % reindex later channel calls in file calls
             % to be developed after file call objects.
+            %}
             
             % remove call from global structure, by call index
             global filesObject;
@@ -360,7 +363,6 @@ classdef channelCall < handle
             filesObject(me.k).channels(me.j).calls.features(me.s,:)        = [];
             filesObject(me.k).channels(me.j).calls.forLocalization(me.s,:) = [];
             filesObject(me.k).channels(me.j).calls.forBeam(me.s,:)         = [];
-            
             
             me.Status = me.new;
         end

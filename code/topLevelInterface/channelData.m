@@ -27,7 +27,7 @@ function [ out, add1, add2, add3 ] = channelData( k,j,par,varargin )
             add1 = T;
             % filter
             filter2use = getParFromVarargin( 'Filter', varargin );
-            if islogical(filter2use) && ~filter2use
+            if islogical(filter2use) && ~filter2use || isempty(filter2use)
                 return;
             else
                 Fs = channelData(k,j,'Fs');

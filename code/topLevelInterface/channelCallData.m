@@ -10,13 +10,13 @@ function [ out, out2 ] = channelCallData( k,j,s,par, varargin )
         validateFileChannelIndex(k,j);
     
         % validate call existance
-        if size(filesObject(k).channels(j).channelCalls,1) < s
+        if size(filesObject(k).channels(j).calls.detection,1) < s
             out = 'no call';
             return;
         end
     end 
     
-    type = getParFromVarargin( 'NoValidation', varargin );
+    type = getParFromVarargin( 'CallDataType', varargin );
     if type == false
         type = channelCall.features;
     end

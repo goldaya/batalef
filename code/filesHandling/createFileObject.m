@@ -21,10 +21,10 @@ function [  ] = createFileObject( n, path, name, rawData, spectralData, fileCall
         % channels data
         filesObject(n).channels = struct;
         if (exist('channels','var') && ~isempty(channels) )
-            for j = 1:size(channels,1)
-                channels(j) = updateChannelStructure(channels(j),rawData.Fs);
+            for j = 1:length(channels)
+                channelsNew(j) = updateChannelStructure(channels(j),rawData.Fs);
             end
-            filesObject(n).channels = channels;
+            filesObject(n).channels = channelsNew;
         else
             for j = 1 : rawData.nChannels
                 filesObject(n).channels(j).calls.detection       = zeros(0, 2);

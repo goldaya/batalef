@@ -136,17 +136,13 @@ function [ out, add1 ] = fileData( k, par, varargin )
                             for j = 1:N
                                 n = channelData(k,j,'Calls','Count');
                                 M = channelData(k,j,'Calls','Matrix');
-                                M(:,1:2) = M(:,1)./Fs;
-                                M(:,3) = M(:,3)./Fs;
-                                M(:,6) = M(:,6)./Fs;
-                                M(:,9) = M(:,9)./Fs;
-                                callStarts2 = M(2:n,6);
-                                callStarts1 = M(1:n-1,6);
+                                callStarts2 = M(2:n,1);
+                                callStarts1 = M(1:n-1,1);
                                 IPI = [0; callStarts2 - callStarts1];
-                                Duration = M(:,9) - M(:,6);
+                                Duration = M(:,9) - M(:,1);
                                 A = zeros(n,1) + j;
                                 B = transpose(linspace(1,n,n));
-                                out = [out; A B M IPI Duration];
+                                out = [out; A B M(:,1:12) IPI Duration M(:,13:14)];
                             end
                             
                         case 'Ridge'
@@ -184,6 +180,13 @@ function [ out, add1 ] = fileData( k, par, varargin )
                     out = zeros(n,3);
                     for a=1:n
                         out(a,:) = fileCallData(k,a,'Location','NoValidation', true);
+                    end  
+
+                case 'Beam'
+                    n = length(filesObject(k).fileCalls);
+                    out = cell(n,1);
+                    for a=1:n
+                        out{a} = fileCallData(k,a,'BeamStructure','NoValidation', true);
                     end  
                     
                 case 'Data'

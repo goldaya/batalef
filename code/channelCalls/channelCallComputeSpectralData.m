@@ -1,10 +1,13 @@
-function call = channelCallComputeSpectralData( call, dataset, Fs )
+function call = channelCallComputeSpectralData( call, dataset, Fs, callStartPoint, callEndPoint )
 %CHANNELCALLCOMPUTESPECTRALDATA
 
+        
         T = call.Spectrograma.T;
         F = call.Spectrograma.F;
         P = call.Spectrograma.P;
-
+        
+       
+        % stats
         % find principle frequency at start, peak, end: get the closest
         % coordinate to start/peak/end, and then take max on the spectrogram
         % slice
@@ -60,9 +63,9 @@ function call = channelCallComputeSpectralData( call, dataset, Fs )
         [call.End.Power, argmax] = max(P(:,T==endT));
         call.End.Freq   = F(argmax);
 
-        % spectrum
-        call.SpectralData = sumAdminCompute(dataset,Fs);
 
+        % spectrum
+        call.SpectralData = sumAdminCompute(dataset(callStartPoint:callEndPoint),Fs);
 
 end
 

@@ -5,8 +5,17 @@ function [ logicVector, indexVector ] = determinePossibleCalls( k,j,a,b,timePosi
     % extra parameters
     noFileCalls = getParFromVarargin('noFileCalls',varargin);
     
+    Fs = fileData(k,'Fs');
+    C = channelData(k,j,'Calls','ForLocalization');
+    switch timePosition
+        case 'Start'
+            points = round(cell2mat(C(:,1)).*Fs);
+        case 'Peak'
+            points = round(cell2mat(C(:,5)).*Fs);
+        case 'End'
+            points = round(cell2mat(C(:,9)).*Fs);
+    end        
     
-    [~,points] = getChannelCallsTimes(k,j,timePosition);
     A = points > a;
     B = points < b;
     logicVector = A.*B;

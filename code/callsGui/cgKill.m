@@ -8,6 +8,8 @@ function [  ] = cgKill(  )
         end
         control.cg.fig = [];
     end
+    
+    control.cg.call = [];
 
 end
 

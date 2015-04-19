@@ -33,6 +33,9 @@ function [  ] = updateFromGit(  )
         disp(strcat(['  git OK. Current branch: ',gitBranch]));
     end
 
+    % reset HEAD
+    eval('git reset HEAD --hard');    
+    
     % pull from github
     disp(strcat(['  Updating from git. Branch: ',gitSettings.branch,' ; repo: ',gitSettings.repo]));
     disp(' ');

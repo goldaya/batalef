@@ -15,7 +15,7 @@ function [ seqs ] = suggestSeqs2( sBase,jBase,k, timePointToUse )
     % some parameters
     nChannels = length(U);
     dev = getParam('fileCalls:matching:triangleMaxError');
-    refPoint = channelCallData(k,jBase,sBase,timePointToUse,'Point');  
+    refPoint = channelCallData(k,jBase,sBase,timePointToUse,'Point','CallDataType',channelCall.forLocalization);  
     [~,MdP] = fileData(k,'Mics','MaxDiff');
     MdP = MdP*dev;
     a1 = ones(nChannels,1);
