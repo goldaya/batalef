@@ -17,9 +17,13 @@ updateFromGit();
 % version
 disp(' ');
 disp(' ');
+try
 load('./common/vers.mat');
 disp(strcat(['  VERSION : ',vers]));
 clear vers;
+catch err
+    err.message
+end
 disp(' ');
     
 % add batalef to path 
