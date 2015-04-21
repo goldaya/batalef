@@ -1,9 +1,9 @@
-function [ channelOut ] = updateChannelStructure( channel, Fs )
+function [ channelOut ] = updateChannelStructure( channelIn, Fs )
 %UPDATECHANNELSTRUCTURE -INTERNAL- update the channel structure to current
 
     % channel calls cell array
-    if isfield(channel,'channelCalls')
-        M = cell2mat(channel.channelCalls(:,[1:11,14:16]));
+    if isfield(channelIn,'channelCalls')
+        M = cell2mat(channelIn.channelCalls(:,[1:11,14:16]));
         calls.detection = [M(:,1)./Fs,M(:,2)];
         calls.features  = zeros(size(M,1),13);
         calls.features(:, 1) = M(:, 6)./Fs;  % start time
@@ -23,7 +23,7 @@ function [ channelOut ] = updateChannelStructure( channel, Fs )
         
         calls.features = num2cell(calls.features);
         
-        calls.features(:,13) = channel.channelCalls(:,13) ;     % ridge
+        calls.features(:,13) = channelIn.channelCalls(:,13) ;     % ridge
         emptyCell = num2cell(zeros(size(M,1),13));
         emptyCell(:,13) = {[]};
         calls.forLocalization = emptyCell;
@@ -31,6 +31,8 @@ function [ channelOut ] = updateChannelStructure( channel, Fs )
         
         channelOut.calls = calls;
         
+    else
+        channelOut = channelIn;
     end
 
 end
