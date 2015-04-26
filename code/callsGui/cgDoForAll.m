@@ -2,6 +2,8 @@ function [  ] = cgDoForAll( K, J )
 %CGDOFORALL Summary of this function goes here
 %   Detailed explanation goes here
 
+    global control;
+    
     handles = cgGetHandles();
     [~,~,~,t] = cgGetCurrent;
     
@@ -32,7 +34,8 @@ function [  ] = cgDoForAll( K, J )
                 call = channelCall(K(k),Jbar(j),s,t,false);
                 if ~call.Saved || overwrite
                     window = [call.DetectionTime-dt/2, call.DetectionTime+dt/2];
-                    call = channelCallAnalyze(K(k),Jbar(j),s,t,window,[],[],startThreshold,endThreshold,gapTolerance,[],true,true);
+                    dataset = channelData(K(k),Jbar(j),'TS','TimeInterval',window,'Filter',control.cg.filter);
+                    call = channelCallAnalyze(K(k),Jbar(j),s,t,window,dataset,[],startThreshold,endThreshold,gapTolerance,[],true,true);
                     ok = cgSave(call, handles);
                     if ~ok
                         return;

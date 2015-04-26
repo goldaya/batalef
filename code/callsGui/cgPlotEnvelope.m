@@ -33,12 +33,13 @@ function [  ] = cgPlotEnvelope( rawDataset,T )
     hold(handles.axesCallWindow, 'on');
     plot(handles.axesCallWindow, T(spoint:epoint), envDataset(spoint:epoint), 'r');
     plot(handles.axesCallWindow, T(epoint:N), envDataset(epoint:N),'b');
-    plot(handles.axesCallWindow, T(dpoint), call.DetectionValue, 'y*');
+    plot(handles.axesCallWindow, T(dpoint), 20*log10(call.DetectionValue), 'y*');
     if ~isempty(ppoint)
-        plot(handles.axesCallWindow, T(ppoint), call.PeakValue, 'g*');
+        plot(handles.axesCallWindow, T(ppoint), 20*log10(call.PeakValue), 'g*');
     end
     hold(handles.axesCallWindow, 'off');
     axis(handles.axesCallWindow, 'tight');
+    xlabel(handles.axesCallWindow, {'Red Curve = Realised Call', 'Green Mark = Local Peak ; Yellow Mark = Detection'});    
     %set(handles.axesCallWindow, 'XLim', [T(1),T(N)]);
     %set(handles.axesCallWindow, 'YLim', [min(envDataset),max(envDataset)]);
     

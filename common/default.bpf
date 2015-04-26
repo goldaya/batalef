@@ -11,6 +11,11 @@ beam:method integer 1.000000
 callsGUI:callWindow float 10.000000 
 callsGUI:dbEnd float -3.000000 
 callsGUI:dbStart float -6.000000 
+callsGUI:filter:method integer 0 
+callsGUI:filter:butter:type integer 102.000000 
+callsGUI:filter:butter:f1 float 50.000000 
+callsGUI:filter:butter:f2 float 70.000000 
+callsGUI:filter:butter:order float 14.000000 
 callsGUI:gap float 0.300000 
 callsGUI:maxGap float 3.500000 
 callsGUI:noisePercentile float 50.000000 

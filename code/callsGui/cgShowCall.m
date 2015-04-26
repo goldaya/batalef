@@ -35,11 +35,14 @@ function cgShowCall(  )
     % recalculate call boundries
     if control.cg.mode == c.process
         % calculate call data from GUI !
-        cgCalculateCall();
+        [~,dataset,T] = cgCalculateCall();
+    else
+        dataset = [];
+        T = [];
     end
     
     % put on gui
-    cgPlotsAndStats();
+    cgPlotsAndStats(dataset,T);
 
 end
 

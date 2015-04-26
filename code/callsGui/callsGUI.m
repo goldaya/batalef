@@ -22,7 +22,7 @@ function varargout = callsGUI(varargin)
 
 % Edit the above text to modify the response to help callsGUI
 
-% Last Modified by GUIDE v2.5 23-Apr-2015 18:55:09
+% Last Modified by GUIDE v2.5 26-Apr-2015 11:13:51
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -582,4 +582,49 @@ title = 'Remove calls in all channels around current call - settings';
 A = inputdlg(Q,title,[1,70],D);
 if ~isempty(A)
     setParam('callsGUI:xWindow',str2double(A{1}));
+end
+
+
+% --- Executes on selection change in ddFilter.
+function ddFilter_Callback(hObject, eventdata, handles)
+%S = cellstr(get(hObject,'String'));
+global control;
+global c;
+v = get(hObject,'Value');
+switch v
+    case 1
+        control.cg.filter = [];
+    case 2
+        if ~isempty(control.cg.filter) && control.cg.filter.method == c.butter
+            D{1} = filterButterTranslateName(control.cg.filter.type);
+            D{2} = num2str(control.cg.filter.f1/1000);
+            D{3} = num2str(control.cg.filter.f2/1000);            
+            D{4} = num2str(control.cg.filter.order);
+        else
+            D{1} = filterButterTranslateName(getParam('callsGUI:filter:butter:type'));
+            D{2} = num2str(getParam('callsGUI:filter:butter:f1'));
+            D{3} = num2str(getParam('callsGUI:filter:butter:f2'));
+            D{4} = num2str(getParam('callsGUI:filter:butter:order'));
+        end
+
+        [params,~,cancel]=filterButterDlg([],D);
+
+        if ~cancel
+            control.cg.filter = params;
+            control.cg.filter.method = c.butter;            
+        end
+end
+cgShowCall();
+
+
+% --- Executes during object creation, after setting all properties.
+function ddFilter_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ddFilter (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end

@@ -12,6 +12,9 @@ function [ rc, failed ] = filterButter( K )
     if isempty(params)
         rc = 4;
         return;
+    else
+        % keep values into parameters array
+        filterButterKeepValues(params.type,params.order,params.f1,params.f2);
     end
     
     for i = 1:length(K)

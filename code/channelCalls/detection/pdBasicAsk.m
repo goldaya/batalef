@@ -65,9 +65,11 @@ function [ do, percentile, minDistance, replace, channel, filter ] = pdBasicAsk(
                 filter = [];
                 filterType = c.no;
             case 'Butter'
-                [filter, cancel] = filterButterDlg();
+                [params, filter, cancel] = filterButterDlg();
                 if cancel
                    return; 
+                else
+                    filterButterKeepValues(params.type,params.order,params.f1,params.f2);
                 end
                 if ~isempty(filter)
                     filter.method = c.butter;

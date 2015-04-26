@@ -1,4 +1,4 @@
-function [ out ] = rdgmAdminCompute( TS, Fs )
+function [ out ] = rdgmAdminCompute( TS, Fs, extParams )
 %RDGMADMINCOMPUTESPECTROGRAM Compute spectrum by selected method
 
     global control;
@@ -12,7 +12,7 @@ function [ out ] = rdgmAdminCompute( TS, Fs )
     
     methodFunc = str2func(m{method}{2});
     
-    out = methodFunc(TS, Fs, params);
+    out = methodFunc(TS, Fs, params, extParams);
     
 
 end

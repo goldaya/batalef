@@ -1,4 +1,4 @@
-function [ ridge ] = rdgmBasic( dataset, Fs, params, varargin  )
+function [ ridge ] = rdgmBasic( dataset, Fs, params, extParams, varargin  )
 %RDGMBASIC Summary of this function goes here
 %   Detailed explanation goes here
 
