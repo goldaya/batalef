@@ -24,7 +24,7 @@ function call = channelCallAnalyze( k,j,s,type,window, dataset,envDataset, start
 %%% find start and end of call %%%
     if isempty(forcedBoundries)
         maxGapInPoints = round(gapTolerance*Fs);
-        startValue = peakValue * 10^(startThreshold/10);
+        startValue = peakValue * 10^(startThreshold/20);
         startPoint = peakPoint;
         gap = 0;
         for a=-peakPoint:-1
@@ -45,7 +45,7 @@ function call = channelCallAnalyze( k,j,s,type,window, dataset,envDataset, start
 
 
         % find end point 
-        endValue = peakValue * 10^(endThreshold/10);
+        endValue = peakValue * 10^(endThreshold/20);
         endPoint = peakPoint;
         gap = 0;
         for i=peakPoint:length(envDataset)

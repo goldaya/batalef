@@ -18,7 +18,7 @@ function [  ] = pdPiecewise( k,I,percentile,minDistance,channel,filter,replace )
         if validateFileChannelIndex(k,j)
             % clear all in advance when replacing
             if replace
-                removeChannelCalls(k,j,'All')
+                channelCall.removeCalls(k,j,[]);
             end
             
             for i = 1:size(I,1)
@@ -26,8 +26,8 @@ function [  ] = pdPiecewise( k,I,percentile,minDistance,channel,filter,replace )
                 threshold = prctile(dataset,percentile);
                 peaks = pdBasicCore(dataset, Fs, threshold, minDistance,0);
                 peaks.points = peaks.points + I(i,1) - 1;
-                peaks.times = peaks.times ./ Fs;
-                channelCall.addCalls(k,j,[peaks.times,peaks.values],false);
+                peaks.times = peaks.points ./ Fs;
+                channelCall.addCalls(k,j,[peaks.times,peaks.values]);
             end
         end
     end

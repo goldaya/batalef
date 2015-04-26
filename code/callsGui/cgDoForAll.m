@@ -33,7 +33,10 @@ function [  ] = cgDoForAll( K, J )
                 if ~call.Saved || overwrite
                     window = [call.DetectionTime-dt/2, call.DetectionTime+dt/2];
                     call = channelCallAnalyze(K(k),Jbar(j),s,t,window,[],[],startThreshold,endThreshold,gapTolerance,[],true,true);
-                    call.save();
+                    ok = cgSave(call, handles);
+                    if ~ok
+                        return;
+                    end
                 end
             end
         end

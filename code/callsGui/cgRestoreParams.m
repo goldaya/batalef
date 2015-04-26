@@ -1,7 +1,6 @@
 function [  ] = cgRestoreParams(  )
 %CGRESTOREPARAMS Restore Parameters to CallsGUI
 
-    global c;
     handles = cgGetHandles();
     
     set(handles.textCallWindow, 'String', getParam('callsGUI:callWindow'));
@@ -20,16 +19,5 @@ function [  ] = cgRestoreParams(  )
     set(handles.textEndDiff,'String',num2str(dbEnd));
     set(handles.sliderEndDiff, 'Value', 1-10^(dbEnd/10));
     
-    switch getParam('callsGUI:showValues')
-        case c.saved
-            set(handles.rbValuesSaved, 'Value', 1);
-        case c.calculated
-            set(handles.rbValuesCalculated, 'Value', 1);
-        case c.mix
-            set(handles.rbValuesMix, 'Value', 1);
-        otherwise
-            set(handles.rbValuesMix, 'Value', 1);
-    end
-
 end
 

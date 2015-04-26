@@ -1,0 +1,9 @@
+Channel calls gui:
+ - remove call in all channels
+ - display envelope in dB
+ - process/display modes
+ - checkboxes and radiobuttons for process type
+ - sliders dB is 20log10 instead of 10log10
+
+pieacewise peak detection
+ - fixed bugs which blocked pwpd

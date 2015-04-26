@@ -18,7 +18,8 @@ callsGUI:showValues integer 6.000000
 callsGUI:stft:window float 300.000000 
 callsGUI:stft:overlap float 75.000000 
 callsGUI:stft:nfft float 512.000000 
-callsGUI:stft:padding float 10.000000 
+callsGUI:stft:padding float 10.000000
+callsGUI:xWindow float 100 
 decimation:N integer 250000.000000 
 decimation:p float 3.000000 
 decimation:q float 7.000000 

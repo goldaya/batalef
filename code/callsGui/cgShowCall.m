@@ -3,7 +3,26 @@ function cgShowCall(  )
 
 
     global control;
+    global c;
     handles = cgGetHandles();
+    
+    % display vs. processing mode
+    if control.cg.mode == c.display
+
+        % when in display mode, get the right proc type
+        if get(handles.rbFeatures,'Value')
+            control.cg.t = 'features';
+        elseif get(handles.rbLocalization,'Value')
+            control.cg.t = 'forLocalization';
+        elseif get(handles.rbBeam,'Value')
+            control.cg.t = 'forBeam';
+        else
+            throw(MException('bats:channelCall:procType','Wrong processing type'));
+        end
+        
+    else
+        control.cg.t = 'features';
+    end
     
     % get the right call
     control.cg.call = channelCall(control.cg.k,control.cg.j,control.cg.s,control.cg.t,false);
@@ -14,7 +33,7 @@ function cgShowCall(  )
     control.cg.window = window;
     
     % recalculate call boundries
-    if get(handles.rbValuesCalculated, 'Value')
+    if control.cg.mode == c.process
         % calculate call data from GUI !
         cgCalculateCall();
     end

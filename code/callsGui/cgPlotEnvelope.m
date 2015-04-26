@@ -8,6 +8,7 @@ function [  ] = cgPlotEnvelope( rawDataset,T )
     
     % get envelope
     envDataset = envmAdminCompute(rawDataset,call.Fs);
+    envDataset = 20.*log10(envDataset);
 
     
     %translate into points

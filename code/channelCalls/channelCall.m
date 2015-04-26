@@ -304,9 +304,11 @@ classdef channelCall < handle
         function save(me)
             % save data to global structures
             
+            %{
             if me.Status == me.unchanged
                 return;
             end
+            %}
             
             global filesObject;
     

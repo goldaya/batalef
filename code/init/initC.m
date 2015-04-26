@@ -14,10 +14,9 @@ function [  ] = initC(  )
     c.loadIfMust    = 0;
     c.dontLoad      = -1;
 
-    % calls gui show values
-    c.saved         = 5;
-    c.calculated    = 6;
-    c.mix           = 7;
+    % calls gui mode
+    c.display       = 1;
+    c.process       = 2;
 
     % main gui axes mode
     c.link = 1;

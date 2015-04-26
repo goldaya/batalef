@@ -17,12 +17,12 @@ function [  ] = cgManualCallRealization( surfobj, ~ )
     % set sliders
     peakValue = call.PeakValue;
     s = 1 - call.StartValue / peakValue;
-    dB = 10*log10(1-s);
+    dB = 20*log10(1-s);
     set(handles.sliderStartDiff, 'Value', s ) ;
     set(handles.textStartDiff,'String',num2str(dB));
     
     s = 1 - call.EndValue / peakValue;
-    dB = 10*log10(1-s);
+    dB = 20*log10(1-s);
     set(handles.sliderEndDiff, 'Value', s ) ;
     set(handles.textEndDiff,'String',num2str(dB));
     

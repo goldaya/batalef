@@ -22,7 +22,7 @@ function varargout = callsGUI(varargin)
 
 % Edit the above text to modify the response to help callsGUI
 
-% Last Modified by GUIDE v2.5 19-Apr-2015 15:14:06
+% Last Modified by GUIDE v2.5 23-Apr-2015 18:55:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -63,6 +63,7 @@ guidata(hObject, handles);
 
 % keep figure code
 global control;
+global c;
 if isempty(control.cg.fig) || ~ishandle(control.cg.fig)
     control.cg.fig = hObject;
     cgInit();
@@ -98,10 +99,12 @@ switch nargin
         control.cg.t = varargin{4};
     otherwise
 end
+control.cg.mode = c.process;
 cgInitIndexes();
 set(handles.textFileIndex, 'String', control.cg.k);
 set(handles.textChannelIndex, 'String', control.cg.j);
 set(handles.textCallIndex, 'String', control.cg.s); 
+cgSetModeButtons();
 cgShowCall();
 
 
@@ -395,13 +398,20 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-function pbSave_Callback(hObject, eventdata, handles)
+function ok = pbSave_Callback(hObject, eventdata, handles)
 global control;
-control.cg.call.save();
+global c;
+if control.cg.mode == c.process
+    ok = cgSave(control.cg.call, handles);
+else
+    msgbox('Not in processing mode');
+    ok = false;
+end
 
 function pbSaveNext_Callback(hObject, eventdata, handles)
-pbSave_Callback(hObject, eventdata, handles)
-pbCallUp_Callback(hObject, eventdata, handles)
+if pbSave_Callback(hObject, eventdata, handles)
+    pbCallUp_Callback(hObject, eventdata, handles)
+end
 
 function pbDeleteCall_Callback(hObject, eventdata, handles)
 
@@ -523,35 +533,53 @@ if isfield(control.cg,'spectrogramSurf') && ishandle(control.cg.spectrogramSurf)
 end
 
 
-% --- Executes on selection change in ddType.
-function ddType_Callback(hObject, eventdata, handles)
-global control;
-D = get(hObject,'UserData');
-v = get(hObject,'Value' );
-control.cg.t = D{v};
-cgShowCall();
-
-% --- Executes during object creation, after setting all properties.
-function ddType_CreateFcn(hObject, eventdata, handles)
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-global control;
-D{1} = 'features';
-D{2} = 'forLocalization';
-D{3} = 'forBeam';
-set(hObject,'UserData',D);
-if isfield(control.cg,'t')
-    v = find(strcmp(control.cg.t,D));
-    if isempty(v)
-        v = 1;
-    end
-else
-    v = 1;
-end
-set(hObject,'Value',v);
-
-
 % --- Executes on button press in pbRemoveCall.
 function pbRemoveCall_Callback(hObject, eventdata, handles)
-cgRemoveCall();
+cgRemoveCall(false);
+
+
+% --------------------------------------------------------------------
+function procModeMenuItem_Callback(hObject, eventdata, handles)
+global control;
+global c;
+% menu items checks
+set(handles.dispModeMenuItem,'Checked','off');
+set(handles.procModeMenuItem,'Checked','on');
+% goto display mode
+control.cg.mode = c.process;
+cgSetModeButtons();
+cgShowCall();
+
+% --------------------------------------------------------------------
+function dispModeMenuItem_Callback(hObject, eventdata, handles)
+global control;
+global c;
+% menu items checks
+set(handles.dispModeMenuItem,'Checked','on');
+set(handles.procModeMenuItem,'Checked','off');
+% goto display mode
+control.cg.mode = c.display;
+cgSetModeButtons();
+cgShowCall();
+
+
+function panelProcRadiobuttons_SelectionChangeFcn(hObject, eventdata, handles)
+cgShowCall();
+
+
+% --- Executes on button press in pbRemoveAllChannels.
+function pbRemoveAllChannels_Callback(hObject, eventdata, handles)
+cgRemoveCall(true);
+
+
+% --------------------------------------------------------------------
+function xSettingsMenuItem_Callback(hObject, eventdata, handles)
+D = cell(1,1);
+Q = cell(1,1);
+D{1} = num2str(getParam('callsGUI:xWindow'));
+Q{1} = 'Window size (msec)';
+title = 'Remove calls in all channels around current call - settings';
+A = inputdlg(Q,title,[1,70],D);
+if ~isempty(A)
+    setParam('callsGUI:xWindow',str2double(A{1}));
+end
