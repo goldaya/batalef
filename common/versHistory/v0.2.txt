@@ -9,3 +9,6 @@ Channel calls gui:
 
 pieacewise peak detection
  - fixed bugs which blocked pwpd
+
+v0.2.1
+ - fixed bug with filter on peak detection which happened due to v0.2
