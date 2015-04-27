@@ -71,7 +71,10 @@ function [ do, percentile, minDistance, replace, channel, filter ] = pdBasicAsk(
                 else
                     filterButterKeepValues(params.type,params.order,params.f1,params.f2);
                 end
-                if ~isempty(filter)
+                if ~isempty(params)  && isempty(filter)
+                    filter = params;
+                end
+                if ~isempty(filter) && isstruct(filter)
                     filter.method = c.butter;
                     filterType = c.butter;
                 end

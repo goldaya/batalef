@@ -1,0 +1,14 @@
+Channel calls gui:
+ - remove call in all channels
+ - display envelope in dB
+ - process/display modes
+ - checkboxes and radiobuttons for process type
+ - sliders dB is 20log10 instead of 10log10
+ - filter: can now use butterworth filter on call window
+ - ridge: added "Basic, peak outwards" ridge function
+
+pieacewise peak detection
+ - fixed bugs which blocked pwpd
+
+v0.2.1
+ - fixed bug with filter on peak detection which happened due to v0.2
