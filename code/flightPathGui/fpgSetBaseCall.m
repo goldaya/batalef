@@ -3,7 +3,7 @@ function [  ] = fpgSetBaseCall( s, refreshBaseCallsCombo )
 %   Detailed explanation goes here
 
     global control;
-    [k,j] = fpgGetCurrent;
+    [k,~,j,~] = fpgGetCurrent;
     validateFileChannelCallIndex(k,j,s);
     control.fpg.s = s;
     

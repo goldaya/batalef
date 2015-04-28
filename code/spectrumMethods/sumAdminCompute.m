@@ -12,8 +12,11 @@ function [ spec ] = sumAdminCompute( TS, Fs )
     
     methodFunc = str2func(m{method}{2});
     
-    spec = methodFunc(TS, Fs, params);   
-    
+    try
+        spec = methodFunc(TS, Fs, params);   
+    catch err
+        spec = [];
+    end
 
 end
 

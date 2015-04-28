@@ -12,3 +12,6 @@ pieacewise peak detection
 
 v0.2.1
  - fixed bug with filter on peak detection which happened due to v0.2
+
+v0.2.2
+ - fixed bug with spectrum computation on very short calls
