@@ -99,7 +99,7 @@ switch nargin
         control.cg.t = varargin{4};
     otherwise
 end
-control.cg.mode = c.process;
+control.cg.mode = c.display;
 cgInitIndexes();
 set(handles.textFileIndex, 'String', control.cg.k);
 set(handles.textChannelIndex, 'String', control.cg.j);

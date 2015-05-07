@@ -22,6 +22,21 @@ function [ out1, out2, out3, out4 ] = getChannelCalls( k, j, varargin )
                 end
                 
             case 'ForLocalization'
+                time = getParFromVarargin('Times',varargin);
+                if ischar(time)
+                    switch time
+                        case 'Start'
+                            out1 = filesObject(k).channels(j).calls.forLocalization(:,1);
+                        case 'Peak'
+                            out1 = filesObject(k).channels(j).calls.forLocalization(:,5);
+                        case 'End'
+                            out1 = filesObject(k).channels(j).calls.forLocalization(:,9);
+                    end
+                    if ~isempty(out1)
+                        out2 = transpose(1:length(out1));
+                        return;
+                    end
+                end
                 out1 = filesObject(k).channels(j).calls.forLocalization;
                 
             case 'Ridge'
