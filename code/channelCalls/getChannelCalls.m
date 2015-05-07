@@ -33,7 +33,7 @@ function [ out1, out2, out3, out4 ] = getChannelCalls( k, j, varargin )
                             out1 = filesObject(k).channels(j).calls.forLocalization(:,9);
                     end
                     if ~isempty(out1)
-                        out2 = 1:length(out1);
+                        out2 = transpose(1:length(out1));
                         return;
                     end
                 end

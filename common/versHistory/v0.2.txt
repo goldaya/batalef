@@ -15,3 +15,8 @@ v0.2.1
 
 v0.2.2
  - fixed bug with spectrum computation on very short calls
+
+v0.2.3
+ - Changed the channel calls matching algo to simply check each channel against the base channel alone.
+ - in the flight path & beam gui added "select all", "compute beam" buttons
+ - in calls gui set the deafult mode to display mode and all checkboxes marked

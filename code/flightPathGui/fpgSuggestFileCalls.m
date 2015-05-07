@@ -10,7 +10,7 @@ function seqs = fpgSuggestFileCalls(  )
     %timePointToUse = 'Start';
     if isscalar(s)
         %seqs = suggestSeqs( s,j,k, timePointToUse);
-        
+        %{
         handles = fpgGetHandles();
         
         nChannels = fileData(k,'Channels','Count');
@@ -31,6 +31,10 @@ function seqs = fpgSuggestFileCalls(  )
         if R < (sum(usage)-1)
             seqs = cell(0,0);
         end
+        %}
+        handles = fpgGetHandles();
+        dev = str2double(get(handles.textError, 'String'))/100 + 1;
+        seqs = ccmSimple(k,j,s,dev);
         
     end
 
