@@ -105,7 +105,7 @@ set(handles.textFileIndex, 'String', control.cg.k);
 set(handles.textChannelIndex, 'String', control.cg.j);
 set(handles.textCallIndex, 'String', control.cg.s); 
 cgSetModeButtons();
-cgShowCall();
+cgShowCall(true);
 
 
 
@@ -519,6 +519,7 @@ end
 % --------------------------------------------------------------------
 function paramsKeepMenuItem_Callback(hObject, eventdata, handles)
 cgKeepParams();
+saveParametersFile();
 
 % --------------------------------------------------------------------
 function paramsRestoreMenuItem_Callback(hObject, eventdata, handles)
@@ -548,7 +549,7 @@ set(handles.procModeMenuItem,'Checked','on');
 % goto display mode
 control.cg.mode = c.process;
 cgSetModeButtons();
-cgShowCall();
+cgShowCall(false);
 
 % --------------------------------------------------------------------
 function dispModeMenuItem_Callback(hObject, eventdata, handles)
@@ -560,11 +561,11 @@ set(handles.procModeMenuItem,'Checked','off');
 % goto display mode
 control.cg.mode = c.display;
 cgSetModeButtons();
-cgShowCall();
+cgShowCall(false);
 
 
 function panelProcRadiobuttons_SelectionChangeFcn(hObject, eventdata, handles)
-cgShowCall();
+cgShowCall(false);
 
 
 % --- Executes on button press in pbRemoveAllChannels.

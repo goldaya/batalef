@@ -20,3 +20,14 @@ v0.2.3
  - Changed the channel calls matching algo to simply check each channel against the base channel alone.
  - in the flight path & beam gui added "select all", "compute beam" buttons
  - in calls gui set the deafult mode to display mode and all checkboxes marked
+
+v0.2.4
+ - spectrograms are now displayed using the "imagesc" function
+ - in spectrogram gui, channel calls are now displayed only with call number, and no "*"
+ - "keep parameters" menu item in calls-gui now opens a save file dialog 
+   (parameters are kept in global structures before the dialog, so aborting does not affect the keep command)
+ - fixed bug in flight&beam where window was cut in half.
+ - in calls gui, now applying filter to the whole channel (and keeping the TS - filtered or unfiltered - in
+   the control global) and slicing the call TS when needed.
+ - colors in raw beam data are now paired with those of the interpolated beam
+ - mic columns in the flight & beam gui table

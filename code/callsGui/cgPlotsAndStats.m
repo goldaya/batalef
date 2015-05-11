@@ -1,4 +1,4 @@
-function cgPlotsAndStats( dataset,T )
+function cgPlotsAndStats( )
 %CGPLOTSANDSTATS -INTERNAL- Reresh the plots and stats on the calls gui
 
     global control;
@@ -7,12 +7,9 @@ function cgPlotsAndStats( dataset,T )
     cgRefreshStats();
     
     % get dataset
-    if ~exist('dataset','var') || isempty(dataset)
-        [dataset,T] = channelData(control.cg.call.k, control.cg.call.j, 'TS', ...
-            channelCall.inPoints(control.cg.call,control.cg.window),...
-            'Filter',control.cg.filter);
-    end
-    
+    dataset = control.cg.TS(control.cg.wip(1):control.cg.wip(2));
+    T = control.cg.T(control.cg.wip(1):control.cg.wip(2));
+        
     % envelope with colors
     try
         cgPlotEnvelope(dataset,T);

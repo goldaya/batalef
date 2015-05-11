@@ -30,18 +30,24 @@ function [  ] = cgDoForAll( K, J )
             Jbar = J(J<=nChannels);
         end
         for j = 1:length(Jbar)
+            
+            % get un/filtered TS for channel
+            dataset = channelData(K(k),Jbar(j),'TS','Filter',control.cg.filter);
+            
+            % do for all calls in this channel
             for s=1:channelData(K(k),Jbar(j),'Calls','Count')
                 call = channelCall(K(k),Jbar(j),s,t,false);
                 if ~call.Saved || overwrite
                     window = [call.DetectionTime-dt/2, call.DetectionTime+dt/2];
-                    dataset = channelData(K(k),Jbar(j),'TS','TimeInterval',window,'Filter',control.cg.filter);
-                    call = channelCallAnalyze(K(k),Jbar(j),s,t,window,dataset,[],startThreshold,endThreshold,gapTolerance,[],true,true);
+                    wip = channelCall.inPoints(call, window);
+                    call = channelCallAnalyze(K(k),Jbar(j),s,t,window,dataset(wip),[],startThreshold,endThreshold,gapTolerance,[],true,true);
                     ok = cgSave(call, handles);
                     if ~ok
                         return;
                     end
                 end
             end
+            
         end
     end
     

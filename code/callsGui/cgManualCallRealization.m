@@ -2,6 +2,7 @@ function [  ] = cgManualCallRealization( surfobj, ~ )
 %CGMANUALCALLREALIZATION Summary of this function goes here
 %   Detailed explanation goes here
 
+    global control;
     handles = cgGetHandles();
     
     % get axes object
@@ -12,7 +13,7 @@ function [  ] = cgManualCallRealization( surfobj, ~ )
     rbbox;
     point2 = get(axobj,'CurrentPoint');
 
-    call = cgCalculateCall( [point1(1,1),point2(1,1)] );
+    call = cgCalculateCall( control.cg.TS(control.cg.wip(1):control.cg.wip(2)), [point1(1,1),point2(1,1)] );
       
     % set sliders
     peakValue = call.PeakValue;

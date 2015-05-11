@@ -1,4 +1,4 @@
-function [call, dataset, T] = cgCalculateCall( forcedBoundries )
+function [call, dataset, T] = cgCalculateCall( dataset, forcedBoundries )
 %CGCALCULATECALL Calculate start and end of call, spectral data, and plot
 %stuff
 
@@ -18,7 +18,7 @@ function [call, dataset, T] = cgCalculateCall( forcedBoundries )
     end
     
     % get un/filtered dataset
-    [dataset,T] = channelData(k,j,'TS','TimeInterval',control.cg.window,'Filter',control.cg.filter);
+    %[dataset,T] = channelData(k,j,'TS','TimeInterval',control.cg.window,'Filter',control.cg.filter);
     
     % analyze call
     call = channelCallAnalyze(k,j,s,t,control.cg.window,dataset,[],startThreshold,endThreshold,gapTolerance,forcedBoundries,true,true);

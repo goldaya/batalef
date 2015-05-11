@@ -1,4 +1,4 @@
-function cgShowCall(  )
+function cgShowCall( refreshRawData )
 %CGSHOWCALL -INTERNAL- show call on gui
 
 
@@ -31,18 +31,29 @@ function cgShowCall(  )
     dt = str2double(get(handles.textCallWindow, 'String'))/1000 ;
     window = control.cg.call.DetectionTime + ([-0.5, 0.5].*dt);
     control.cg.window = window;
+    control.cg.wip    = channelCall.inPoints(control.cg.call,window);
+    
+    % refresh raw data and filter if needed
+    if refreshRawData
+        [TS,T] = channelData(control.cg.k,control.cg.j,'TS','Filter',control.cg.filter);
+        control.cg.TS = TS;
+        control.cg.T  = T;
+    end
+    
+    dataset = control.cg.TS(control.cg.wip(1):control.cg.wip(2));
     
     % recalculate call boundries
     if control.cg.mode == c.process
         % calculate call data from GUI !
-        [~,dataset,T] = cgCalculateCall();
+        %[~,dataset,T] = cgCalculateCall();
+        cgCalculateCall(dataset);
     else
-        dataset = [];
-        T = [];
+        %dataset = [];
+        %T = [];
     end
     
     % put on gui
-    cgPlotsAndStats(dataset,T);
+    cgPlotsAndStats();
 
 end
 
