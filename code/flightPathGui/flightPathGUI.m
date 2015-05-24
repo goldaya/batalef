@@ -22,7 +22,7 @@ function varargout = flightPathGUI(varargin)
 
 % Edit the above text to modify the response to help flightPathGUI
 
-% Last Modified by GUIDE v2.5 07-May-2015 23:58:53
+% Last Modified by GUIDE v2.5 25-May-2015 00:02:15
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -335,3 +335,10 @@ set(handles.textIdx,'String',strcat('1:',num2str(N)));
 % --- Executes on button press in pbComputeBeam.
 function pbComputeBeam_Callback(~, ~, handles)
 beamComputeMenuItem_Callback([],[], handles)
+
+
+% --------------------------------------------------------------------
+function beamsManipulate_Callback(hObject, eventdata, handles)
+[k,a] = fpgGetCurrent();
+beamManipulationGUI(k,a);
+
