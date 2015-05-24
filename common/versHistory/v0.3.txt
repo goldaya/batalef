@@ -1,0 +1,9 @@
+Channel calls gui:
+ - fixed bugs with cgShowCall() missing param.
+
+Beam:
+ - beam data has new structure (power at mic, power after gain compensation, 
+   power after directivity, power ready for inter, coordinates matrix, 
+   raw matrix, interpolated matrix)
+ - added Beam Manipulation GUI which shows all the (non matrix) data above
+   plus directions of mics and usage, accepts changes and recompute beam.

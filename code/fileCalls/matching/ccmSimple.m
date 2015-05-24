@@ -11,7 +11,7 @@ function [ seqs ] = ccmSimple( k,j,s,dev )
     for i = 1 : nChannels
         
         if U(i)
-            window = M(j,i)*dev*[-0.5,0.5] + baseCall.PeakTime;
+            window = M(j,i)*dev*[-1,1] + baseCall.PeakTime;
     
             % get times of all channelcalls in channel J(i)
             [T,I] = channelData(k,i,'Calls','ForLocalization','Times','Peak');

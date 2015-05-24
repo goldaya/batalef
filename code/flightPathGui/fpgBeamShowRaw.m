@@ -9,6 +9,7 @@ function fpgBeamShowRaw(  )
     R = fileCallData(k,a,'Beam','Raw');
     
     
+    
     if isempty(R)
         msgbox('No data');
     else
@@ -18,7 +19,10 @@ function fpgBeamShowRaw(  )
         EL = flipud(EL);
         fig = figure;
         set(fig,'Name',strcat(['Beam - Raw . Call #',num2str(a)]),'numbertitle','off');
-        imagesc(AZ,EL,R)
+    
+        I = fileCallData(k,a,'Beam','Interpolated');
+        imagesc(AZ,EL,R,[min(min(I)),max(max(I))])
+        %image(AZ,EL,R)
     end
     
 end

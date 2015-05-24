@@ -28,10 +28,9 @@ function [  ] = sogPlot(  )
         % put on axes
         axesName = strcat('axes',num2str(i));
         axobj = handles.(axesName);
-        
-        surf(axobj,spec.T,spec.F,spec.P,'edgecolor','none');
-        view(axobj, [0,90]);
-        axis(axobj, 'tight'); 
+        axes(axobj);
+        imagesc(spec.T,spec.F,spec.P);
+        set(axobj,'YDir','normal');
         title(axobj,strcat(['Channel ',num2str(J(i))]));
         
         % add channel calls
@@ -41,13 +40,9 @@ function [  ] = sogPlot(  )
             Ylim = get(axobj,'Ylim');
             dY = (Ylim(2)-Ylim(1))/2;
             Y = zeros(N,1)+dY;
-            Zlim = get(axobj,'Zlim');
-            Z = zeros(N,1)+Zlim(2);
-            axes(axobj);
             hold(axobj,'on');
-            plot3(axobj,times,Y,Z,'*','Color','black');
             I = strtrim(cellstr(num2str(transpose(indexes))));
-            text(times,Y+(dY/3),Z,I);
+            text(times,Y,I);
             hold(axobj,'off');
         end
     end 

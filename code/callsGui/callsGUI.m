@@ -105,7 +105,7 @@ set(handles.textFileIndex, 'String', control.cg.k);
 set(handles.textChannelIndex, 'String', control.cg.j);
 set(handles.textCallIndex, 'String', control.cg.s); 
 cgSetModeButtons();
-cgShowCall();
+cgShowCall(true);
 
 
 
@@ -195,7 +195,7 @@ s = s + 1;
 cgGotoCall(k,j,s);
 
 function textCallWindow_Callback(hObject, eventdata, handles)
-cgShowCall()
+cgShowCall(false)
 
 function textCallWindow_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -208,7 +208,7 @@ function textStartDiff_Callback(hObject, eventdata, handles)
 dB = str2double(get(hObject, 'String'));
 s = 1-10^(dB/10);
 set(handles.sliderStartDiff, 'Value', s);
-cgShowCall()
+cgShowCall(false)
 
 
 function textStartDiff_CreateFcn(hObject, eventdata, handles)
@@ -220,7 +220,7 @@ end
 function sliderStartDiff_Callback(hObject, eventdata, handles)
 dB = 10*log10(1-get(hObject,'Value'));
 set(handles.textStartDiff,'String',num2str(dB));
-cgShowCall()
+cgShowCall(false)
 
 
 function sliderStartDiff_CreateFcn(hObject, eventdata, handles)
@@ -234,7 +234,7 @@ function textEndDiff_Callback(hObject, eventdata, handles)
 dB = str2double(get(hObject, 'String'));
 s = 1-10^(dB/10);
 set(handles.sliderEndDiff, 'Value', s);
-cgShowCall()
+cgShowCall(false)
 
 function textEndDiff_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -245,7 +245,7 @@ end
 function sliderEndDiff_Callback(hObject, eventdata, handles)
 dB = 10*log10(1-get(hObject,'Value'));
 set(handles.textEndDiff,'String',num2str(dB));
-cgShowCall()
+cgShowCall(false)
 
 
 function sliderEndDiff_CreateFcn(hObject, eventdata, handles)
@@ -266,7 +266,7 @@ if gap > mGap
 end
 % setParam('callsGUI:gap', gap);
 set(handles.sliderGap, 'Value', str2double(get(hObject, 'String')));
-cgShowCall()
+cgShowCall(false)
 
 
 function textGap_CreateFcn(hObject, eventdata, handles)
@@ -280,7 +280,7 @@ function sliderGap_Callback(hObject, eventdata, handles)
 gap = get(hObject, 'Value');
 setParam('callsGUI:gap', gap);
 set(handles.textGap, 'String', num2str(gap));
-cgShowCall()
+cgShowCall(false)
 
 
 function sliderGap_CreateFcn(hObject, eventdata, handles)
@@ -422,7 +422,7 @@ function uipanel4_SelectionChangeFcn(hObject, eventdata, handles)
 %	EventName: string 'SelectionChanged' (read only)
 %	OldValue: handle of the previously selected object or empty if none was selected
 %	NewValue: handle of the currently selected object
-cgShowCall()
+cgShowCall(false)
 
 
 % --------------------------------------------------------------------
@@ -485,7 +485,7 @@ end
 
 % --- Executes on button press in pbRedraw.
 function pbRedraw_Callback(hObject, eventdata, handles)
-cgShowCall();
+cgShowCall(false);
 
 
 function textDeltaTime_Callback(hObject, eventdata, handles)
@@ -519,6 +519,7 @@ end
 % --------------------------------------------------------------------
 function paramsKeepMenuItem_Callback(hObject, eventdata, handles)
 cgKeepParams();
+saveParametersFile();
 
 % --------------------------------------------------------------------
 function paramsRestoreMenuItem_Callback(hObject, eventdata, handles)
@@ -548,7 +549,7 @@ set(handles.procModeMenuItem,'Checked','on');
 % goto display mode
 control.cg.mode = c.process;
 cgSetModeButtons();
-cgShowCall();
+cgShowCall(false);
 
 % --------------------------------------------------------------------
 function dispModeMenuItem_Callback(hObject, eventdata, handles)
@@ -560,11 +561,11 @@ set(handles.procModeMenuItem,'Checked','off');
 % goto display mode
 control.cg.mode = c.display;
 cgSetModeButtons();
-cgShowCall();
+cgShowCall(false);
 
 
 function panelProcRadiobuttons_SelectionChangeFcn(hObject, eventdata, handles)
-cgShowCall();
+cgShowCall(false);
 
 
 % --- Executes on button press in pbRemoveAllChannels.
@@ -614,7 +615,7 @@ switch v
             control.cg.filter.method = c.butter;            
         end
 end
-cgShowCall();
+cgShowCall(false);
 
 
 % --- Executes during object creation, after setting all properties.

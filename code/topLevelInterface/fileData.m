@@ -110,8 +110,8 @@ function [ out, add1 ] = fileData( k, par, varargin )
                     case 'MaxDiff'
                         M = filesObject(k).mics.matrix;
                         P = M(:,3:5);
-                        Fs = filesObject(k).rawData.Fs;
                         out = maxTimeDiffBetweenChannels(P);
+                        Fs = filesObject(k).rawData.Fs;
                         add1 = round(out.*Fs);
                     case 'Subarrays'
                         out = filesObject(k).mics.subarrays;

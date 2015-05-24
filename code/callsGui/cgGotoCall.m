@@ -31,7 +31,11 @@ function [  ] = cgGotoCall( k,j,s )
        return;
     end
     
-
+    if control.cg.k ~= k || control.cg.j ~= j
+        refreshRawData = true;
+    else
+        refreshRawData = false;
+    end
     control.cg.k = k;
     control.cg.j = j;
     control.cg.s = s;
@@ -41,7 +45,7 @@ function [  ] = cgGotoCall( k,j,s )
     set(handles.textChannelIndex, 'String', j);
     set(handles.textCallIndex, 'String', s);    
     
-    cgShowCall();
+    cgShowCall(refreshRawData);
 
 end
 

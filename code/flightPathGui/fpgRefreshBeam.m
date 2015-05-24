@@ -20,6 +20,7 @@ function fpgRefreshBeam(  )
     cla;
     if isempty(P)
     else
+        %P = log(P);
         surf(C(:,1),C(:,2),P,'edgecolor','none');
         view(2);
         axis tight;

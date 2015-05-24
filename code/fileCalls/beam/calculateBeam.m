@@ -2,7 +2,6 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
 %CALCULATEBEAM Summary of this function goes here
 %   Detailed explanation goes here
 
-    global filesObject;
     
     % default is with save
     if ~exist('withSave','var')
@@ -21,7 +20,7 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     
     M = fileData(k,'Mics','Positions');
     G = fileData(k,'Mics','Gains','NoValidation',true);
-    U = fileData(k,'Mics','BeamUsage','NoValidation',true);
+    micsBeamUsage = fileData(k,'Mics','BeamUsage','NoValidation',true);
     D = fileData(k,'Mics','Directivity','NoValidation',true);
 
     
@@ -59,9 +58,12 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     
     % get spheric relative 
     n = size(M,1);
-    Ps = zeros(n,1);
+    Pg = zeros(n,1);    % power after gain compensation
+    Pd = zeros(n,1);    % power after directionality 
+    Ps = zeros(n,1);    % power ready for interp
     Cs = zeros(n,3);
     for j = 1:n
+        % spheric coordinates
         x = M(j,1) - xBat(1);
         y = M(j,2) - xBat(2);
         z = M(j,3) - xBat(3);
@@ -69,8 +71,10 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
         Cs(j,1) = az;
         Cs(j,2) = el;
         Cs(j,3) = r;
-        %Ps(j) = Pm(j)*G(j)*r^2*(10^(r*alpha_iso/10));
-        Ps(j) = Pm(j)*G(j)*10^(-r*alpha_iso/10);
+        
+        % gain compensation
+        Pg(j) = Pm(j)*G(j)*10^(-r*alpha_iso/10);
+        Ps(j) = Pg(j);
         
         % directivity
         if D.use && Ps(j) > 0
@@ -78,6 +82,7 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
             dAngle = rad2deg(ang([-x,-y,-z],D.zero));
             dGain = interp1(dAngles,dGains,dAngle);    
             Ps(j) = Ps(j)*10^((dGain)/10);
+            Pd(j) = Pm(j)*10^((dGain)/10);
         end
     end
 
@@ -94,25 +99,6 @@ function [ interpolated ] = calculateBeam( k,a, withSave )
     AZ = 0-radtodeg(Csr(:,1));
     EL = radtodeg(Csr(:,2));
    
-    U = logical(U.*Pm);
-    
-    PsU = Ps(U);
-    AZU = AZ(U);
-    ELU = EL(U);
-    
-    leads = [AZU,ELU,PsU];
-    
-    
-    [raw, interpolated, azCoors, elCoors] = bmAdminCompute( PsU, [AZU, ELU] );
-    %raw = 10*log10(raw);
-    %interpolated = 10*log10(interpolated);
-    if withSave
-        filesObject(k).fileCalls{a}.beam.coordinates = [azCoors,elCoors];
-        filesObject(k).fileCalls{a}.beam.leads = leads;
-        filesObject(k).fileCalls{a}.beam.raw = raw;
-        filesObject(k).fileCalls{a}.beam.interpolated = interpolated;
-        filesObject(k).fileCalls{a}.beam.micDirections = [AZ,EL];
-        filesObject(k).fileCalls{a}.beam.used = U;
-    end
-        
+    interpolated = calculateBeamInner(k,a,micsBeamUsage,AZ,EL,Pm,Pg,Pd,Ps,withSave);
 end
+

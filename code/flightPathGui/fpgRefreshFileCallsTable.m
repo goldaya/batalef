@@ -5,12 +5,17 @@ function [  ] = fpgRefreshFileCallsTable(  )
     k = fpgGetCurrent();
     handles = fpgGetHandles();
     
+    N = fileData(k,'Channels','Count');
     n = fileData(k, 'Calls', 'Count');
-    D = cell(n,3);
+    D = cell(n,2+N);
+    
     for a = 1:n
         D{a,1} = fileCallData(k, a, 'Time');
         D{a,2} = strcat('[',seq2string(fileCallData(k, a, 'Location')),']');
-        D{a,3} = seq2string(fileCallData(k, a, 'ChannelCalls'));
+        seq = fileCallData(k, a, 'ChannelCalls');
+        for j = 1:N
+            D{a,2+j} = seq(j);
+        end
     end
     
     set(handles.uitabFileCalls, 'Data', D);
