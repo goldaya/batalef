@@ -32,19 +32,19 @@ function bmgCreateTable( fig )
     
     % Power at mic
     uitabColNames{4}    = 'P. at mic';
-    uitabColEditable(4) = 1;
+    uitabColEditable(4) = 0;
     uitabColFormats{4}  = 'numeric';
     uitabColWidths{4}   = 70;    
     
     % Power after gain compensation
     uitabColNames{5}    = 'P. after gain';
-    uitabColEditable(5) = 1;
+    uitabColEditable(5) = 0;
     uitabColFormats{5}  = 'numeric';
     uitabColWidths{5}   = 70;    
     
     % Power after directionality
     uitabColNames{6}    = 'P. after direct.';
-    uitabColEditable(6) = 1;
+    uitabColEditable(6) = 0;
     uitabColFormats{6}  = 'numeric';
     uitabColWidths{6}   = 70;    
     

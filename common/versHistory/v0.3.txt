@@ -7,3 +7,11 @@ Beam:
    raw matrix, interpolated matrix)
  - added Beam Manipulation GUI which shows all the (non matrix) data above
    plus directions of mics and usage, accepts changes and recompute beam.
+
+0.3.1
+Show Raw
+ - flipped Y direction (?)
+ - added mic numbers
+
+Export
+ - fixed a bug when exporting again to the same file

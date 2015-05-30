@@ -29,6 +29,10 @@ function [ fca ] = exportFileObject( K, withRawData )
     if ~ischar(name)
         return; % aborted
     end
+    
+    % get var name
+    [~,name,ext] = fileparts(name);
+    
     % check variable exists in base workspace
     try
         evalin('base',name);
@@ -51,6 +55,7 @@ function [ fca ] = exportFileObject( K, withRawData )
         end
     end
     
+    %{
     % get variable name
     dotes = strfind(name,'.');
     if max(size(dotes)) > 1
@@ -64,21 +69,13 @@ function [ fca ] = exportFileObject( K, withRawData )
     else
         var = name(1:dotes-1);
     end
+    %}
     
     % assign to variable in base workspace
-    assignin('base',var,fca);
+    assignin('base',name,fca);
     
     % save to file    
-    save(strcat(path,name),'fca');
+    save(strcat(path,name,ext),'fca');
     
-    %{
-    V = inputdlg('Assign data to variable:');
-    if ~isempty(V)
-        var = V{1};
-        assignin('base', var, fca);
-        disp(' ');
-        disp(strcat(['  ',var,' is now cell array with file objects']))
-    end
-    %}
 end
 

@@ -59,7 +59,12 @@ function [ out1 ] = fileCallData( k, a, par, varargin )
             end
             
         case 'Beam'
-            switch varargin{1}
+            if isempty(varargin)
+                p2 = 'All';
+            else
+                p2 = varargin{1};
+            end
+            switch p2
                 case {'Int','Interpolated'}
                     out1 = filesObject(k).fileCalls{a}.beam.interpolated;
                     
@@ -77,6 +82,9 @@ function [ out1 ] = fileCallData( k, a, par, varargin )
                
                 case 'All'
                     out1 = filesObject(k).fileCalls{a}.beam;
+                
+                otherwise
+                    throwup();
             end
     end
     
