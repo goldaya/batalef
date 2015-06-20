@@ -1,18 +1,20 @@
-function [  ] = createFileObject( n, path, name, rawData, spectralData, fileCalls, channels, mics )
+function [  ] = createFileObject( n, fullname, rawData, spectralData, fileCalls, channels, mics )
 %CREATEFILEOBJECT Summary of this function goes here
 %   rawData = [ channelsData, Fs ]
     
     global filesObject;
     
-    if ~( exist('path', 'var') && exist('name', 'var') )
+    if ~exist('fullname', 'var') 
         err = MException( 'bats:files:addFile', 'No path or no filename');
         throw( err );
     end
     
-    filesObject(n).selected = false;
-    filesObject(n).path = path;
-    filesObject(n).name = name;
-    filesObject(n).fullname = strcat( path, name);
+    filesObject(n).selected  = false;
+    [path,naked,ext] = fileparts(fullname);
+    filesObject(n).path      = strcat( path, filesep() );
+    filesObject(n).name      = strcat(naked,ext);
+    filesObject(n).naked     = naked;
+    filesObject(n).extension = ext;
     
     % raw data (basic data) + channels
     if ( exist('rawData', 'var') && ~isempty(rawData) )

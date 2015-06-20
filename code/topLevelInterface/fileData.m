@@ -32,6 +32,12 @@ function [ out, add1 ] = fileData( k, par, varargin )
         case 'Fullpath'
             out = strcat(filesObject(k).path, filesObject(k).name);
         
+        case 'Extension'
+            out = filesObject(k).extension;
+        
+        case 'NakedName'
+            out = filesObject(k).naked;
+            
         case 'Fs'
             out = filesObject(k).rawData.Fs;
         

@@ -612,3 +612,9 @@ mgFunctionsOff();
 % --------------------------------------------------------------------
 function fcGetBeamsDataMenuItem_Callback(hObject, eventdata, handles)
 mgGetFileCallsBeamsData();
+
+
+% --------------------------------------------------------------------
+function createSecondaryFileMenuItem_Callback(hObject, eventdata, handles)
+createSecondaryFile(mgResolveFilesToWork());
+mgRefreshFilesTable();

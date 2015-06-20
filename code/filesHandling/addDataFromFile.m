@@ -27,9 +27,9 @@ function addDataFromFile( path, filename )
         n = length(filesObject) + 1 ;
     end
     
-    
-    rawData = readRawDataFromFile(strcat( path, filename ),getParam('rawData:loadWithMatrix'));
-    createFileObject( n, path, filename, rawData );
+    fullpath = strcat( path, filename );
+    rawData = readRawDataFromFile(fullpath,getParam('rawData:loadWithMatrix'));
+    createFileObject( n, fullpath, rawData );
     
 end
 
