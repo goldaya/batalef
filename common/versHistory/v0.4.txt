@@ -1,3 +1,7 @@
 Added secondary files optionality
  - create secondary file (a file with the calls cut out) from the main gui
    through TS operations -> create secondary file.
+
+0.4.1
+ - bugs
+ - secondary files buffer

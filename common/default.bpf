@@ -77,6 +77,7 @@ ridge:basic:finterval float 10000.000000
 ridge:basic:specWindow float 30.000000 
 ridge:basic:specOverlap float 7.000000 
 ridge:basic:specNfft float 512.000000 
+secondaryFiles:buffer float 10
 soundSpeed float 343.000000 
 spectral:method integer 13.000000 
 spectral:stft:window float 30.000000 

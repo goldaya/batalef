@@ -10,6 +10,7 @@ function [  ] = createFileObject( n, fullname, rawData, spectralData, fileCalls,
     end
     
     filesObject(n).selected  = false;
+    filesObject(n).fullname  = fullname;
     [path,naked,ext] = fileparts(fullname);
     filesObject(n).path      = strcat( path, filesep() );
     filesObject(n).name      = strcat(naked,ext);

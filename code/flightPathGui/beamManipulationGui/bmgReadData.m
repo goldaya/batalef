@@ -4,7 +4,7 @@ function [  ] = bmgReadData(  )
 
     global control;
     
-    beam = fileCallData(1,1,'Beam','All');
+    beam = fileCallData(control.bmg.k,control.bmg.a,'Beam','All');
     U  = beam.micsUsed;
     A  = beam.micDirections(:,1);
     E  = beam.micDirections(:,2);
