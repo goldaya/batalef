@@ -11,8 +11,8 @@ function [ newTS ] = createSecondaryTS( k )
     
     for j = 1:N
         TS = channelData(k,j,'TS');
-        starts = round(cell2mat((channelData(k,j,'Calls','ForLocalization','Times','Start'))*buffer).*Fs);
-        ends   = round(cell2mat((channelData(k,j,'Calls','ForLocalization','Times','End'  ))*buffer).*Fs);
+        starts = round((cell2mat(channelData(k,j,'Calls','ForLocalization','Times','Start'))-buffer).*Fs);
+        ends   = round((cell2mat(channelData(k,j,'Calls','ForLocalization','Times','End'  ))+buffer).*Fs);
         for i = 1:length(starts)
             TS(starts(i):ends(i)) = zeros(ends(i)-starts(i)+1,1);
         end
