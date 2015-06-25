@@ -5,3 +5,6 @@ Added secondary files optionality
 0.4.1
  - bugs
  - secondary files buffer
+
+0.4.2
+ - ask for secondary files buffer before execution
