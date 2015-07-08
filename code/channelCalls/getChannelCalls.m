@@ -12,10 +12,16 @@ function [ out1, out2, out3, out4 ] = getChannelCalls( k, j, varargin )
         switch par
             
             case 'Matrix'
+                if nargin == 1
+                    par2 = 'features';
+                else
+                    par2 = varargin{2};
+                end
                 channelCalls = filesObject(k).channels(j).calls;
                 if ~isempty(channelCalls)
                     detections = channelCalls.detection;
-                    features = cell2mat(channelCalls.features(:,1:12));
+                    matrix     = channelCalls.(par2);
+                    features   = cell2mat(matrix(:,1:12));
                     out1 = [features,detections];
                 else
                     out1 = [];

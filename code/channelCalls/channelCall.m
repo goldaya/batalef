@@ -146,31 +146,37 @@ classdef channelCall < handle
                 K = 1:appData('Files','Count');
             end
 
-            for k = 1:length(K)
+            for ik = 1:length(K)
                 % resolve channels to work on
-                N = fileData(K(k),'Channels','Count');
+                N = fileData(K(ik),'Channels','Count');
                 if ~exist('J','var') || isempty(J)
                     Jk = 1:N;
                 else
                     Jk = J(J<=N);
                 end
             
-                for j = 1:length(Jk)
+                for ij = 1:length(Jk)
                      
-                    Sn = channelData(K(k),Jk(j),'Calls','Count');
-                    calls = filesObject(K(k)).channels(Jk(j)).calls;
+                    Sn = channelData(K(ik),Jk(ij),'Calls','Count');
+                    calls = filesObject(K(ik)).channels(Jk(ij)).calls;
                     if isempty(M) % remove alll
+                        if ~isempty(calls.detection)
+                            me.removeReindexChannelCallsInFileCalls(K(ik),J(ij),1,length(calls.detection));
+                        end
                         calls.detection      = zeros(0,2);
                         calls.features        = cell(0,13);
                         calls.forLocalization = cell(0,13);
                         calls.forBeam         = cell(0,13);
-                        
+                                                
                     elseif size(M,2) == 1 % by index
                         I = M(M<Sn);
                         calls.detection(I,:)       = [];
                         calls.features(I,:)        = [];
                         calls.forLocalization(I,:) = [];
                         calls.forBeam(I,:)         = [];
+                        for i=1:length(I)
+                            me.removeReindexChannelCallsInFileCalls(K(ik),J(ij),I(i),1);
+                        end
                         
                     elseif size(M,2) == 2 % between times
                         I = 1:Sn;
@@ -178,16 +184,27 @@ classdef channelCall < handle
                         calls.detection(I,:)       = [];
                         calls.features(I,:)        = [];
                         calls.forLocalization(I,:) = [];
-                        calls.forBeam(I,:)         = [];                        
+                        calls.forBeam(I,:)         = [];
+                        
+                        if ~isempty(I)
+                            me.removeReindexChannelCallsInFileCalls(K(ik),J(ij),I(1),length(I));
+                        end
                     
                     end
-                    filesObject(K(k)).channels(Jk(j)).calls = calls;
+                    filesObject(K(ik)).channels(Jk(ij)).calls = calls;
                 
                 end
 
             end
         end
         
+        % Remove & reindex the channel calls in a file call
+        function removeReindexChannelCallsInFileCalls(k,j,s,n)
+            for a = 1:fileData(k,'Calls','Count')
+                call = fileCall(k,a);
+                call.changeChannelCallsAfterRemoval(j,s,n)
+            end            
+        end
     end
     
     methods (Hidden = true)
@@ -347,17 +364,8 @@ classdef channelCall < handle
         end
 
         function remove(me)
-            % handle file calls. to be developed
-            %{
-            % remove file call associated with this channel call
-            if me.FileCall ~= 0
-                deleteFileCall(me.k,me.FileCall);
-                % should change this after developing file calls objects
-            end
-            
-            % reindex later channel calls in file calls
-            % to be developed after file call objects.
-            %}
+            % handle file calls
+            me.removeReindexChannelCallsInFileCalls(me.k,me.j,me.s,1)
             
             % remove call from global structure, by call index
             global filesObject;
