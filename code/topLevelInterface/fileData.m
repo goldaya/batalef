@@ -199,8 +199,9 @@ function [ out, add1 ] = fileData( k, par, varargin )
                     n = length(filesObject(k).fileCalls);
                     out = cell(n,1);
                     for a=1:n
-                        out{a} = fileCallData(k,a,'Data');
+                        out{a} = fileCallData(k,a,'Data','NoValidation',true);
                     end
+                    add1 = n;
             end
             
         case 'Call'

@@ -57,6 +57,7 @@ peaks:manual:window:time float 10.000000
 peaks:manual:window:value float 0.100000 
 peaks:thresholdValue float 0.100000 
 peaks:thresholdPercentile float 95.000000 
+peaks:fixedThreshold float 0
 peaks:usePercentileThreshold integer 1.000000 
 peaks:showThreshold integer 1.000000 
 peaks:minDistance integer 20.000000 

@@ -1,0 +1,8 @@
+Added TS manipulations:
+ - Trimming the beginning and end of the file
+ - Padding the beginning and end of the file
+ - Saving the TS to a wav file
+
+Peak detection:
+ - removed popup after each file in piecewise peak detection
+ - added fixed threshold (envelope value)

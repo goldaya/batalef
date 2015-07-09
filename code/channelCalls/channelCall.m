@@ -128,13 +128,17 @@ classdef channelCall < handle
             
         end
         
-        function removeCalls(K,J,M)
+        function deleted = removeCalls(K,J,M,testrun)
             % M == []        -> remove all calls
             % size(M,2) == 1 -> vector of indexes of calls to remove
             % size(M,2) == 2 -> time interval to clear of calls
             
             
             global filesObject;
+            if ~exist('testrun','var')
+                testrun = false;
+            end
+            deleted = false;
             
             % resolve calls
             if ~exist('M','var')
@@ -161,7 +165,11 @@ classdef channelCall < handle
                     calls = filesObject(K(ik)).channels(Jk(ij)).calls;
                     if isempty(M) % remove alll
                         if ~isempty(calls.detection)
-                            me.removeReindexChannelCallsInFileCalls(K(ik),J(ij),1,length(calls.detection));
+                            deleted = true;
+                            if testrun
+                                return;
+                            end
+                            channelCall.removeReindexChannelCallsInFileCalls(K(ik),Jk(ij),1,length(calls.detection));
                         end
                         calls.detection      = zeros(0,2);
                         calls.features        = cell(0,13);
@@ -174,8 +182,14 @@ classdef channelCall < handle
                         calls.features(I,:)        = [];
                         calls.forLocalization(I,:) = [];
                         calls.forBeam(I,:)         = [];
+                        if ~isempty(I)
+                            deleted = true;
+                            if testrun
+                                return;
+                            end
+                        end
                         for i=1:length(I)
-                            me.removeReindexChannelCallsInFileCalls(K(ik),J(ij),I(i),1);
+                            channelCall.removeReindexChannelCallsInFileCalls(K(ik),Jk(ij),I(i),1);
                         end
                         
                     elseif size(M,2) == 2 % between times
@@ -187,7 +201,11 @@ classdef channelCall < handle
                         calls.forBeam(I,:)         = [];
                         
                         if ~isempty(I)
-                            me.removeReindexChannelCallsInFileCalls(K(ik),J(ij),I(1),length(I));
+                            deleted = true;
+                            if testrun
+                                return;
+                            end
+                            channelCall.removeReindexChannelCallsInFileCalls(K(ik),Jk(ij),I(1),length(I));
                         end
                     
                     end

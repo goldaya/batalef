@@ -1,4 +1,4 @@
-function [  ] = pdPiecewise( k,I,percentile,minDistance,channel,filter,replace )
+function [  ] = pdPiecewise( k,I,percentile,fixedThreshold,minDistance,channel,filter,replace )
 %PDPIECEWISE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -23,7 +23,7 @@ function [  ] = pdPiecewise( k,I,percentile,minDistance,channel,filter,replace )
             
             for i = 1:size(I,1)
                 dataset = channelData(k,j,'Envelope','Interval',I(i,:),'Filter',filter);
-                threshold = prctile(dataset,percentile);
+                threshold = max(prctile(dataset,percentile),fixedThreshold);
                 peaks = pdBasicCore(dataset, Fs, threshold, minDistance,0);
                 peaks.points = peaks.points + I(i,1) - 1;
                 peaks.times = peaks.points ./ Fs;
@@ -32,7 +32,7 @@ function [  ] = pdPiecewise( k,I,percentile,minDistance,channel,filter,replace )
         end
     end
     
-    msgbox('Finished calls detection');
+    
     
 end
 

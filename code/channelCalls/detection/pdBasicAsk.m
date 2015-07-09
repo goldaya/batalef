@@ -1,4 +1,4 @@
-function [ do, percentile, minDistance, replace, channel, filter ] = pdBasicAsk(  )
+function [ do, percentile, minDistance, replace, channel, filter, fixedThreshold ] = pdBasicAsk(  )
 %PDBASICASK Get basic peak detectin parameters from user
 
 
@@ -16,27 +16,35 @@ function [ do, percentile, minDistance, replace, channel, filter ] = pdBasicAsk(
     Q{1} = 'Percentile';
     D{1} = num2str(getParam('peaks:percentile'));
     
-    Q{2} = 'Minimal distance between peaks (msec)';
-    D{2} = num2str(getParam('peaks:minDistance'));
-    
-    Q{3} = 'Filter (No/Butter/Function/Builder)';
-    switch getParam('peaks:filter')
-        case c.butter
-            D{3} = 'Butter';
-        case c.function
-            D{3} = 'Function';
-        case c.builder
-            D{3} = 'Builder';
-        otherwise
-            D{3} = 'No';
+    Q{2} = 'Fixed threshold (No/<value>)';
+    fixedThreshold = getParam('peaks:fixedThreshold');
+    if fixedThreshold == 0
+        D{2} = 'No';
+    else
+        D{2} = num2str(fixedThreshold);
     end
     
-    Q{4} = 'Channels to work on. Could be a single index or " All " ';
-    D{4} = 'All';
+    Q{3} = 'Minimal distance between peaks (msec)';
+    D{3} = num2str(getParam('peaks:minDistance'));
+    
+    Q{4} = 'Filter (No/Butter/Function/Builder)';
+    switch getParam('peaks:filter')
+        case c.butter
+            D{4} = 'Butter';
+        case c.function
+            D{4} = 'Function';
+        case c.builder
+            D{4} = 'Builder';
+        otherwise
+            D{4} = 'No';
+    end
+    
+    Q{5} = 'Channels to work on. Could be a single index or " All " ';
+    D{5} = 'All';
     
 
-    Q{5} = 'New peaks: Replace/Add';
-    D{5} = 'Replace';
+    Q{6} = 'New peaks: Replace/Add';
+    D{6} = 'Replace';
 
     
     ready = false;
@@ -49,7 +57,7 @@ function [ do, percentile, minDistance, replace, channel, filter ] = pdBasicAsk(
             return;
         end
     
-        switch A{5}
+        switch A{6}
             case 'Replace'
                 replace = true;
             case 'Add'
@@ -60,7 +68,7 @@ function [ do, percentile, minDistance, replace, channel, filter ] = pdBasicAsk(
                 continue;
         end
         
-        switch A{3}
+        switch A{4}
             case 'No'
                 filter = [];
                 filterType = c.no;
@@ -101,14 +109,14 @@ function [ do, percentile, minDistance, replace, channel, filter ] = pdBasicAsk(
                 continue;
         end
         
-        if strcmp(A{4},'All')
+        if strcmp(A{5},'All')
             channel = 'All';
-        elseif isnan(str2double(A{4}))
+        elseif isnan(str2double(A{5}))
             title = 'Peak Detection - Wrong channel specification';
             D = A;
             continue;
         else
-            channel = str2double(A{4});
+            channel = str2double(A{5});
         end
         
         ready = true;
@@ -117,7 +125,12 @@ function [ do, percentile, minDistance, replace, channel, filter ] = pdBasicAsk(
     
     do = true;
     percentile = str2double(A{1});
-	minDistance = str2double(A{2}); 
+	minDistance = str2double(A{3});
+    if strcmp(A{2},'No')
+        fixedThreshold = 0;
+    else
+        fixedThreshold = str2double(A{2});
+    end
     
     
     % keep values
@@ -127,6 +140,7 @@ function [ do, percentile, minDistance, replace, channel, filter ] = pdBasicAsk(
     setParam('peaks:filter',filterType);
     setParam('peaks:percentile',percentile);
     setParam('peaks:minDistance',minDistance);
+    setParam('peaks:fixedThreshold',fixedThreshold);
     
 end
 

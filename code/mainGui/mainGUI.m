@@ -618,3 +618,18 @@ mgGetFileCallsBeamsData();
 function createSecondaryFileMenuItem_Callback(hObject, eventdata, handles)
 createSecondaryFile(mgResolveFilesToWork());
 mgRefreshFilesTable();
+
+
+% --------------------------------------------------------------------
+function rdatatrimMenuItem_Callback(hObject, eventdata, handles)
+mgTrimTS(mgResolveFilesToWork());
+
+
+% --------------------------------------------------------------------
+function rdataPadMenuItem_Callback(hObject, eventdata, handles)
+mgPadTS(mgResolveFilesToWork());
+
+
+% --------------------------------------------------------------------
+function Untitled_2_Callback(hObject, eventdata, handles)
+writeWavFile(mgResolveFilesToWork());

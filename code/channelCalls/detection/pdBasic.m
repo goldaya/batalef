@@ -6,7 +6,7 @@ function [ cancel ] = pdBasic( K )
         return;
     end
     
-    [do, percentile, minDistance, replace, channel, filter] = pdBasicAsk();
+    [do, percentile, minDistance, replace, channel, filter, fixedThreshold] = pdBasicAsk();
     if ~do
         return;
     end
@@ -30,7 +30,7 @@ function [ cancel ] = pdBasic( K )
             if validateFileChannelIndex(k,j,true)
                 Fs = channelData(k,j,'Fs');
                 dataset = channelData(k,j,'Envelope','Filter',filter);
-                threshold = prctile(dataset,percentile);
+                threshold = max(prctile(dataset,percentile),fixedThreshold);
                 peaks = pdBasicCore(dataset, Fs, threshold, minDistance,0);
                 addChannelCalls(k,j,[peaks.times,peaks.values],replace);
             end

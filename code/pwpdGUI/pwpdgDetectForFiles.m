@@ -5,7 +5,7 @@ function [  ] = pwpdgDetectForFiles(  )
     global control;
     
     control.status = 'Piecewise peak detection';
-    [do, percentile, minDistance, replace, channel, filter] = pdBasicAsk();
+    [do, percentile, minDistance, replace, channel, filter, fixedThreshold] = pdBasicAsk();
     
     if ~do
         control.status = 'Idle';
@@ -17,7 +17,7 @@ function [  ] = pwpdgDetectForFiles(  )
     if ~isempty(K)
         for i = 1:length(K)
             I = pwpdgSetIntervals(K(i));
-            pdPiecewise(K(i),I,percentile, minDistance, channel, filter, replace);
+            pdPiecewise(K(i),I,percentile,fixedThreshold, minDistance, channel, filter, replace);
         end
     end
     
