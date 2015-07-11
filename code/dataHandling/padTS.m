@@ -5,7 +5,12 @@ function padTS( k,delta, atStart, atEnd, randomNoise )
     
     % random noise not yet supported
     
+    % make sure there is a dataset
+    if isempty(filesObject(k).rawData.data)
+        refreshRawData( k, true );
+    end
     
+    % pad
     rawData = filesObject(k).rawData;
     pointsDelta = round(delta * rawData.Fs);
     Z = zeros(pointsDelta,size(rawData.data,2));
@@ -15,7 +20,7 @@ function padTS( k,delta, atStart, atEnd, randomNoise )
         for j = 1:fileData(k,'Channels','Count')
             channelCallsRetime(k,j,delta,false);
         end
-        fileCallsRetime( k, delta, false )
+        fileCallsRetime( k, delta, false );
     end
     
     if atEnd
@@ -23,6 +28,7 @@ function padTS( k,delta, atStart, atEnd, randomNoise )
         rawData.nSamples = rawData.nSamples + pointsDelta;
     end
     
+    rawData.status = 'Altered';
     filesObject(k).rawData = [];
     filesObject(k).rawData = rawData;
     

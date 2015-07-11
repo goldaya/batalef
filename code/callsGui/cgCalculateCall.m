@@ -3,6 +3,7 @@ function [call, dataset, T] = cgCalculateCall( dataset, forcedBoundries )
 %stuff
 
     global control;
+
     [k,j,s,t] = cgGetCurrent;
     handles   = cgGetHandles();
     

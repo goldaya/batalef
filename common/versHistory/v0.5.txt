@@ -6,3 +6,6 @@ Added TS manipulations:
 Peak detection:
  - removed popup after each file in piecewise peak detection
  - added fixed threshold (envelope value)
+
+0.5.1
+ - fixed bug with padding

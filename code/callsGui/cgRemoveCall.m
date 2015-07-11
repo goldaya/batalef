@@ -13,7 +13,7 @@ function cgRemoveCall( allChannels )
     
     % refresh display
     cgInitIndexes();
-    cgShowCall();
+    cgShowCall(false);
     
     % refresh main gui display
     mgRefreshChannelCallsDisplay();

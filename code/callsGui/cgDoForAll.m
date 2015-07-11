@@ -3,7 +3,7 @@ function [  ] = cgDoForAll( K, J )
 %   Detailed explanation goes here
 
     global control;
-    
+%     global test;
     handles = cgGetHandles();
     [~,~,~,t] = cgGetCurrent;
     
@@ -21,7 +21,7 @@ function [  ] = cgDoForAll( K, J )
     endThreshold   = str2double(get(handles.textEndDiff,  'String'));
     gapTolerance = str2double(get(handles.textGap, 'String'))/1000;
 
-    
+%     test = cell(12,1);
     for k = 1:length(K)
         if isempty(J)
             Jbar = 1:fileData(K(k),'Channels','Count');
@@ -30,6 +30,7 @@ function [  ] = cgDoForAll( K, J )
             Jbar = J(J<=nChannels);
         end
         for j = 1:length(Jbar)
+            SS = zeros(channelData(K(k),Jbar(j),'Calls','Count'),2);
             
             % get un/filtered TS for channel
             dataset = channelData(K(k),Jbar(j),'TS','Filter',control.cg.filter);
@@ -40,14 +41,19 @@ function [  ] = cgDoForAll( K, J )
                 if ~call.Saved || overwrite
                     window = [call.DetectionTime-dt/2, call.DetectionTime+dt/2];
                     wip = channelCall.inPoints(call, window);
-                    call = channelCallAnalyze(K(k),Jbar(j),s,t,window,dataset(wip(1):wip(2)),[],startThreshold,endThreshold,gapTolerance,[],true,true);
+%                     tic;
+                    [call] = channelCallAnalyze(K(k),Jbar(j),s,t,window,dataset(wip(1):wip(2)),[],startThreshold,endThreshold,gapTolerance,[],true,true);
+%                     SS(s,1) = toc;
+%                     tic;
+%                     [call] = channelCallAnalyze_new(K(k),Jbar(j),s,t,window,dataset(wip(1):wip(2)),[],startThreshold,endThreshold,gapTolerance,[],true,true);
+%                     SS(s,2) = toc;
                     ok = cgSave(call, handles);
                     if ~ok
                         return;
                     end
                 end
             end
-            
+            test{j} = SS;
         end
     end
     
