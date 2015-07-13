@@ -1,8 +1,8 @@
-function [  ] = somAdminMethodSelectedInternal( newMethod, noDialog )
+function [  ] = somAdminMethodSelectedInternal( newMethod, noDialog, handleGui )
 %SOMADMINMETHODSELECTED 
 
     global control;
-    handles = mgGetHandles();
+    
     
     
     spectrogramMethods;
@@ -12,21 +12,27 @@ function [  ] = somAdminMethodSelectedInternal( newMethod, noDialog )
     
     if ~exist('noDialog', 'var')
         noDialog = false;
+    end 
+    if ~exist('handleGui', 'var')
+        handleGui = true;
     end    
+    
     [parstruct, userAbort] = defMethodsParamsDialog( m{newMethod}{3}, m{newMethod}{1}, noDialog );
     if userAbort
         return;
     end
     
-    methodsui = get(handles.defMethodsSpectrogramMenu, 'Children');
-    defmMethodSelected(methodsui, newMethod);
-    try
-        [~,menuH] = cgGetHandles('defMethodsSpectrogramMenu');
-        cgmethodsui =  get(menuH, 'Children');
-        defmMethodSelected(cgmethodsui, newMethod);
-    catch
+    if handleGui
+        handles = mgGetHandles();
+        methodsui = get(handles.defMethodsSpectrogramMenu, 'Children');
+        defmMethodSelected(methodsui, newMethod);
+        try
+            [~,menuH] = cgGetHandles('defMethodsSpectrogramMenu');
+            cgmethodsui =  get(menuH, 'Children');
+            defmMethodSelected(cgmethodsui, newMethod);
+        catch
+        end
     end
-    
         
     control.spectrogram.method = newMethod;
     control.spectrogram.params = parstruct;

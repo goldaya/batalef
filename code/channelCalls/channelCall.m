@@ -70,11 +70,23 @@ classdef channelCall < handle
             end
         end
         
-        function val = inPoints(obj,time)
+        function val = inPoints(obj,time,relaxed)
             % translate time coordinate into points coordinate
             % (approximation)
             channelCall.validateClass(obj);
             val = round(time.*obj.Fs);
+            if ~exist('relaxed','var')
+                relaxed = false;
+            end
+            if ~relaxed
+                if val(1) < 1
+                    val(1) = 1;
+                end
+                if val(2) > fileData(obj.FileIdx,'nSamples');
+                    val(2) = fileData(obj.FileIdx,'nSamples');
+                end
+            end
+            
         end
         
         function val = inTime(obj,points)

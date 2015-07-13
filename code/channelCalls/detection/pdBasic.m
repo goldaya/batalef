@@ -1,4 +1,4 @@
-function [ cancel ] = pdBasic( K )
+function [ cancel ] = pdBasic( K, dialog )
 %PDBASIC Detect calls using peak detection
 
     cancel = true;
@@ -6,7 +6,11 @@ function [ cancel ] = pdBasic( K )
         return;
     end
     
-    [do, percentile, minDistance, replace, channel, filter, fixedThreshold] = pdBasicAsk();
+    if ~exist('dialog','var')
+        dialog = true;
+    end
+    
+    [do, percentile, minDistance, replace, channel, filter, fixedThreshold] = pdBasicAsk(dialog);
     if ~do
         return;
     end
@@ -18,7 +22,7 @@ function [ cancel ] = pdBasic( K )
         k = K(i);
         
         % determine channels
-        if ischar(channel) % then must be 'All'
+        if ischar(channel) || channel == 0 % then must be 'All'
             J = 1:fileData(k,'Channels','Count');
         else
             J = channel;

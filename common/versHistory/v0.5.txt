@@ -9,3 +9,7 @@ Peak detection:
 
 0.5.1
  - fixed bug with padding
+
+0.5.2
+ - fixed a bug: when a call was very close to 0 or end of file, the window
+   around it in FE was out of boundry.

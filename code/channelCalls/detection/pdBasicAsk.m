@@ -1,4 +1,4 @@
-function [ do, percentile, minDistance, replace, channel, filter, fixedThreshold ] = pdBasicAsk(  )
+function [ do, percentile, minDistance, replace, channel, filter, fixedThreshold ] = pdBasicAsk( dialog )
 %PDBASICASK Get basic peak detectin parameters from user
 
 
@@ -46,7 +46,7 @@ function [ do, percentile, minDistance, replace, channel, filter, fixedThreshold
     Q{6} = 'New peaks: Replace/Add';
     D{6} = 'Replace';
 
-    
+    if dialog
     ready = false;
     title = 'Peak Detection';
     while ~ready
@@ -121,6 +121,16 @@ function [ do, percentile, minDistance, replace, channel, filter, fixedThreshold
         
         ready = true;
         
+    end
+    else
+        A = D;
+        filterType = getParam('filter:butter:type');
+        if filterType == c.butter
+            filter.method = c.butter;
+            filter.f1 = num2str(getParam('filter:butter:f1'));
+            filter.f2 = num2str(getParam('filter:butter:f2'));
+            filter.order = num2str(getParam('filter:butter:order'));  
+        end        
     end
     
     do = true;
