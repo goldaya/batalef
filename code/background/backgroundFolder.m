@@ -103,7 +103,7 @@ function [  ] = backgroundFolder(audiopath, bat, configfile)
   output_str = sprintf('Writing output to: %s', output_file);
   disp(output_str);
   global filesObject;
-  save(output_file, 'filesObject');
+  save(output_file, 'filesObject','-v7.3');
   total_time = (cputime - starttime) / 60.0;
   output_str = sprintf('Job has completed in %f minutes.', total_time);
   disp(output_str);

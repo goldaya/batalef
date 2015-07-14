@@ -5,7 +5,7 @@ function [ idx ] = addFileCall( k, channelCalls )
     global filesObject;
 
     MicPositions = fileData(k, 'Mics','Positions');
-    channelCallsTimes = seqChannelCallsTimes( k, channelCalls );
+    channelCallsTimes = seqChannelCallsTimes( k, channelCalls, 'forLocalization' );
     
     % approximate time of call and position
     [t, x] = approxCallTimeLocation(channelCallsTimes, MicPositions);

@@ -1,2 +1,7 @@
 Background processing
  - Specifically for Edward: only peak detection and FE for features
+
+v0.6.1 - bugs:
+ - in localization, the times were taken from the 'features' data instead
+   of the 'forLocalization' data
+ - filter in the FE gui: the envelope was shown pre-filtered
