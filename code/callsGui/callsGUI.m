@@ -615,7 +615,7 @@ switch v
             control.cg.filter.method = c.butter;            
         end
 end
-cgShowCall(false);
+cgShowCall(true);
 
 
 % --- Executes during object creation, after setting all properties.
