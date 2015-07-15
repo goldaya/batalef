@@ -13,7 +13,7 @@
 %%
 %% Then submit it with 'qsub scriptname.sh'
 
-function [  ] = backgroundFolder(audiopath, bat, configfile, secondaryConfigfile)
+function [  ] = backgroundFolder(audiopath, bat, configfile, createSecondaryFiles, secondaryConfigfile, matrixOutputOnly)
   %BACKGROUNDFOLDER 
   % init batalef structures
   audiopath = strcat(audiopath, filesep());
@@ -90,7 +90,8 @@ function [  ] = backgroundFolder(audiopath, bat, configfile, secondaryConfigfile
   disp(output_str);
   
   % secondary files
-  if logical(getParam('background:createSecondaryFiles'))
+  %if logical(getParam('background:createSecondaryFiles'))
+  if createSecondaryFiles
       disp('---Secondary Files---');
       secParFile = dir(secondaryConfigfile);
       if isempty(secParFile)
@@ -134,6 +135,7 @@ function [  ] = backgroundFolder(audiopath, bat, configfile, secondaryConfigfile
   end
   
   % Output
+  %{
   switch getParam('background:outputType')
       case 1 % the whole file structure
           disp('Output Type: whole data structure')
@@ -159,6 +161,32 @@ function [  ] = backgroundFolder(audiopath, bat, configfile, secondaryConfigfile
              output_str = sprintf('%d/%d, %d.', k, nK, time_passed);
              disp(output_str);
           end
+  end
+  %}
+  
+  if matrixOutputOnly
+          disp('Output Type: channel calls matrices')
+          C = cell(nK,2);
+          for k=1:nK
+             elapsed = cputime;
+             C{k,1} = fileData(k,'Name'); 
+             C{k,2} = fileData(k,'Channels','Calls','Matrix');
+             time_passed = cputime - elapsed;
+             output_str = sprintf('%d/%d, %d.', k, nK, time_passed);
+             disp(output_str);
+          end      
+  else
+          disp('Output Type: whole data structure')
+          disp('Putting TS in export structures')
+          C = cell(nK,1);
+          for k = 1:nK
+            elapsed = cputime;	
+            refreshRawData( k, 1 );
+            time_passed = cputime - elapsed;
+            output_str = sprintf('%d/%d, %d.', k, nK, time_passed);
+            disp(output_str);
+            C{k} = filesObject(k);
+          end      
   end
   
   % Save to disk
