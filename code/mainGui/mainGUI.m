@@ -616,7 +616,7 @@ mgGetFileCallsBeamsData();
 
 % --------------------------------------------------------------------
 function createSecondaryFileMenuItem_Callback(hObject, eventdata, handles)
-createSecondaryFile(mgResolveFilesToWork());
+createSecondaryFile(mgResolveFilesToWork(),true,true,false);
 mgRefreshFilesTable();
 
 
@@ -633,3 +633,8 @@ mgPadTS(mgResolveFilesToWork());
 % --------------------------------------------------------------------
 function Untitled_2_Callback(hObject, eventdata, handles)
 writeWavFile(mgResolveFilesToWork());
+
+
+% --------------------------------------------------------------------
+function createSecondaryFileNoDialogMenuItem_Callback(hObject, eventdata, handles)
+createSecondaryFile(mgResolveFilesToWork(), true, true, true);

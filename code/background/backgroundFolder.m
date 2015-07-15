@@ -106,7 +106,7 @@ function [  ] = backgroundFolder(audiopath, bat, configfile, createSecondaryFile
       sumAdminMethodSelectedInternal(control.spectrum.method, true, false);      
       
       elapsed = cputime;
-      createSecondaryFile( K, false );
+      createSecondaryFile( K, true, false, false );
       sK = nK+1 : 2*nK;
       time_passed = cputime - elapsed;
       output_str = sprintf('created secondary files in %d seconds.', time_passed);

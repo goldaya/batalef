@@ -7,3 +7,4 @@ v0.6.1 - bugs:
  - filter in the FE gui: the envelope was shown pre-filtered
 
 v0.6.2 - background processing (edward)
+v0.6.3 - single shot secondary files creation

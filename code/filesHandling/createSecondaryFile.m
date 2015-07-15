@@ -1,8 +1,12 @@
-function createSecondaryFile( K, dialog )
+function createSecondaryFile( K, add, dialog, singleShot)
 %CREATESECONDARYFILE -INTERNAL- create a secondary file and load into app
 
     if ~exist('dialog','var')
         dialog = true;
+    end
+    
+    if ~exist('singleShot','var') || ~dialog
+        singleShot = false;
     end
 
     % ask for buffer 
@@ -16,6 +20,9 @@ function createSecondaryFile( K, dialog )
         if bufferParam ~= bufferUse
             setParam('secondaryFiles:buffer',bufferUse);
         end
+        if singleShot
+            path = uigetdir();
+        end
     else
         bufferUse = bufferParam;
     end
@@ -24,7 +31,9 @@ function createSecondaryFile( K, dialog )
     for i = 1:length(K)
         naked = fileData(K(i),'NakedName');
         ext   = fileData(K(i),'Extension');
-        path  = fileData(K(i),'Path');
+        if ~singleShot
+            path  = fileData(K(i),'Path');
+        end
         
         secFile = strcat(naked,'_secondary',ext);
         secFullPath = strcat(path,secFile);
@@ -37,10 +46,11 @@ function createSecondaryFile( K, dialog )
             secFullPath = strcat(path,fName);
         end
         Fs = fileData(K(i),'Fs');
-        fullpath = secFullPath;
         TS = createSecondaryTS( K(i), bufferUse/1000 );
         audiowrite( secFullPath, TS, Fs );
-        addDataFromFile( path, secFile );
+        if add
+            addDataFromFile( path, secFile );
+        end
     end
 
 end
