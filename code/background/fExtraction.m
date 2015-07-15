@@ -16,8 +16,8 @@ function [  ] = fExtraction( K )
     if logical(getParam('background:calls:filteredFE'))
         filterStr.method = c.butter; 
         filterStr.type = getParam('filter:butter:type');
-        filterStr.f1 = getParam('filter:butter:f1');
-        filterStr.f2 = getParam('filter:butter:f2');
+        filterStr.f1 = getParam('filter:butter:f1').*1000;
+        filterStr.f2 = getParam('filter:butter:f2').*1000;
         filterStr.order = getParam('filter:butter:order');
     else
         filterStr = [];
