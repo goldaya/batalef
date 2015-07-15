@@ -1,16 +1,23 @@
-function createSecondaryFile( K )
+function createSecondaryFile( K, dialog )
 %CREATESECONDARYFILE -INTERNAL- create a secondary file and load into app
+
+    if ~exist('dialog','var')
+        dialog = true;
+    end
 
     % ask for buffer 
     bufferParam = getParam('secondaryFiles:buffer');
-    A = inputdlg('Buffer size around each call (msec)','Creating Secondary Files',[1,50],{num2str(bufferParam)});
-    if isempty(A)
-        return;
-    end
-    
-    bufferUse = str2double(A{1});
-    if bufferParam ~= bufferUse
-        setParam('secondaryFiles:buffer',bufferUse);
+    if dialog
+        A = inputdlg('Buffer size around each call (msec)','Creating Secondary Files',[1,50],{num2str(bufferParam)});
+        if isempty(A)
+            return;
+        end    
+        bufferUse = str2double(A{1});
+        if bufferParam ~= bufferUse
+            setParam('secondaryFiles:buffer',bufferUse);
+        end
+    else
+        bufferUse = bufferParam;
     end
     
     
@@ -19,15 +26,21 @@ function createSecondaryFile( K )
         ext   = fileData(K(i),'Extension');
         path  = fileData(K(i),'Path');
         
-        secFile = strcat(path,naked,'_secondary',ext);
-        [name,path] = uiputfile(secFile);
-        if name
-            Fs = fileData(K(i),'Fs');
-            fullpath = strcat( path, name );
-            TS = createSecondaryTS( K(i), bufferUse/1000 );
-            audiowrite( fullpath, TS, Fs );
-            addDataFromFile( path, name );
+        secFile = strcat(naked,'_secondary',ext);
+        secFullPath = strcat(path,secFile);
+        if dialog
+            [fName,path] = uiputfile(secFullPath);
+            if ~fName
+                continue;
+            end
+            secFile = fName;
+            secFullPath = strcat(path,fName);
         end
+        Fs = fileData(K(i),'Fs');
+        fullpath = secFullPath;
+        TS = createSecondaryTS( K(i), bufferUse/1000 );
+        audiowrite( secFullPath, TS, Fs );
+        addDataFromFile( path, secFile );
     end
 
 end

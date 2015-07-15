@@ -13,7 +13,7 @@
 %%
 %% Then submit it with 'qsub scriptname.sh'
 
-function [  ] = backgroundFolder(audiopath, bat, configfile)
+function [  ] = backgroundFolder(audiopath, bat, configfile, secondaryConfigfile)
   %BACKGROUNDFOLDER 
   % init batalef structures
   audiopath = strcat(audiopath, filesep());
@@ -24,14 +24,15 @@ function [  ] = backgroundFolder(audiopath, bat, configfile)
   global control;
   initC();
   initB();
+  global filesObject;
   parFile = dir(configfile);
   if isempty(parFile)
     throw(MException('bats:backgroundRun:noParametersFileInFolder','There is no parameters file in working directory'));
   end
-  control.params.currentFile = parFile.name;
-  output_str = sprintf('The parameter file name is: %s', parFile.name);
+  control.params.currentFile = configfile;
+  output_str = sprintf('The parameter file name is: %s', configfile);
   disp(output_str);
-  loadParametersFile(parFile.name);
+  loadParametersFile(configfile);
   envmAdminMethodSelectedInternal(control.envelope.method, true, false);
   somAdminMethodSelectedInternal(control.spectrogram.method, true, false);
   sumAdminMethodSelectedInternal(control.spectrum.method, true, false);
@@ -85,25 +86,88 @@ function [  ] = backgroundFolder(audiopath, bat, configfile)
   elapsed = cputime;
   fExtraction(K); % Feature Extraction
   time_passed = cputime - elapsed;
-  output_str = sprintf('fExtraction took %d seconds, writing out the call matrix.', time_passed);
+  output_str = sprintf('fExtraction took %d seconds.', time_passed);
   disp(output_str);
-  % Output - Calls Matrix only
-  C = cell(nK,1);
-  for i = 1:nK
-    %elapsed = cputime;	
-    refreshRawData( i, 1 );
-    %{
-    C{i} = fileData(K(i),'Channels','Calls','Matrix');
-    time_passed = cputime - elapsed;
-    output_str = sprintf('%d/%d Extracting data %d.', i, nK, time_passed);
-    disp(output_str);
-    %}
+  
+  % secondary files
+  if logical(getParam('background:createSecondaryFiles'))
+      disp('---Secondary Files---');
+      secParFile = dir(secondaryConfigfile);
+      if isempty(secParFile)
+        throw(MException('bats:backgroundRun:noParametersFileInFolder','There is no secondary parameters file in working directory'));
+      end
+      control.params.currentFile = secondaryConfigfile;
+      output_str = sprintf('The parameter file name is: %s', secondaryConfigfile);
+      disp(output_str);
+      loadParametersFile(secondaryConfigfile);     
+      envmAdminMethodSelectedInternal(control.envelope.method, true, false);
+      somAdminMethodSelectedInternal(control.spectrogram.method, true, false);
+      sumAdminMethodSelectedInternal(control.spectrum.method, true, false);      
+      
+      elapsed = cputime;
+      createSecondaryFile( K, false );
+      sK = nK+1 : 2*nK;
+      time_passed = cputime - elapsed;
+      output_str = sprintf('created secondary files in %d seconds.', time_passed);
+      disp(output_str);
+      elapsed = cputime;
+      disp('Running pdBasic on secondary files')
+      pdBasic(sK,false);
+      time_passed = cputime - elapsed;
+      output_str = sprintf('pdBasic took %d seconds, starting feature extraction.', time_passed);
+      disp(output_str);
+      fExtraction(K); % Feature Extraction
+      time_passed = cputime - elapsed;
+      output_str = sprintf('fExtraction took %d seconds.', time_passed);
+      disp(output_str);     
+      disp('---Ended secondary files processing---');
+      nK = 2*nK;
+      
+      % restore main parameter environment
+      control.params.currentFile = parFile.name;
+      output_str = sprintf('The parameter file name is: %s', parFile.name);
+      disp(output_str);
+      loadParametersFile(parFile.name);
+      envmAdminMethodSelectedInternal(control.envelope.method, true, false);
+      somAdminMethodSelectedInternal(control.spectrogram.method, true, false);
+      sumAdminMethodSelectedInternal(control.spectrum.method, true, false);      
   end
+  
+  % Output
+  switch getParam('background:outputType')
+      case 1 % the whole file structure
+          disp('Output Type: whole data structure')
+          disp('Putting TS in export structures')
+          C = cell(nK,1);
+          for k = 1:nK
+            elapsed = cputime;	
+            refreshRawData( k, 1 );
+            time_passed = cputime - elapsed;
+            output_str = sprintf('%d/%d, %d.', k, nK, time_passed);
+            disp(output_str);
+            C{k} = filesObject(k);
+          end
+   
+      case 2
+          disp('Output Type: channel calls matrices')
+          C = cell(nK,2);
+          for k=1:nK
+             elapsed = cputime;
+             C{k,1} = fileData(k,'Name'); 
+             C{k,2} = fileData(k,'Channels','Calls','Matrix');
+             time_passed = cputime - elapsed;
+             output_str = sprintf('%d/%d, %d.', k, nK, time_passed);
+             disp(output_str);
+          end
+  end
+  
+  % Save to disk
   output_file = strcat(audiopath, bat, '.mat');
   output_str = sprintf('Writing output to: %s', output_file);
   disp(output_str);
-  global filesObject;
-  save(output_file, 'filesObject','-v7.3');
+  save(output_file, 'C','-v7.3');
+  
+  % end script
   total_time = (cputime - starttime) / 60.0;
   output_str = sprintf('Job has completed in %f minutes.', total_time);
   disp(output_str);

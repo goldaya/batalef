@@ -12,7 +12,7 @@ function [ out1, out2, out3, out4 ] = getChannelCalls( k, j, varargin )
         switch par
             
             case 'Matrix'
-                if nargin == 1
+                if nargin < 4
                     par2 = 'features';
                 else
                     par2 = varargin{2};
@@ -26,6 +26,25 @@ function [ out1, out2, out3, out4 ] = getChannelCalls( k, j, varargin )
                 else
                     out1 = [];
                 end
+
+            case 'features'
+                time = getParFromVarargin('Times',varargin);
+                if ischar(time)
+                    switch time
+                        case 'Start'
+                            out1 = filesObject(k).channels(j).calls.features(:,1);
+                        case 'Peak'
+                            out1 = filesObject(k).channels(j).calls.features(:,5);
+                        case 'End'
+                            out1 = filesObject(k).channels(j).calls.features(:,9);
+                    end
+                    if ~isempty(out1)
+                        out2 = transpose(1:length(out1));
+                        return;
+                    end
+                end
+                out1 = filesObject(k).channels(j).calls.features;
+
                 
             case 'ForLocalization'
                 time = getParFromVarargin('Times',varargin);
