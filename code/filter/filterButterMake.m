@@ -3,6 +3,7 @@ function [ filterObject ] = filterButterMake( Fs, type, order, f1, f2 )
 
     global c;
     
+    filterObject = [];
     switch type
         case c.lowPass
             d = fdesign.lowpass('N,F3dB', order, f1, Fs);

@@ -2,6 +2,7 @@ airAbsorption:temperature float 25.000000
 airAbsorption:relativeHumidity float 50.000000 
 airAbsorption:atmosphericPressure float 1.000000 
 background:createSecondaryFiles float 1
+background:calls:filteredFE float 1
 background:outputType float 1
 beam:maxAz float 90.000000 
 beam:maxEl float 90.000000 
