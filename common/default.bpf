@@ -4,6 +4,7 @@ airAbsorption:atmosphericPressure float 1.000000
 background:createSecondaryFiles float 1
 background:calls:filteredFE float 1
 background:outputType float 1
+background:trimStart float 10
 beam:maxAz float 90.000000 
 beam:maxEl float 90.000000 
 beam:minAz float -90.000000 

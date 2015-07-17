@@ -74,11 +74,23 @@ function [  ] = backgroundFolder(audiopath, bat, configfile, createSecondaryFile
   end
   K = 1:nK;
   time_passed = cputime - elapsed;
-  output_str = sprintf('Processing input files took %d seconds.', time_passed);
-  disp(output_str);
-  elapsed = cputime;
+  fprintf('Adding files to batalef took %d seconds.\n', time_passed);
+    % Trim
+  trimBuffer = getParam('background:trimStart')/1000;
+  if trimBuffer > 0
+      elapsed = cputime;
+      disp('Trimming Files');
+      for k = 1:nK
+        removeStartTS(k,trimBuffer,false);
+      end
+      time_passed = cputime - elapsed;
+      fprintf('Trimmed files in %d seconds\n', time_passed);
+  else
+      disp('Not trimming files');
+  end
   % Process
   disp('Running pdBasic');
+  elapsed = cputime;
   pdBasic(K,false); % Call Detection
   time_passed = cputime - elapsed;
   output_str = sprintf('pdBasic took %d seconds, starting feature extraction.', time_passed);
@@ -111,6 +123,20 @@ function [  ] = backgroundFolder(audiopath, bat, configfile, createSecondaryFile
       time_passed = cputime - elapsed;
       output_str = sprintf('created secondary files in %d seconds.', time_passed);
       disp(output_str);
+      
+      trimBuffer = getParam('background:trimStart')/1000;
+      if trimBuffer > 0
+          elapsed = cputime;
+          disp('Trimming Files');
+          for k = nK+1:2*nK
+            removeStartTS(k,trimBuffer,false);
+          end
+          time_passed = cputime - elapsed;
+          fprintf('Trimmed files in %d seconds\n', time_passed);
+      else
+          disp('Not trimming files');
+      end      
+      
       elapsed = cputime;
       disp('Running pdBasic on secondary files')
       pdBasic(sK,false);
@@ -181,7 +207,9 @@ function [  ] = backgroundFolder(audiopath, bat, configfile, createSecondaryFile
           C = cell(nK,1);
           for k = 1:nK
             elapsed = cputime;	
-            refreshRawData( k, 1 );
+            if isempty(filesObject(k).rawData.data)
+                refreshRawData( k, 1 );
+            end
             time_passed = cputime - elapsed;
             output_str = sprintf('%d/%d, %d.', k, nK, time_passed);
             disp(output_str);
