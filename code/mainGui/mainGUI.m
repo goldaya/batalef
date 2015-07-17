@@ -637,4 +637,4 @@ writeWavFile(mgResolveFilesToWork());
 
 % --------------------------------------------------------------------
 function createSecondaryFileNoDialogMenuItem_Callback(hObject, eventdata, handles)
-createSecondaryFile(mgResolveFilesToWork(), true, true, true);
+createSecondaryFile(mgResolveFilesToWork(), false, true, true);

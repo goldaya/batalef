@@ -36,14 +36,16 @@ function createSecondaryFile( K, add, dialog, singleShot)
         end
         
         secFile = strcat(naked,'_secondary',ext);
-        secFullPath = strcat(path,secFile);
+        secFullPath = strcat(path,filesep(),secFile);
         if dialog
-            [fName,path] = uiputfile(secFullPath);
-            if ~fName
-                continue;
+            if ~singleShot
+                [fName,path] = uiputfile(secFullPath);
+                if ~fName
+                    continue;
+                end
+                secFile = fName;
+                secFullPath = strcat(path,filesep(),fName);
             end
-            secFile = fName;
-            secFullPath = strcat(path,fName);
         end
         Fs = fileData(K(i),'Fs');
         TS = createSecondaryTS( K(i), bufferUse/1000 );

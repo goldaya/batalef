@@ -8,3 +8,4 @@ v0.6.1 - bugs:
 
 v0.6.2 - background processing (edward)
 v0.6.3 - single shot secondary files creation
+v0.6.4 - single shot secondary files creation ../ 2
