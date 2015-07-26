@@ -1,5 +1,5 @@
-classdef bParam < handle
-    %BPARAM Parameters object
+classdef bParameters < handle
+    %BPARAMETERS Parameters object
     
     properties
         file
@@ -16,7 +16,7 @@ classdef bParam < handle
   
     methods
         % CONSTRUCTOR
-        function me = bparam(application,type,parent)
+        function me = bParameters(application,type)
             switch type
                 case 'file'
                 case 'application'
@@ -28,7 +28,6 @@ classdef bParam < handle
             end
             me.type = type;
             me.application = application; % application control class
-            me.parent = parent;
         end
         
         

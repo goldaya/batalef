@@ -24,6 +24,9 @@ classdef bRawData < handle
         Status
         HasMatrix
         Application
+	FileName
+	FileExtension
+	FilePath
     end
     
     
@@ -197,7 +200,16 @@ classdef bRawData < handle
         function obj = get.Application(me)
             obj = me.Parent.Application;
         end
-                
+        
+	function val = get.FilePath(me)
+		val = fileparts(me.AudioPath);
+	end
+	function val = get.FileName(me)
+		[~,val] = fileparts(me.AudioPath);
+	end 
+	function val = get.FileExtension(me)
+		[~,~,val] = fileparts(me.AudioPath);
+	end       
     end
     
 end
