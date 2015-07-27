@@ -659,15 +659,9 @@ outputPoiMatrix(mgResolveFilesToWork());
 
 % --------------------------------------------------------------------
 function filesSelIntervalMenuItem_Callback(hObject, eventdata, handles)
-A = inputdlg('Select files interval','Select files interval',1,{'[]'});
+global filesObject;
+A = inputdlg('Select files interval');
 if ~isempty(A)
-    K = str2num(A{1});
-    for k = 1:appData('Files','Count');
-        if isempty(find(K==k,1))
-            fileData(k,'Select',false);
-        else
-            fileData(k,'Select',true);
-        end
-    end
+    K = str2num(A);
+    
 end
-mgRefreshFilesTable();
