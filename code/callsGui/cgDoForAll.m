@@ -29,6 +29,7 @@ function [  ] = cgDoForAll( K, J )
             nChannels = fileData(K(k),'Channels','Count');
             Jbar = J(J<=nChannels);
         end
+        kLength = fileData(K(k),'Length');
         for j = 1:length(Jbar)
             SS = zeros(channelData(K(k),Jbar(j),'Calls','Count'),2);
             
@@ -40,6 +41,12 @@ function [  ] = cgDoForAll( K, J )
                 call = channelCall(K(k),Jbar(j),s,t,false);
                 if ~call.Saved || overwrite
                     window = [call.DetectionTime-dt/2, call.DetectionTime+dt/2];
+                    if window(1) < 0
+                        window(1) = 0;
+                    end
+                    if window(2) > kLength
+                        window(2) = kLength;
+                    end
                     wip = channelCall.inPoints(call, window);
 %                     tic;
                     [call] = channelCallAnalyze(K(k),Jbar(j),s,t,window,dataset(wip(1):wip(2)),[],startThreshold,endThreshold,gapTolerance,[],true,true);
