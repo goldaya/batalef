@@ -2,7 +2,7 @@ function gitAskSettings(  )
 %GITASKSETTINGS Open dialog to change git update settings
 
     batFolder = fileparts(which('batalef'));
-    fullpath = strcat(batFolder,'/user/gitSettings.mat');
+    fullpath = strcat(batFolder,filesep(),'user',filesep(),'gitSettings.mat');
     load(fullpath);
     Q{1} = 'update ?';
     Q{2} = 'repository';

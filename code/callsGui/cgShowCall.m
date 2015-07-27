@@ -30,8 +30,8 @@ function cgShowCall( refreshRawData )
     % window to work in
     dt = str2double(get(handles.textCallWindow, 'String'))/1000 ;
     window = control.cg.call.DetectionTime + ([-0.5, 0.5].*dt);
-    control.cg.window = window;
     control.cg.wip    = channelCall.inPoints(control.cg.call,window);
+    control.cg.window = control.cg.wip./control.cg.call.Fs;
     
     % refresh raw data and filter if needed
     if refreshRawData
