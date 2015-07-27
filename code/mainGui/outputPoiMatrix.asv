@@ -1,7 +1,0 @@
-function [ output_args ] = outputPoiMatrix( K )
-%OUTPUTPOIMATRIX 
-
-    arrayfun(@(k) {arrayfun(@(j) {channelData(k,j,'Pois'),1:fileData(k,'Channels','Count'))},K)
-
-end
-
