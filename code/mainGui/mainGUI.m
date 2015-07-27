@@ -616,8 +616,12 @@ mgGetFileCallsBeamsData();
 
 % --------------------------------------------------------------------
 function createSecondaryFileMenuItem_Callback(hObject, eventdata, handles)
-createSecondaryFile(mgResolveFilesToWork(),true,true,false);
+createSecondaryFile(mgResolveFilesToWork(),getParam('secondaryFiles:addToApp'),true,false);
 mgRefreshFilesTable();
+
+% --------------------------------------------------------------------
+function createSecondaryFileNoDialogMenuItem_Callback(hObject, eventdata, handles)
+createSecondaryFile(mgResolveFilesToWork(), getParam('secondaryFiles:addToApp'), true, true);
 
 
 % --------------------------------------------------------------------
@@ -634,7 +638,15 @@ mgPadTS(mgResolveFilesToWork());
 function Untitled_2_Callback(hObject, eventdata, handles)
 writeWavFile(mgResolveFilesToWork());
 
+% --------------------------------------------------------------------
+function pbMarkPoi_ClickedCallback(hObject, eventdata, handles)
+mgMarkPointOfInterest();
 
 % --------------------------------------------------------------------
-function createSecondaryFileNoDialogMenuItem_Callback(hObject, eventdata, handles)
-createSecondaryFile(mgResolveFilesToWork(), false, true, true);
+function poisMarkMenuItem_Callback(hObject, eventdata, handles)
+mgMarkPointOfInterest();
+
+
+% --------------------------------------------------------------------
+function poisClear_Callback(hObject, eventdata, handles)
+mgClearPointsOfIntereset();

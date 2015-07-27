@@ -24,6 +24,9 @@ function [  ] = mgPlotChannel( k, j, axesName )
     % title
     title(axobj,strcat(['Channel ',num2str(j)]));
     
+    % keep channel index
+    set(axobj,'UserData',j);
+    
     % calls
     mgPlotChannelCalls(k,j,axesName);
     mgPlotPwpdLines(axesName);
@@ -36,6 +39,9 @@ function [  ] = mgPlotChannel( k, j, axesName )
         set(axobj,'Xlim',X);
         set(axobj,'Ylim',Y);
     end
+    
+    % points of interest
+    mgPlotPois(k,j,axesName);
     
     %
     set(axobj,'Tag',axesName);

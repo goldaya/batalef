@@ -9,10 +9,18 @@ function createSecondaryFile( K, add, dialog, singleShot)
         singleShot = false;
     end
 
-    % ask for buffer 
+    % ask for buffer and add
     bufferParam = getParam('secondaryFiles:buffer');
     if dialog
-        A = inputdlg('Buffer size around each call (msec)','Creating Secondary Files',[1,50],{num2str(bufferParam)});
+        Q{1} = 'Buffer size around each call (msec)';
+        Q{2} = 'Add to application';
+        D{1} = num2str(bufferParam);
+        if add
+            D{2} = 'Yes';
+        else
+            D{2} = 'No';
+        end
+        A = inputdlg(Q,'Creating Secondary Files',[1,50],D);
         if isempty(A)
             return;
         end    
@@ -23,6 +31,12 @@ function createSecondaryFile( K, add, dialog, singleShot)
         if singleShot
             path = uigetdir();
         end
+        if strcmp(A{2},'Yes')
+            add = true;
+        else
+            add = false;
+        end
+        setParam('secondaryFiles:addToApp',double(add));
     else
         bufferUse = bufferParam;
     end
@@ -56,4 +70,5 @@ function createSecondaryFile( K, add, dialog, singleShot)
     end
 
 end
+
 

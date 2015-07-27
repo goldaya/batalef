@@ -1,0 +1,15 @@
+function mgPlotPois(k,j,axesName)
+%MGPLOTPOIS Summary of this function goes here
+%   Detailed explanation goes here
+
+    global control;
+    
+    if isfield(control.mg.pois, axesName)
+        if ishandle(control.mg.callsMarks.(axesName))
+            delete(control.mg.callsMarks.(axesName));
+            control.mg.callsMarks.(axesName) = [];
+        end
+    end
+    
+end
+
