@@ -10,6 +10,7 @@ v0.6.2 - background processing (edward)
 v0.6.3 - single shot secondary files creation
 v0.6.4 - single shot secondary files creation ../ 2
 v0.6.5 - trim start of TS in background processing
+
 v0.6.6
  - fixed a bug with feature extraction on calls very close to the start / end of file
  - select file interavl - through menu item i the Files menu
@@ -17,3 +18,5 @@ v0.6.6
     - Points of Interest menu
     - a button in a toolbar and a menu item in the Points of Interest menu to mark a single point
     - clear all PoI of a file, through the menu
+
+v0.6.7 - bug with spectrogram gui (set stuck on error + marking backwards)

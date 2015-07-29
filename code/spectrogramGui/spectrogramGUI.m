@@ -60,11 +60,14 @@ guidata(hObject, handles);
 
 % keep figure
 global control;
-if isempty(control.sog.fig)
+if isempty(control.sog.fig) || ~ishandle(control.sog.fig)
     control.sog.fig = hObject;
     sogInit();
 end
 control.sog.span = varargin{1};
+if diff(control.sog.span) < 0
+    control.sog.span =  control.sog.span([2,1]);
+end
 sogPlot();
 %{
 % title
