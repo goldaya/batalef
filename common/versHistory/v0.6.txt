@@ -20,3 +20,4 @@ v0.6.6
     - clear all PoI of a file, through the menu
 
 v0.6.7 - bug with spectrogram gui (set stuck on error + marking backwards)
+v0.6.8 - bug with batch processing feature extraction
