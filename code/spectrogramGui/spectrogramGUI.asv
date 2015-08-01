@@ -22,7 +22,7 @@ function varargout = spectrogramGUI(varargin)
 
 % Edit the above text to modify the response to help spectrogramGUI
 
-% Last Modified by GUIDE v2.5 10-Sep-2014 11:25:47
+% Last Modified by GUIDE v2.5 30-Jul-2015 17:49:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -60,11 +60,16 @@ guidata(hObject, handles);
 
 % keep figure
 global control;
-if isempty(control.sog.fig)
+if isempty(control.sog.fig) || ~ishandle(control.sog.fig)
     control.sog.fig = hObject;
     sogInit();
 end
 control.sog.span = varargin{1};
+if diff(control.sog.span) < 0
+    control.sog.span =  control.sog.span([2,1]);
+end
+control.sog.k = appData('Files','Displayed');
+control.sog.J = appData('Channels','Displayed');
 sogPlot();
 %{
 % title
@@ -160,3 +165,105 @@ sogPlot();
 % --- Executes when user attempts to close figure1.
 function figure1_CloseRequestFcn(hObject, eventdata, handles)
 sogKill();
+
+
+% --------------------------------------------------------------------
+function toggleLinkaxes_OffCallback(hObject, eventdata, handles)
+global control;
+handles = sogGetHandles();
+nAxes = appData('Axes','Count');
+for i = 1:nAxes;
+    axesName = strcat('axes',num2str(i));
+    linkaxes(handles.(axesName));
+end
+control.sog.linkAxes = false;
+
+
+% --------------------------------------------------------------------
+function toggleLinkaxes_OnCallback(hObject, eventdata, handles)
+global control;
+handles = sogGetHandles();
+nAxes = appData('Axes','Count');
+V = zeros(nAxes,1);
+for i = 1:nAxes;
+    axesName = strcat('axes',num2str(i));
+    V(i) = handles.(axesName);
+end
+linkaxes(V);
+control.sog.linkAxes = true;
+
+
+% --------------------------------------------------------------------
+function pbTimeMeasure_ClickedCallback(hObject, eventdata, handles)
+global control;
+zoom('off');
+pan('off');
+datacursormode('off');
+sogTmInit( ~control.sog.tm.on );
+
+
+
+% --- Executes during object creation, after setting all properties.
+function pbTimeMeasure_CreateFcn(hObject, eventdata, handles)
+mh = mgGetHandles();
+iconData = get(mh.pbTimeMeasure,'CData');
+set(hObject,'CData',iconData);
+
+
+% --- Executes during object creation, after setting all properties.
+function toggleLinkaxes_CreateFcn(hObject, eventdata, handles)
+mh = mgGetHandles();
+iconData = get(mh.toggleLinkaxes,'CData');
+set(hObject,'CData',iconData);
+
+
+% --------------------------------------------------------------------
+function toggleZoom_ClickedCallback(hObject, eventdata, handles)
+sogTmInit(false);
+pan('off');
+datacursormode('off');
+if get(hObject,'State')
+    zoom('on');
+else
+    zoom('off');
+end
+
+
+% --------------------------------------------------------------------
+function togglePan_ClickedCallback(hObject, eventdata, handles)
+sogTmInit(false);
+zoom('off');
+datacursormode('off');
+if get(hObject,'State')
+    pan('on');
+else
+    pan('off');
+end
+
+
+% --------------------------------------------------------------------
+function toggleDatacursor_ClickedCallback(hObject, eventdata, handles)
+sogTmInit(false);
+zoom('off');
+pan('off');
+if get(hObject,'State')
+    datacursormode('on');
+else
+    datacursormode('off');
+end
+
+
+% --------------------------------------------------------------------
+function pbAddCall_ClickedCallback(hObject, eventdata, handles)
+global control;
+[x,y] = ginput(1);
+i = get(gca,'UserData');
+k = control.sog.k;
+j = control.sog.J(i);
+t = control.sog.span(1) + x;
+channelCall.addCalls(k,j,[t,0]);
+
+
+% --------------------------------------------------------------------
+function pbRemoveCalls_ClickedCallback(hObject, eventdata, handles)
+

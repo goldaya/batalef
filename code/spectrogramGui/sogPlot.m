@@ -6,12 +6,12 @@ function [  ] = sogPlot(  )
     handles = sogGetHandles();
     
     % do
-    k = appData('Files','Displayed');
+    k = control.sog.k;
     if k == 0
         return;
     end
     Fs = fileData(k,'Fs');
-    J = appData('Channels','Displayed');
+    J = control.sog.J;
     if isempty(J)
         return;
     end
@@ -32,6 +32,7 @@ function [  ] = sogPlot(  )
         imagesc(spec.T,spec.F,spec.P);
         set(axobj,'YDir','normal');
         title(axobj,strcat(['Channel ',num2str(J(i))]));
+        set(axobj,'UserData',J(i));
         
         % add channel calls
         [times,~,indexes] = channelData(k,J(i),'Calls','Detections','Interval',control.sog.span./Fs);

@@ -22,7 +22,7 @@ function varargout = spectrogramGUI(varargin)
 
 % Edit the above text to modify the response to help spectrogramGUI
 
-% Last Modified by GUIDE v2.5 05-Jan-2015 20:26:07
+% Last Modified by GUIDE v2.5 30-Jul-2015 17:49:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -68,6 +68,8 @@ control.sog.span = varargin{1};
 if diff(control.sog.span) < 0
     control.sog.span =  control.sog.span([2,1]);
 end
+control.sog.k = appData('Files','Displayed');
+control.sog.J = appData('Channels','Displayed');
 sogPlot();
 %{
 % title
@@ -249,3 +251,23 @@ if get(hObject,'State')
 else
     datacursormode('off');
 end
+
+
+% --------------------------------------------------------------------
+function pbAddCall_ClickedCallback(hObject, eventdata, handles)
+global control;
+k = control.sog.k;
+j = get(gca,'UserData');
+[t,~] = ginput(1);
+channelCall.addCalls(k,j,[t,0]);
+sogPlot();
+
+% --------------------------------------------------------------------
+function pbRemoveCalls_ClickedCallback(hObject, eventdata, handles)
+global control;
+rect = getrect();
+k = control.sog.k;
+j = get(gca,'UserData');
+t = [rect(1), rect(1) + rect(3)];
+channelCall.removeCalls(k,j,t,false);
+sogPlot();
