@@ -44,6 +44,7 @@ filter:butter:type integer 102.000000
 filter:butter:f1 float 50.000000 
 filter:butter:f2 float 70.000000 
 filter:butter:order float 14.000000 
+mainGUI:autospectro integer 0
 mainGUI:nAxes integer 1.000000 
 mainGUI:axesHeight float 150.000000 
 mainGUI:showCalls integer 1.000000 

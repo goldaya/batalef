@@ -498,9 +498,9 @@ else
         msgbox('Last file reached');
     else
 	% select next file for proceesing and display
-	mgSelectFiles(k);
+	mgSelectFiles(k+1);
 	mgRefreshFilesTable();
-        mgDisplayFile(k+1);
+    mgDisplayFile(k+1);
     end
 end
 
@@ -677,3 +677,13 @@ if ~isempty(A)
     end
 end
 mgRefreshFilesTable();
+
+
+% --------------------------------------------------------------------
+function toggleAutoSpectro_OffCallback(hObject, eventdata, handles)
+setParam('mainGUI:autospectro',0);
+
+
+% --------------------------------------------------------------------
+function toggleAutoSpectro_OnCallback(hObject, eventdata, handles)
+setParam('mainGUI:autospectro',1);

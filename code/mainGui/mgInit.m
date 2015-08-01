@@ -41,3 +41,10 @@ envmAdminBuildList(control.mg.fig);
 envmAdminMethodSelectedInternal(control.envelope.method, true);
 
 ccdmAdminBuildList();
+
+switch getParam('mainGUI:autospectro')
+    case 0
+        set(handles.toggleAutoSpectro,'State','off');
+    case 1
+        set(handles.toggleAutoSpectro,'State','on');
+end
