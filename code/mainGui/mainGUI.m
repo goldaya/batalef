@@ -479,6 +479,9 @@ else
     elseif k == 1
         msgbox('First file reached');
     else
+	% select the prefious file for processing and display it
+	mgSelectFiles(k-1);
+	mgRefreshFilesTable();
         mgDisplayFile(k-1);
     end
 end
@@ -494,6 +497,9 @@ else
     if k == n;
         msgbox('Last file reached');
     else
+	% select next file for proceesing and display
+	mgSelectFiles(k);
+	mgRefreshFilesTable();
         mgDisplayFile(k+1);
     end
 end
