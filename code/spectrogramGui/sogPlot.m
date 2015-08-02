@@ -33,9 +33,10 @@ function [  ] = sogPlot(  )
         set(axobj,'YDir','normal');
         title(axobj,strcat(['Channel ',num2str(J(i))]));
         set(axobj,'UserData',J(i));
+        set(axobj,'Tag',axesName);
         
         % add channel calls
-        sogPlotChannelCalls(axesNames,k,J(i));
+        sogPlotChannelCalls(axesName,k,J(i));
         %{
         [times,~,indexes] = channelData(k,J(i),'Calls','Detections','Interval',control.sog.span./Fs);
         if ~isempty(times)

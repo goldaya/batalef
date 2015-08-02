@@ -1,19 +1,28 @@
-function [  ] = sogPlotChannelCalls(axName,k,j)
+function [  ] = sogPlotChannelCalls(ax,k,j)
 %SOGPLOTCHANNELCALLS add channel clls data to spectrograms
 
     global control;
-    [~,axobj] = sogGetHandles(axName);
+    if ishandle(ax)
+        axobj = ax;
+        axName = get(ax,'tag');
+    elseif ischar(ax)
+        axName = ax;
+        [~,axobj] = sogGetHandles(axName);
+    else
+        disp('missing axes definition for channel calls')
+        return;
+    end
 
     % clear older markers
     if isfield(control.sog,axName)
-        if isfield(control.sog.axName, 'ccTexts')
-            ccTexts = control.sog.axName.ccTexts;
+        if isfield(control.sog.(axName), 'ccTexts')
+            ccTexts = control.sog.(axName).ccTexts;
             for i = 1:length(ccTexts)
                 if ishandle(ccTexts(i))
                     delete(ccTexts(i));
                 end
             end
-            control.sog.axName.ccTexts = [];
+            control.sog.(axName).ccTexts = [];
         end
     end
 
@@ -27,8 +36,9 @@ function [  ] = sogPlotChannelCalls(axName,k,j)
             Y = zeros(N,1)+dY;
             hold(axobj,'on');
             I = strtrim(cellstr(num2str(transpose(indexes))));
-            control.sog.axName.ccTexts = text(times,Y,I);
+            control.sog.(axName).ccTexts = text(times,Y,I);
             hold(axobj,'off');
+            set(axobj,'Tag',axName);
         end
 
 end
