@@ -35,6 +35,8 @@ function [  ] = sogPlot(  )
         set(axobj,'UserData',J(i));
         
         % add channel calls
+        sogPlotChannelCalls(axesNames,k,J(i));
+        %{
         [times,~,indexes] = channelData(k,J(i),'Calls','Detections','Interval',control.sog.span./Fs);
         if ~isempty(times)
             N = length(times);
@@ -46,6 +48,7 @@ function [  ] = sogPlot(  )
             text(times,Y,I);
             hold(axobj,'off');
         end
+        %}
     end 
 
 
