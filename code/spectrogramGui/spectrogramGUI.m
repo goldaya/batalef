@@ -260,7 +260,7 @@ k = control.sog.k;
 j = get(gca,'UserData');
 [t,~] = ginput(1);
 channelCall.addCalls(k,j,[t,0]);
-sogPlot();
+sogPlotChannelCalls(gca,k,j);
 
 % --------------------------------------------------------------------
 function pbRemoveCalls_ClickedCallback(hObject, eventdata, handles)
@@ -270,4 +270,4 @@ k = control.sog.k;
 j = get(gca,'UserData');
 t = [rect(1), rect(1) + rect(3)];
 channelCall.removeCalls(k,j,t,false);
-sogPlot();
+sogPlotChannelCalls(gca,k,j);
