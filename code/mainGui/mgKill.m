@@ -20,8 +20,6 @@ function [  ] = mgKill(  )
     end
     
     % clean up
-    global filesObject;
-    global c;
     clearvars -global filesObject;
     clearvars -global control;
     clearvars -global c;
