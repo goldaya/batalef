@@ -14,7 +14,8 @@ function [ bestValues, bestAccuracy ] = geneticBeam( nInitial, nSurvivors, mutat
     pop = [I,W,A,E];
     
     % compute fitness - consider changing arrayfun with matrix computation
-    F = arrayfun(@(i,w,a,e) genComputeFitness( i,w,a,e,micsAzimuth,micsElevation,powerAtMics),pop(:,1),pop(:,2),pop(:,3),pop(:,4));
+    F = genComputeFitness( pop, micsAzimuth, micsElevation, powerAtMics );
+    %F = arrayfun(@(i,w,a,e) genComputeFitness( i,w,a,e,micsAzimuth,micsElevation,powerAtMics),pop(:,1),pop(:,2),pop(:,3),pop(:,4));
     
     while min(F) > accuracy
         
@@ -28,10 +29,12 @@ function [ bestValues, bestAccuracy ] = geneticBeam( nInitial, nSurvivors, mutat
         surv = pop(F<=prcntile(F,p),:);
         
         % mate and mutate
-        pop = cell2mat(cellfun(@(specimen) genMateAndMutate(specimen, surv, mutationProb, mutationFactor),num2cell(surv,2)));
+        pop = genMateAndMutate(survivors,mutationProbability,mutationFactor);
+        %pop = cell2mat(cellfun(@(specimen) genMateAndMutate(specimen, surv, mutationProb, mutationFactor),num2cell(surv,2)));
     
         % compute fitness
-        F = arrayfun(@(i,w,a,e) genComputeFitness( i,w,a,e,micsAzimuth,micsElevation,powerAtMics),pop(:,1),pop(:,2),pop(:,3),pop(:,4));
+        F = genComputeFitness( pop, micsAzimuth, micsElevation, powerAtMics );
+        % F = arrayfun(@(i,w,a,e) genComputeFitness( i,w,a,e,micsAzimuth,micsE7levation,powerAtMics),pop(:,1),pop(:,2),pop(:,3),pop(:,4));
     end
     
     [bestAccuracy, bestInstance] = min(F);
@@ -39,6 +42,41 @@ function [ bestValues, bestAccuracy ] = geneticBeam( nInitial, nSurvivors, mutat
 
 end
 
+
+function F = genComputeFitness( pop, MA, ME, MP )
+    
+    nP = size(pop,1);
+    nM = size(pop,2);
+
+    IX  = log(pop(:,1))*ones(1,nM);
+    WX  = 2.*(pop(:,2)*ones(1,nM)).^2;
+    AX  = pop(:,3)*ones(1,nM);
+    EX  = pop(:,4)*ones(1,nM);
+    MAX = ones(nP,1)*MA';
+    MEX = ones(nP,1)*ME';
+    MPX = ones(nP,1)*log(MP)';
+
+    F  = norm( ((AX-MAX).^2 + (EX-MEX).^2).*IX./(2*W) + MPX );
+        
+end
+
+function pop = genMateAndMutate(parents,mutationProbability,mutationFactor)
+    % [I,W,A,E] = parents
+    m = size(parents,1);
+    for i =1:4
+        B = parents(:,i)*ones(1,m);
+        R = rand(m,m);
+        D = B.*R + B'.*(1-R);
+        % mutate
+        D = (ceil(rand(m,m)-1+mutationProbability).*(rand(m,m)-0.5).*2.*mutationFactor + 1).*D;
+        
+        pop(:,i) = reshape(D,[m^2,1]);
+    end
+    pop = D;
+end
+
+
+%{
 function [ fitness ] = genComputeFitness( i,w,a,e,micsAzimuth,micsElevation,powerAtMics )
 %GENCOMPUTEFITNESS Compute fitness by computing log gaussian impacts vs.
 %log measured impacts on microphones
@@ -62,3 +100,4 @@ function kid = genMateMutateKid(papa1,papa2,mutationProb,mutationFactor)
     end
     
 end
+%}
