@@ -49,6 +49,15 @@ filter:butter:f1 float 50.000000
 filter:butter:f2 float 70.000000 
 filter:butter:order float 14.000000 
 localization:method integer 1
+localization:array:xres float 0.1
+localization:array:xliml float -3
+localization:array:xlimh float 3
+localization:array:yres float 0.1
+localization:array:yliml float -3
+localization:array:ylimh float 3
+localization:array:zres float 0.1
+localization:array:zliml float -3
+localization:array:zlimh float 3
 mainGUI:autospectro integer 0
 mainGUI:nAxes integer 1.000000 
 mainGUI:axesHeight float 150.000000 
