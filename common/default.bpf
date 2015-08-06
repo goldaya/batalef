@@ -11,7 +11,11 @@ beam:minAz float -90.000000
 beam:minEl float -90.000000 
 beam:resAz float 1.000000 
 beam:resEl float 1.000000 
-beam:method integer 1.000000 
+beam:method integer 1.000000
+beam:genetic:initPop integer 1000
+beam:genetic:survivalRate float 0.033
+beam:genetic:mutatationProb float 0.025
+beam:genetic:mutationFactor float 0.25 
 callsGUI:callWindow float 10.000000 
 callsGUI:dbEnd float -3.000000 
 callsGUI:dbStart float -6.000000 
