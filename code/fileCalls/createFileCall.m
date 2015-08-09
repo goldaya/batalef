@@ -1,4 +1,4 @@
-function [  ] = createFileCall( k, a, channelCalls, callTime, callLocation, noValidation )
+function [  ] = createFileCall( k, a, channelCalls, callTime, callLocation, callPowers, noValidation )
 %CREATEFILECALL Fill in the file call data in the indicated index
 %   Detailed explanation goes here
 
@@ -16,6 +16,7 @@ function [  ] = createFileCall( k, a, channelCalls, callTime, callLocation, noVa
     call.channelCalls = channelCalls;
     call.time = callTime;
     call.location = callLocation;
+    call.powers = callPowers;
     call.beam = struct('leads',[],'raw',[],'interpolated',[],'coordinates',[],'micDirections',[]);
     
     filesObject(k).fileCalls{a} = call;

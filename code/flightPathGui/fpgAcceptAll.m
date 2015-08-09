@@ -1,19 +1,16 @@
 function fpgAcceptAll(  )
 %FPGACCEPTALL Internal Accept all possible file calls
 
-    timePointToUse = 'Start';
-    
-    % get current base
     [k,~,j,~] = fpgGetCurrent;
+    handles = fpgGetHandles();    
+    dev = str2double(get(handles.textError, 'String'))/100 + 1;
     
-    % go over unassigned base calls
+    % go over unassigned base calls, for each accept the 1st seq
     n = channelData(k,j,'Calls','Count');
     for s = 1:n
         if channelCallData(k,j,s,'FileCall')==0
-            % get possible seq
-            seqs = suggestSeqs( s,j,k, timePointToUse );
+            seqs = ccmSimple(k,j,s,dev);    
             if ~isempty(seqs)
-                % accept 1st seq.
                 addFileCall(k, seqs{1});
             end
         end
