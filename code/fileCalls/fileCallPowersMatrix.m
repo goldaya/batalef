@@ -8,6 +8,9 @@ function M = fileCallPowersMatrix( k, batPosition, channelCalls )
 %     % center of mic array)
     micPositions = fileData(k,'Mics','Positions');
     nMics = size(micPositions,1);
+    if ~isrow(batPosition)
+        batPosition = batPosition';
+    end
 %     ctr = diff([min(micPositions);max(micPositions)])./2; % center of mics
 %     rel = [micPositions; ctr] - ones(nMics+1,1)*batPosition; % mics relative to bat
 %     sph = cart2sph(rel(:,1),rel(:,2),rel(:,3));
@@ -45,7 +48,7 @@ function M = fileCallPowersMatrix( k, batPosition, channelCalls )
     pM = zeros(nMics,1);
     for j = 1:nMics
         if ~isnan(channelCalls(j))
-            pM(j) = channelCallData(k,j,channelCalls(j),'Peak','Power','CallDataType','forBeam');
+            pM(j) = channelCallData(k,j,channelCalls(j),'Peak','Value','CallDataType','forBeam');
         end
     end
     
