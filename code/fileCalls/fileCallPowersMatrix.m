@@ -32,9 +32,9 @@ function M = fileCallPowersMatrix( k, batPosition, channelCalls )
     % directivity
     D = fileData(k,'Mics','Directivity','NoValidation',true);
     dC = ones(nMics,1);
+    angles = arrayfun(@(x) ang(batPosition-x{1},D.zero), ...
+        mat2cell(micPositions,ones(1,nMics),3));
     if D.use        
-        angles = arrayfun(@(x) ang(batPosition-x{1},D.zero), ...
-            mat2cell(micPositions,ones(1,nMics),3));
         X = cell2mat(D.cell{1});
         Y = zeros(length(A));
         for i = 1:length(X)
@@ -53,7 +53,7 @@ function M = fileCallPowersMatrix( k, batPosition, channelCalls )
     end
     
     %this is attenuation oriented, maybe should be power oriented:
-    M = [pM,R,1./rC,gC,gC./rC,dC,dC.*gC./rC,...
+    M = [R,angles,pM,1./rC,gC,gC./rC,dC,dC.*gC./rC,...
         pM./rC,pM.*gC,pM.*gC./rC,pM.*dC,pM.*dC.*gC./rC];
 end
 

@@ -16,9 +16,10 @@ function [  ] = bmgReadData(  )
 %     M = [A E Pm Pg Pd Ps];
 
     M = beam.powers;
-    M = M(:,[1,2,3,10,11,12]);
+    M = M([1,2,3,10,12,13],:);
     D = [num2cell(U),num2cell(M)];
     uithings = guidata(control.bmg.fig);
     set(uithings.uitabBeamData,'Data',D);
 
 end
+
