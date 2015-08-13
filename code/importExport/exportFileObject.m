@@ -75,7 +75,7 @@ function [ fca ] = exportFileObject( K, withRawData )
     assignin('base',name,fca);
     
     % save to file    
-    save(strcat(path,name,ext),'fca');
+    save(strcat(path,name,ext),'fca','-v7.3');
     
 end
 

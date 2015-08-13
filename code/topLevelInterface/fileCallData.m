@@ -41,6 +41,8 @@ function [ out1 ] = fileCallData( k, a, par, varargin )
             out1 = filesObject(k).fileCalls{a}.beam;    
             
         case 'Power'
+            out1 = filesObject(k).fileCalls{a}.powers(:,1);
+            %{
             CC = filesObject(k).fileCalls{a}.channelCalls;
             out1 = zeros(length(CC),1);
             for i = 1:length(CC)
@@ -48,6 +50,7 @@ function [ out1 ] = fileCallData( k, a, par, varargin )
                     out1(i) = channelCallData(k,i,CC(i),pos,'Power');
                 end
             end
+            %}
 
         case 'Value'
             CC = filesObject(k).fileCalls{a}.channelCalls;

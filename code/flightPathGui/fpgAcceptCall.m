@@ -1,6 +1,7 @@
 function [  ] = fpgAcceptCall(  )
-%FPGACCEPTCALL Summary of this function goes here
-%   Detailed explanation goes here
+%FPGACCEPTCALL Accept a sequence, approximate time & location and provide
+%the powers matrix for beam computation
+
     
     handles = fpgGetHandles();
     k = fpgGetCurrent();
@@ -16,4 +17,3 @@ function [  ] = fpgAcceptCall(  )
     fpgRefresh(a);
     
 end
-

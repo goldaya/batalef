@@ -9,17 +9,16 @@ function [ t, x ] = approxCallTimeLocation( channelCallsTimes, MicPositions )
     mPoss = MicPositions(relevantCalls,:);
     
     % build time intervals array
-    n = length(times);
-    intArray = zeros(n,1);
-    for j = 2:n
-        intArray(j) = times(j) - times(1);
-    end
-    
-    % get the speed of sound
-    sonic = getParam('soundSpeed');
-    
+    intArray = times - times(1);
+
     % approximate 3D location
+    sonic = getParam('soundSpeed');
     x = MLAT( mPoss, intArray, sonic );
+    
+%    res = 0.1;
+%    lim = [-5,5];
+%    dTm = times - times(1);
+%    x = locateBatThroughArray( mPoss, res, lim, res, lim, res, lim, sonic, dTm );
     
     % time
     t = times(1);

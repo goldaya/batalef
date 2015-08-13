@@ -54,6 +54,14 @@ function [ out, add1, add2, add3 ] = channelData( k,j,par,varargin )
         case 'Calls'
             [out, add1, add2, add3] = getChannelCalls(k,j,varargin{:});
             
+        case {'Pois','PointsOfInterest'}
+            try
+                out = filesObject(k).channels(j).pois;
+            catch 
+                out = [];
+            end
+                
+            
         otherwise
             err = MException('bats:fileData:noPar','No such parameter "%s"', par);
             throw(err);    

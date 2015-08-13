@@ -1,0 +1,10 @@
+Spectrogram GUI:
+ - added auto-spectrogram toggle button. when "on", whenever displaying a 
+   file (by using the up/down arrows or the display button), a spectrogram
+   appears for that file.
+ - ability to add and remove channel calls directly from the spectro gui.
+   This is done through the +,- toolbar buttons.
+
+Browse through files:
+ - when using the up/down arrows, the next/previous file is displayed and
+   marked for processing (all other marks are deleted)

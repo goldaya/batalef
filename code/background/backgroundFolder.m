@@ -143,7 +143,7 @@ function [  ] = backgroundFolder(audiopath, bat, configfile, createSecondaryFile
       time_passed = cputime - elapsed;
       output_str = sprintf('pdBasic took %d seconds, starting feature extraction.', time_passed);
       disp(output_str);
-      fExtraction(K); % Feature Extraction
+      fExtraction(sK); % Feature Extraction
       time_passed = cputime - elapsed;
       output_str = sprintf('fExtraction took %d seconds.', time_passed);
       disp(output_str);     

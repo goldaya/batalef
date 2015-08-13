@@ -34,7 +34,7 @@ function [  ] = fExtraction( K )
                window = [call.DetectionTime-dt/2, call.DetectionTime+dt/2];
                wip = channelCall.inPoints(call, window);
                     
-               [call] = channelCallAnalyze(k,j,s,'features',window,dataset(wip(1):wip(2)),[],dbStart,dbEnd,gapTolerance,[],true,false);
+               [call] = channelCallAnalyze(K(k),j,s,'features',window,dataset(wip(1):wip(2)),[],dbStart,dbEnd,gapTolerance,[],true,false);
                call.save( );
            end
        end

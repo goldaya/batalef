@@ -19,14 +19,14 @@ function bmgCreateTable( fig )
     uitabColWidths{1}   = 70    ;
     
     % Azimuth
-    uitabColNames{2}    = 'Azimuth';
-    uitabColEditable(2) = 1;
+    uitabColNames{2}    = 'Radius';
+    uitabColEditable(2) = 0;
     uitabColFormats{2}  = 'numeric';
     uitabColWidths{2}   = 70;
 
     % Elevation
-    uitabColNames{3}    = 'Elevation';
-    uitabColEditable(3) = 1;
+    uitabColNames{3}    = 'Angle (Mic)';
+    uitabColEditable(3) = 0;
     uitabColFormats{3}  = 'numeric';
     uitabColWidths{3}   = 70;
     

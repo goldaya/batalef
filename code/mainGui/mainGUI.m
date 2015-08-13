@@ -479,6 +479,9 @@ else
     elseif k == 1
         msgbox('First file reached');
     else
+	% select the prefious file for processing and display it
+	mgSelectFiles(k-1);
+	mgRefreshFilesTable();
         mgDisplayFile(k-1);
     end
 end
@@ -494,7 +497,10 @@ else
     if k == n;
         msgbox('Last file reached');
     else
-        mgDisplayFile(k+1);
+	% select next file for proceesing and display
+	mgSelectFiles(k+1);
+	mgRefreshFilesTable();
+    mgDisplayFile(k+1);
     end
 end
 
@@ -616,8 +622,12 @@ mgGetFileCallsBeamsData();
 
 % --------------------------------------------------------------------
 function createSecondaryFileMenuItem_Callback(hObject, eventdata, handles)
-createSecondaryFile(mgResolveFilesToWork(),true,true,false);
+createSecondaryFile(mgResolveFilesToWork(),getParam('secondaryFiles:addToApp'),true,false);
 mgRefreshFilesTable();
+
+% --------------------------------------------------------------------
+function createSecondaryFileNoDialogMenuItem_Callback(hObject, eventdata, handles)
+createSecondaryFile(mgResolveFilesToWork(), getParam('secondaryFiles:addToApp'), true, true);
 
 
 % --------------------------------------------------------------------
@@ -634,7 +644,46 @@ mgPadTS(mgResolveFilesToWork());
 function Untitled_2_Callback(hObject, eventdata, handles)
 writeWavFile(mgResolveFilesToWork());
 
+% --------------------------------------------------------------------
+function pbMarkPoi_ClickedCallback(hObject, eventdata, handles)
+mgMarkPointOfInterest();
 
 % --------------------------------------------------------------------
-function createSecondaryFileNoDialogMenuItem_Callback(hObject, eventdata, handles)
-createSecondaryFile(mgResolveFilesToWork(), false, true, true);
+function poisMarkMenuItem_Callback(hObject, eventdata, handles)
+mgMarkPointOfInterest();
+
+
+% --------------------------------------------------------------------
+function poisClear_Callback(hObject, eventdata, handles)
+mgClearPointsOfIntereset();
+
+
+% --------------------------------------------------------------------
+function poisGetMatrixMenuItem_Callback(hObject, eventdata, handles)
+outputPoiMatrix(mgResolveFilesToWork());
+
+
+% --------------------------------------------------------------------
+function filesSelIntervalMenuItem_Callback(hObject, eventdata, handles)
+A = inputdlg('Select files interval','Select files interval',1,{'[]'});
+if ~isempty(A)
+    K = str2num(A{1});
+    for k = 1:appData('Files','Count');
+        if isempty(find(K==k,1))
+            fileData(k,'Select',false);
+        else
+            fileData(k,'Select',true);
+        end
+    end
+end
+mgRefreshFilesTable();
+
+
+% --------------------------------------------------------------------
+function toggleAutoSpectro_OffCallback(hObject, eventdata, handles)
+setParam('mainGUI:autospectro',0);
+
+
+% --------------------------------------------------------------------
+function toggleAutoSpectro_OnCallback(hObject, eventdata, handles)
+setParam('mainGUI:autospectro',1);

@@ -34,6 +34,13 @@ function [ channelOut ] = updateChannelStructure( channelIn, Fs )
     else
         channelOut = channelIn;
     end
+    
+    % points of intereste
+    if isfield(channelIn,'pois')
+        channelOut.pois = channelIn.pois;
+    else
+        channelOut.pois = [];
+    end
 
 end
 

@@ -9,6 +9,7 @@ function [ idx ] = addFileCall( k, channelCalls )
     
     % approximate time of call and position
     [t, x] = approxCallTimeLocation(channelCallsTimes, MicPositions);
+    M = fileCallPowersMatrix(k,x,channelCalls);
     
     % put new call in the right place
     m = fileData(k,'Calls','Count');
@@ -28,7 +29,7 @@ function [ idx ] = addFileCall( k, channelCalls )
     
     % looped through whole array and did not find a something earlier ? put it in the
     % 1st place !
-    createFileCall(k, 1, channelCalls, t, x, true);
+    createFileCall(k, 1, channelCalls, t, x, M, true);
     idx = 1;
 end
 

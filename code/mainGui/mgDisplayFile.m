@@ -26,5 +26,10 @@ function [  ] = mgDisplayFile( k )
     if k == 0
         mpgKill();
     end
+    
+    % auto spectrogram
+    if k ~=0 && getParam('mainGUI:autospectro')
+        spectrogramGUI([1,fileData(k,'nSamples')]);
+    end
 end
 

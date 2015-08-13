@@ -7,7 +7,7 @@ function seqs = fpgSuggestFileCalls(  )
     if isnan(s)
         return;
     end
-    %timePointToUse = 'Start';
+    
     if isscalar(s)
         %seqs = suggestSeqs( s,j,k, timePointToUse);
         %{
