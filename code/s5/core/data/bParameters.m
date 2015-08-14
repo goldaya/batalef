@@ -2,21 +2,24 @@ classdef bParameters < handle
     %BPARAMETERS Parameters object
     
     properties
-        file
-        application
-        type
-        parent % application / file / gui object
+        File
+        Type
+        Parent % application / file / gui object
     end
     
-    properties (SetAccess = protected)
-        names
-        types
-        values
+    properties (SetAccess = private)
+        Names
+        Types
+        Values
+    end
+    
+    properties (Dependent = true)
+        Application
     end
   
     methods
         % CONSTRUCTOR
-        function me = bParameters(application,type)
+        function me = bParameters(parent,type)
             switch type
                 case 'file'
                 case 'application'
@@ -26,33 +29,33 @@ classdef bParameters < handle
                     err = MException('batalef:parameters:objectWrongType',sprintf('Parameters-object type %s is not allowed',type));
                     throw(err);
             end
-            me.type = type;
-            me.application = application; % application control class
+            me.Type = type;
+            me.Parent = parent; 
         end
         
         
         % LOAD FROM FILE
         function loadFromFile(me,filePath)
-            me.file = filePath;
-            fid = fopen(filePath);
+            me.File = filePath;
+            fid = fopen(me.Application.physpath(filePath));
             A = textscan(fid, '%s %s %f'); % name, type, value(float)
             fclose(fid);
             A{3} = num2cell(A{3});
             A = me.enforceCommonDefaults(A);
-            me.names  = A{1};
-            me.types  = A{2};
-            me.values = A{3};            
+            me.Names  = A{1};
+            me.Types  = A{2};
+            me.Values = A{3};            
         end
         
         
         % SAVE TO FILE
         function saveToFile(me,filePath)
             fid = fopen(filePath, 'wt');
-            for i=1:length(me.names)
+            for i=1:length(me.Names)
                 fprintf(fid, '%s %s %f \n', ...
-                    me.names{i},...
-                    me.types{i},...
-                    me.values{i}...
+                    me.Names{i},...
+                    me.Types{i},...
+                    me.Values{i}...
                     );
             end
             fclose(fid);            
@@ -62,7 +65,7 @@ classdef bParameters < handle
         % ENFORCE COMMON PARAMETERS
         function paramsOut = enforceCommonDefaults(me,paramsIn)
             % get default common parameters
-            C = me.application.getCommonDefaults(me.type);
+            C = me.Application.getCommonDefaults(me.Type);
             
             % for each param in C, put the value for it from the input User data.
             % if absent use the default from C
@@ -88,12 +91,12 @@ classdef bParameters < handle
         function val = get(me,parameterName)
             if exist('parameterName','var')
                 idx = me.findIdx(parameterName);
-                val = me.values{idx};
+                val = me.Values{idx};
             else
                 val = cell(3,1);
-                val{1} = me.names;
-                val{2} = me.types;
-                val{3} = me.values;
+                val{1} = me.Names;
+                val{2} = me.Types;
+                val{3} = me.Values;
             end
         end
         
@@ -106,13 +109,13 @@ classdef bParameters < handle
                 err = MException('batalef:parameters:nonScalarValue',sprintf('Value for parameters must be scalar. Parameter: "%s"',parameterName));
                 throw(err);
             end
-            me.values{idx} = newValue;
+            me.Values{idx} = newValue;
         end
         
         
         % FIND INDEX
         function idx = findIdx(me,parameterName)
-            idx = find(strcmp(parameterName,me.names));
+            idx = find(strcmp(parameterName,me.Names));
             if isempty(idx)
                 err = MException('batalef:parameters:noParameter',sprintf('No parameter with name "%s"',parameterName));
                 throw(err);
@@ -121,6 +124,17 @@ classdef bParameters < handle
                 throw(err)
             end
         end
+        
+        % APPLICATION
+        function app = get.Application(me)
+            switch me.Type
+                case 'application'
+                    app = me.Parent;
+                otherwise
+                    app = me.Parent.Application;
+            end
+        end
+                    
         
     end
 

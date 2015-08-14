@@ -2,21 +2,17 @@ classdef bApplication < handle
 
     properties (Access = private)
        CommonParams
-       
     end
     
     properties (Access = public)
         WorkingDirectory
-        Files = cell(0)
     end
     
 	methods
         
         % CONSTRUCTOR
-        function me = bApplication(workingDirectory,appCommonParams,fileCommonParams)
+        function me = bApplication(workingDirectory)
             me.WorkingDirectory = workingDirectory;
-            me.loadCommonParameters('application',me.physpath(appCommonParams));
-            me.loadCommonParameters('file',me.physpath(fileCommonParams));
         end
         
         % LOAD COMMON PARAMETERS
@@ -35,7 +31,7 @@ classdef bApplication < handle
             
         % ADD FILE TO APPLICATION
 		function [FileIdx] = addFile(me,audioFile,parametersFile)
-            [~,title] = fileparts(audioFile);
+            [~,title] = fileParts(audioFile);
             fileobj = bFile(me,title,audioFile,parametersFile);
             n = length(me.Files);
             me.Files{n+1} = fileobj;
@@ -44,8 +40,7 @@ classdef bApplication < handle
         
         % GET FULL PHYSICAL PATH
         function val = physpath(me,path)
-            val = strcat(me.WorkingDirectory,filesep(),path);
-        end
+            if isempty(strfind(path,me.WorkingDirectory))
                 
     end
 end

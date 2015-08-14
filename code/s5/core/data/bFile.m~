@@ -22,11 +22,12 @@ classdef bFile < handle
             me.Title = title;
             
             % create parameters object
-            me.Parameters = bParameters(me,'file');
-            me.Parameters.loadFromFile(parametersFile);
-            
+            me.P
             % create raw data object
-            me.RawData = bRawData('external',[],[],[],audioFile,me);
+            
+            
+            me.Parameters = parametersObject;
+            me.Parameters.Parent = me;
         end
     end
     

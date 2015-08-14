@@ -6,33 +6,33 @@ classdef bRawData < handle
         Matrix
         Fs
         AudioPath
-        Application
-        NSamples
-        NChannels
         Operations
         Parent
+        NSamples  % 
+        NChannels
     end
     
     properties (Constant)
         raw = 0;
         filtered = 1;
         userFunction = 3;
-        
     end
     
     properties (Dependent)
         Status
         HasMatrix
         Application
-	FileName
-	FileExtension
-	FilePath
+        FileName
+        FileExtension
+        FilePath
     end
     
     
     methods
         % CONSTRUCTOR
         function me = bRawData(position,matrix,Fs,operations,audioPath,parent)
+            me.Position = position;
+            me.Parent   = parent;            
             switch position
                 case 'internal'
                     if isempty(matrix)
@@ -54,7 +54,7 @@ classdef bRawData < handle
                     % read file metadata
                     try
                         
-                        meta = audioinfo(audioPath);
+                        meta = audioinfo(me.Application.physpath(audioPath));
                         me.AudioPath  = audioPath;
                         me.NChannels  = meta.NumChannels;
                         me.NSamples   = meta.TotalSamples;
@@ -77,8 +77,7 @@ classdef bRawData < handle
                         sprintf('The data position specified ("%s") is invalid',position));
                     throw(err)
             end
-            me.Position = position;
-            me.Parent   = parent;
+
         end
         
         % SET INTERVAL BOUNDRIES
@@ -119,12 +118,13 @@ classdef bRawData < handle
         
         % READ DATA FROM FILE
         function [TS, Fs] = readAudio(me,interval)
+            phys = me.Application.physpath(me.AudioPath);
             try
                 if isempty(interval)
-                    [TS,Fs] = audioread(me.AudioPath);
+                    [TS,Fs] = audioread(phys);
                 else
                     interval = me.setIntervalBoundries(interval);
-                    [TS,Fs] = audioread(me.AudioPath,interval);
+                    [TS,Fs] = audioread(phys,interval);
                 end
             
             catch err
@@ -201,15 +201,16 @@ classdef bRawData < handle
             obj = me.Parent.Application;
         end
         
-	function val = get.FilePath(me)
-		val = fileparts(me.AudioPath);
-	end
-	function val = get.FileName(me)
-		[~,val] = fileparts(me.AudioPath);
-	end 
-	function val = get.FileExtension(me)
-		[~,~,val] = fileparts(me.AudioPath);
-	end       
+        function val = get.FilePath(me)
+            val = fileparts(me.Application.physpath(me.AudioPath));
+        end
+        function val = get.FileName(me)
+            [~,val] = fileparts(me.AudioPath);
+        end 
+        function val = get.FileExtension(me)
+            [~,~,val] = fileparts(me.AudioPath);
+        end 
+
     end
     
 end
