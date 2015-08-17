@@ -1,4 +1,4 @@
-function createSecondaryFile( K, add, dialog, singleShot)
+function secFile = createSecondaryFile( K, add, dialog, singleShot)
 %CREATESECONDARYFILE -INTERNAL- create a secondary file and load into app
 
     if ~exist('dialog','var')
