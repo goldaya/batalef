@@ -19,7 +19,7 @@ function feInConsole( dirPath, parametersFile, recursive )
     % init batalef environment
     startTime = cputime;
     tic;
-    initBackgroundBatalef(parametersFile);
+    backgroundInit(parametersFile);
     t = toc;
     fprintf('batalef system initialized in %d seconds\n',t)
 
@@ -55,7 +55,8 @@ function doFeDir(dirPath, recursive)
             fprintf('%i/%i: %s',i,N,F(i).name);
             tic;
             importFileObjectFromFile(strcat(dirPath,filesep(),F(i).name));
-            fExtraction(1);
+            K = 1:appData('Files','Count');
+            fExtraction(K);
             save(strcat(dirPath,filesep(),F(i).name),'filesObject');
             t = toc;
             fprintf(': Done. %d seconds\n',t);
