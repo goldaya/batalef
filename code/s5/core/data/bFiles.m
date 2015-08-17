@@ -1,4 +1,4 @@
-class bFiles < handle
+classdef bFiles < handle
 
 	properties
 		List
@@ -45,5 +45,5 @@ class bFiles < handle
 		end
 	end
 
-endcalss
+end
 

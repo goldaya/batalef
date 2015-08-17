@@ -51,7 +51,7 @@ classdef bFile < handle
         end
 
 	% GET CHANNEL INTERFACE OBJECT
-        function cobj = Channel(me,j)
+        function cobj = channel(me,j)
             cobj = bChannel(me,j);
         end
     end
