@@ -22,6 +22,8 @@ function [  ] = cgRestoreParams(  )
     set(handles.textEndDiff,'String',num2str(dbEnd));
     set(handles.sliderEndDiff, 'Value', 1-10^(dbEnd/10));
     
+    set(handles.textD2P, 'String', num2str(getParam('callsGUI:detectionPeakWindow').*1000));
+    
     % filter
     switch getParam('callsGUI:filter:method')
         case c.none

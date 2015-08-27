@@ -11,3 +11,4 @@ Browse through files:
 
 (0.7.1 rollbacked)
 0.7.2 - background processing: backgroundFolder121, feInConsole.
+0.7.3 - FE: detection to peak window

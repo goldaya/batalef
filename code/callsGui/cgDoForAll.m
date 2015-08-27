@@ -20,6 +20,7 @@ function [  ] = cgDoForAll( K, J )
     startThreshold = str2double(get(handles.textStartDiff,'String'));
     endThreshold   = str2double(get(handles.textEndDiff,  'String'));
     gapTolerance = str2double(get(handles.textGap, 'String'))/1000;
+    detectionPeakWindow = str2double(get(handles.textD2P,'String'))/1000;
 
 %     test = cell(12,1);
     for k = 1:length(K)
@@ -49,7 +50,7 @@ function [  ] = cgDoForAll( K, J )
                     end
                     wip = channelCall.inPoints(call, window);
 %                     tic;
-                    [call] = channelCallAnalyze(K(k),Jbar(j),s,t,window,dataset(wip(1):wip(2)),[],startThreshold,endThreshold,gapTolerance,[],true,true);
+                    [call] = channelCallAnalyze(K(k),Jbar(j),s,t,window,dataset(wip(1):wip(2)),[],detectionPeakWindow,startThreshold,endThreshold,gapTolerance,[],true,true);
 %                     SS(s,1) = toc;
 %                     tic;
 %                     [call] = channelCallAnalyze_new(K(k),Jbar(j),s,t,window,dataset(wip(1):wip(2)),[],startThreshold,endThreshold,gapTolerance,[],true,true);

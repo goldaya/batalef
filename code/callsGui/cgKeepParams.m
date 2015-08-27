@@ -9,6 +9,7 @@ function [  ] = cgKeepParams(  )
     setParam('callsGUI:gap', str2double(get(handles.textGap, 'String')));
     setParam('callsGUI:dbStart', str2double(get(handles.textStartDiff,'String')));
     setParam('callsGUI:dbEnd', str2double(get(handles.textEndDiff,'String')));
+    setParam('callsGUI:detectionPeakWindow', str2double(get(handles.textD2P, 'String'))./1000);
     
     % filter
     switch get(handles.ddFilter, 'Value');
