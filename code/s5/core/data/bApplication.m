@@ -7,6 +7,8 @@ classdef bApplication < handle
     
     properties (Access = public)
         WorkingDirectory
+        gpuProcAllowed = false
+        parProcAllowed = false
     end
     
     properties (Dependent = true)
