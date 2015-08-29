@@ -1,4 +1,4 @@
-function call = channelCallAnalyze( k,j,s,type,window, dataset,envDataset, startThreshold, endThreshold, gapTolerance, forcedBoundries, computeSpectral, computeRidge )
+function call = channelCallAnalyze( k,j,s,type,window, dataset,envDataset, detectionPeakWindow, startThreshold, endThreshold, gapTolerance, forcedBoundries, computeSpectral, computeRidge )
 %CHANNELCALLANALYZE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -15,10 +15,18 @@ function call = channelCallAnalyze( k,j,s,type,window, dataset,envDataset, start
         envDataset = envmAdminCompute(dataset,Fs);
     end
     
-
+    
     if isempty(forcedBoundries)
     %%% find peak %%%
-        [peakValue, peakPoint] = max(envDataset);
+        D2P = call.inPoints(call,call.DetectionTime - window(1)+[-1,1].*(detectionPeakWindow/2));
+        if D2P(1) < 1
+            D2P(1) = 1;
+        end
+        if D2P(2) > length(envDataset)
+            D2P(2) = length(envDataset);
+        end
+        [peakValue, peakPoint] = max( envDataset(D2P(1):D2P(2)) );
+        peakPoint = peakPoint+D2P(1);
         call.PeakTime  = peakPoint/Fs + window(1);
         call.PeakValue = peakValue;
 

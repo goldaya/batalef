@@ -12,6 +12,7 @@ function [call, dataset, T] = cgCalculateCall( dataset, forcedBoundries )
     startThreshold = str2double(get(handles.textStartDiff,'String'));
     endThreshold   = str2double(get(handles.textEndDiff,  'String'));
     gapTolerance = str2double(get(handles.textGap, 'String'))/1000;
+    detectionPeakWindow = str2double(get(handles.textD2P,'String'))/1000;
     
     %
     if ~exist('forcedBoundries','var')
@@ -22,7 +23,7 @@ function [call, dataset, T] = cgCalculateCall( dataset, forcedBoundries )
     %[dataset,T] = channelData(k,j,'TS','TimeInterval',control.cg.window,'Filter',control.cg.filter);
     
     % analyze call
-    call = channelCallAnalyze(k,j,s,t,control.cg.window,dataset,[],startThreshold,endThreshold,gapTolerance,forcedBoundries,true,true);
+    call = channelCallAnalyze(k,j,s,t,control.cg.window,dataset,[],detectionPeakWindow,startThreshold,endThreshold,gapTolerance,forcedBoundries,true,true);
     control.cg.call = call;
     
 

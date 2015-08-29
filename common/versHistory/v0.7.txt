@@ -8,3 +8,7 @@ Spectrogram GUI:
 Browse through files:
  - when using the up/down arrows, the next/previous file is displayed and
    marked for processing (all other marks are deleted)
+
+(0.7.1 rollbacked)
+0.7.2 - background processing: backgroundFolder121, feInConsole.
+0.7.3 - FE: detection to peak window

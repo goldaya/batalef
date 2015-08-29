@@ -19,6 +19,7 @@ beam:genetic:mutationFactor float 0.25
 callsGUI:callWindow float 10.000000 
 callsGUI:dbEnd float -3.000000 
 callsGUI:dbStart float -6.000000 
+callsGUI:detectionPeakWindow float 0.005
 callsGUI:filter:method integer 0 
 callsGUI:filter:butter:type integer 102.000000 
 callsGUI:filter:butter:f1 float 50.000000 
