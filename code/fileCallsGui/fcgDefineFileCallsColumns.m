@@ -1,4 +1,4 @@
-fuinction fcgDefineFileCallsColumns(k)
+function fcgDefineFileCallsColumns(k)
 %FCGDEFINEFILECALLSCOLUMNS set the columns of the file list table (number of mics is file specific)
 
     N = fileData(k,'Mics','Count');
@@ -26,8 +26,7 @@ fuinction fcgDefineFileCallsColumns(k)
     
     uitabColEditable = logical(uitabColEditable);
 
-    handles = fcgGetHandles();
-    uitab = handles.uitabFileCalls;    
+    uitab = getHandles('fcg','uitabFileCalls');
     set(uitab,'columnname',uitabColNames);
     set(uitab,'columnformat',uitabColFormats);
     set(uitab,'columnWidth',uitabColWidths);
