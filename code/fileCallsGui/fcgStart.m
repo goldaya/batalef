@@ -8,6 +8,10 @@ function fcgStart( fig, k )
         fcgBuildBeamPanel(fig);
         fcgBuildLocalizationPanel(fig);
         registerGui('fcg',fig);
+        locAdminBuildList(fig);
+        locAdminMethodSelectedInternal(control.beam.method,true);
+        bmAdminBuildList(fig);
+        bmAdminMethodSelectedInternal(control.beam.method,true);        
     end
 
     handles = getHandles('fcg');

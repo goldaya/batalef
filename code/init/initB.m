@@ -45,6 +45,7 @@ function [  ] = initB(  )
     control.spectrogram.method = getParam('spectrogram:method');
     control.ridge.method = getParam('ridge:method');
     control.beam.method = getParam('beam:method');
+    control.localization.method = getParam('localization:method');
     
     control.mg = [];
     control.mg.k = 0;

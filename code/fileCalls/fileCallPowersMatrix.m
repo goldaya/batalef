@@ -34,10 +34,11 @@ function M = fileCallPowersMatrix( k, batPosition, channelCalls )
     
     % directivity
     D = fileData(k,'Mics','Directivity','NoValidation',true);
-    dC = ones(nMics,1);
-    angles = arrayfun(@(x) ang(batPosition-x{1},D.zero), ...
-        mat2cell(micPositions,ones(1,nMics),3));
-    if D.use        
+    dC = zeros(nMics,1);
+    angles = zeros(nMics,1);
+    if D.use
+        angles = arrayfun(@(x) ang(batPosition-x{1},D.zero), ...
+            mat2cell(micPositions,ones(1,nMics),3));        
         X = cell2mat(D.cell{1});
         Y = zeros(length(A));
         for i = 1:length(X)

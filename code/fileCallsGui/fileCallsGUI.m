@@ -22,7 +22,7 @@ function varargout = fileCallsGUI(varargin)
 
 % Edit the above text to modify the response to help fileCallsGUI
 
-% Last Modified by GUIDE v2.5 01-Sep-2015 13:38:46
+% Last Modified by GUIDE v2.5 01-Sep-2015 16:42:30
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -212,6 +212,7 @@ airAbsorptionDialog();
 
 % --------------------------------------------------------------------
 function beamComputeMenuItem_Callback(hObject, eventdata, handles)
+fcgComputeBeams();
 
 % --------------------------------------------------------------------
 function beamClearMenuItem_Callback(hObject, eventdata, handles)
@@ -239,28 +240,9 @@ micsGUI(k);
 
 
 % --------------------------------------------------------------------
-function dmBeamSurf_Callback(hObject, eventdata, handles)
-% hObject    handle to dmBeamSurf (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
+function beamMatrixSaveMenuItem_Callback(hObject, eventdata, handles)
+fcgSavePowersMatrix();
 
 % --------------------------------------------------------------------
-function dmBeamGenetic_Callback(hObject, eventdata, handles)
-% hObject    handle to dmBeamGenetic (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --------------------------------------------------------------------
-function dmLocMlat_Callback(hObject, eventdata, handles)
-% hObject    handle to dmLocMlat (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --------------------------------------------------------------------
-function dmLocArray_Callback(hObject, eventdata, handles)
-% hObject    handle to dmLocArray (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+function beamMatrixReloadMenuItem_Callback(hObject, eventdata, handles)
+fcgPopulatePowersMatrix();

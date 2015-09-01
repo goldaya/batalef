@@ -27,19 +27,7 @@ function fcgPlotRaw()
     EL = cell2mat(D(:,3));
     P  = cell2mat(D(:,11));
     
-    M = NaN(length(elCoors),length(azCoors));
-    mAZ = zeros(length(U),1);
-    mEL = zeros(length(U),1);
-    for i = 1:length(P)
-        % put in the most appropiate cell
-        A = abs(azCoors - AZ(i));
-        [~,iAZ] = min(A);
-        A = abs(elCoors - EL(i));
-        [~,iEL] = min(A);
-        M(iEL,iAZ) = P(i);
-        mAZ(i) = azCoors(iAZ);
-        mEL(i) = elCoors(iEL);
-    end
+    M = computeRawImage(azCoors, elCoors, AZ, EL, P);
 
     axes(axobj);
     imagesc(azCoors,elCoors,M,'Parent',axobj);
@@ -47,7 +35,7 @@ function fcgPlotRaw()
 
     for i = 1:length(U)
 %         idx = text(mAZ(i),mEL(i),num2str(i));
-        idx = text(AZ(i)+2,EL(i),num2str(i));
+        idx = text(AZ(i)+1,EL(i),num2str(i));
         set(idx,'Clipping','on');
         if U(i)
             set(idx,'Color','green');

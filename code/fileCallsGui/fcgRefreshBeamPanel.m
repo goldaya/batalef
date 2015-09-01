@@ -3,6 +3,7 @@ function fcgRefreshBeamPanel()
 
     fcgPopulatePowersMatrix();
     fcgPlotRaw();
+    fcgPlotBeam();
     
 end
 

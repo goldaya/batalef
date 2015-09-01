@@ -5,7 +5,7 @@ function [  ] = bmAdminBuildList( guifig )
 
     try
         handles = guidata( guifig );
-        menus = handles.defMethodsBeamMenu;
+        menus = handles.dmBeamMenu;
     catch
         return;
     end    

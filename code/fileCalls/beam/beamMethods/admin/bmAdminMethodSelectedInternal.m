@@ -2,7 +2,7 @@ function [  ] = bmAdminMethodSelectedInternal( newMethod, noDialog )
 %BMADMINMETHODSELECTEDINTERNAL
 
     global control;
-    handles = fpgGetHandles();
+    handles = getHandles('fcg');
     
     
     %oldMethod = control.envelope.method;
@@ -20,7 +20,7 @@ function [  ] = bmAdminMethodSelectedInternal( newMethod, noDialog )
     end
     
     
-    methodsui = get(handles.defMethodsBeamMenu, 'Children');
+    methodsui = get(handles.dmBeamMenu, 'Children');
     defmMethodSelected(methodsui, newMethod);
             
     control.beam.method = newMethod;

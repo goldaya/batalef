@@ -1,4 +1,4 @@
-function [ raw, interpolated, azCoors, elCoors ] = bmAdminCompute( powers, micDirections )
+function [ IM, direction, width, power ] = bmAdminCompute( micPowers, micDirections )
 %BMADMINCOMPUTE Compute beam by selected method
 
     global control;
@@ -20,7 +20,10 @@ function [ raw, interpolated, azCoors, elCoors ] = bmAdminCompute( powers, micDi
     domain.elRes = getParam('beam:resEl');
     azCoors = transpose(linspace(domain.azMin,domain.azMax,round((domain.azMax - domain.azMin)/domain.azRes)));
     elCoors = transpose(linspace(domain.elMin,domain.elMax,round((domain.elMax - domain.elMin)/domain.elRes)));
-    clear domain;
-    [raw, interpolated] = methodFunc(powers, micDirections, azCoors, elCoors, params);   
+
+    [IM, direction, width, power] = methodFunc(micPowers, micDirections, azCoors, elCoors, params);
+    IM.image = IM;
+    IM.azCoors = azCoors;
+    IM.elCoors = elCoors;
     
 end

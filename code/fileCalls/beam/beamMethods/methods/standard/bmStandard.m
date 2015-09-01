@@ -1,18 +1,7 @@
-function [ raw, interpolated ] = bmStandard( powers, micDirections, azCoors, elCoors, params )
+function [ IM, direction, width, power ] = bmStandard( powers, micDirections, azCoors, elCoors, ~ )
 %BMSTANDARD
 
-    % create initial matrix and put known values in it
-    M = NaN(length(elCoors),length(azCoors));
-    for i = 1:length(powers)
-        % get the most appropiate cell
-        A = abs(azCoors - micDirections(i,1));
-        [~,iAZ] = min(A);
-        A = abs(azCoors - micDirections(i,2));
-        [~,iEL] = min(A);
-        M(iEL,iAZ) = powers(i);
-    end
-
-    raw = M; % interface requires data before interpolation
+    M = computeRawImage( azCoors, elCoors, micDirections(:,1), micDirections(:,2), powers );
     
     % Bitonic filter
     matrix_n2z=M; 
@@ -37,12 +26,12 @@ function [ raw, interpolated ] = bmStandard( powers, micDirections, azCoors, elC
     M(S(1),:) = zeros(1,S(2));
         
     % interpolation
-    interpolated = inpaint_nans(M,1);
+    IM = inpaint_nans(M,1);
     
-    %{
-    % logarithmic scale
-    interpolated = 10*log10(interpolated);
-    raw = 10*log10(raw);
-    %}
+    % under dev
+    direction = [];
+    width = [];
+    power = [];
+    
 end
 

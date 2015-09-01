@@ -448,7 +448,8 @@ end
 function fcFpbMenuItem_Callback(hObject, eventdata, handles)
 K = mgResolveFilesToWork();
 if ~isempty(K)
-    flightPathGUI(K(1));
+    fileCallsGUI(K(1));
+%     flightPathGUI(K(1));
 end
 
 
