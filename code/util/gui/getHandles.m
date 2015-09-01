@@ -1,6 +1,7 @@
 function handles = getHandles( guiName, uiobj )
 %GETHANDLES Get gui handles (all / specific ui object)
 
+    global control;
     handles = guidata(control.(guiName).fig);
     if exist('uiobj','var')
         handles = handles.(uiobj);

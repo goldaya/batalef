@@ -41,7 +41,7 @@ function [ out1 ] = fileCallData( k, a, par, varargin )
             out1 = filesObject(k).fileCalls{a}.beam;    
             
         case 'Power'
-            out1 = filesObject(k).fileCalls{a}.powers(:,1);
+            out1 = filesObject(k).fileCalls{a}.beam.powers(:,5);
             %{
             CC = filesObject(k).fileCalls{a}.channelCalls;
             out1 = zeros(length(CC),1);

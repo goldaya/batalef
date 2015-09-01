@@ -1,27 +1,39 @@
 function fcgStart( fig, k )
 %FCGSTART Start the file calls gui
 
+    global control;
+    
+    control.fcg.k = k;
     if ~isGuiAlive('fcg')
+        fcgBuildBeamPanel(fig);
+        fcgBuildLocalizationPanel(fig);
         registerGui('fcg',fig);
-        fcgBuildPanels(fig, k);
     end
 
     handles = getHandles('fcg');
     
-    % list & localization 
-    fcgDefineFileCallsColumns(k);
-    fcgPopulateCallsList(k);
-    
-    
     % matching
     fcgPopulateBaseChannelsList(k);
-    fcgPopulateBaseCallsList(k,1);
+    fcgPopulateBaseCallsList();
+    fcgPopulatePossibleMatches();
     
+    % list & localization 
+    fcgDefineFileCallsColumns(k);
+    fcgPopulateCallsList();
+    fcgPlotLocalization();
     
+    % selection & operations
+    set(handles.textIdx,'String','0');
+    
+        
     % beam
-    N = fileData(k,'Calls','Count');
-    if N > 0
-    end
+    cla(handles.axesBeam);
+    cla(handles.axesRaw);
+    set(handles.uitabPowers,'Data',[]);
+    
+%     N = fileData(k,'Calls','Count');
+%     if N > 0
+%     end
     
     
     

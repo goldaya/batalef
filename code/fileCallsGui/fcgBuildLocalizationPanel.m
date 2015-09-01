@@ -1,10 +1,10 @@
-function fcgBuildLocalizationPanel(fig,k)
+function fcgBuildLocalizationPanel(fig)
 % FCGBUILDLOCALIZATIONPANEL build the UI table and axes objects
 
     guiD = guidata(fig);
 
     % calls table
-    uitabPosition = [0,0,0.7,1];
+    uitabPosition = [0,0,0.6,1];
     uitabUnits = 'normalized';
     
     
@@ -16,7 +16,7 @@ function fcgBuildLocalizationPanel(fig,k)
 
 
     % axes object
-    axesPosition = [0.7,0,0.3,1];
+    axesPosition = [0.65,0.1,0.3,0.9];
     axesUnits = 'normalized';
     axobj = axes('parent',guiD.panelLocalization,...
                     'units',axesUnits,...

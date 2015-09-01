@@ -1,9 +1,9 @@
-function fcgBuildBeamPanel(fig,k)
+function fcgBuildBeamPanel(fig)
 %FCGBUILDBEAMPANEL File Calls Gui - build the beam data ui items
 
     guiD = guidata(fig);
 
-    uitabPositions = [0,0.4,1,0.6];
+    uitabPosition = [0,0.6,1,0.4];
     uitabUnits = 'normalized';
 
     N = 10;
@@ -11,56 +11,80 @@ function fcgBuildBeamPanel(fig,k)
     uitabColEditable = zeros(1,N);
     uitabColFormats  = cell(1,N);
     uitabColWidths   = cell(1,N);
+
+    i = 0;
+
+    i = i +1;
+    uitabColNames{i}    = 'Mic Usage';
+    uitabColEditable(i) = 1;
+    uitabColFormats{i}  = 'logical';
+    uitabColWidths{i}   = 70;
     
-    uitabColNames{1}    = 'Mic Rel Azimuth';
-    uitabColEditable(1) = 1;
-    uitabColFormats{1}  = 'numeric';
-    uitabColWidths{1}   = 70;
+    i = i +1;
+    uitabColNames{i}    = 'Mic Rel Azimuth';
+    uitabColEditable(i) = 1;
+    uitabColFormats{i}  = 'numeric';
+    uitabColWidths{i}   = 140;
     
-    uitabColNames{2}    = 'Mic Rel Elevation';
-    uitabColEditable(2) = 1;
-    uitabColFormats{2}  = 'numeric';
-    uitabColWidths{2}   = 70;
+    i = i+1;
+    uitabColNames{i}    = 'Mic Rel Elevation';
+    uitabColEditable(i) = 1;
+    uitabColFormats{i}  = 'numeric';
+    uitabColWidths{i}   = 140;
     
-    uitabColNames{3}    = 'Distance';
-    uitabColEditable(3) = 1;
-    uitabColFormats{3}  = 'numeric';
-    uitabColWidths{3}   = 70;
+    i = i + 1;
+    uitabColNames{i}    = 'Distance';
+    uitabColEditable(i) = 1;
+    uitabColFormats{i}  = 'numeric';
+    uitabColWidths{i}   = 140;
+    
+    i = i + 1;
+    uitabColNames{i}    = 'Direct. Angle';
+    uitabColEditable(i) = 1;
+    uitabColFormats{i}  = 'numeric';
+    uitabColWidths{i}   = 140;    
 
-    uitabColNames{4}    = 'Meas. Power';
-    uitabColEditable(4) = 0;
-    uitabColFormats{4}  = 'numeric';
-    uitabColWidths{4}   = 70;
+    i = i + 1;
+    uitabColNames{i}    = 'Meas. Power';
+    uitabColEditable(i) = 0;
+    uitabColFormats{i}  = 'numeric';
+    uitabColWidths{i}   = 140;
 
-    uitabColNames{5}    = 'Air absorption (dB)';
-    uitabColEditable(5) = 1;
-    uitabColFormats{5}  = 'numeric';
-    uitabColWidths{5}   = 70;
+    i = i + 1;
+    uitabColNames{i}    = 'Air absorption (dB)';
+    uitabColEditable(i) = 1;
+    uitabColFormats{i}  = 'numeric';
+    uitabColWidths{i}   = 140;
 
-    uitabColNames{6}    = 'Mic Calibration Gain (dB)';
-    uitabColEditable(6) = 1;
-    uitabColFormats{6}  = 'numeric';
-    uitabColWidths{6}   = 70;
+    i = i + 1;
+    uitabColNames{i}    = 'Mic Calibration Gain (dB)';
+    uitabColEditable(i) = 1;
+    uitabColFormats{i}  = 'numeric';
+    uitabColWidths{i}   = 180;
 
-    uitabColNames{7}    = 'Mic Direct. Gain (dB)';
-    uitabColEditable(7) = 1;
-    uitabColFormats{7}  = 'numeric';
-    uitabColWidths{7}   = 70;
+    i = i + 1;
+    uitabColNames{i}    = 'Mic Direct. Gain (dB)';
+    uitabColEditable(i) = 1;
+    uitabColFormats{i}  = 'numeric';
+    uitabColWidths{i}   = 140;
 
-    uitabColNames{8}    = 'Power after Air + Calib.';
-    uitabColEditable(8) = 0;
-    uitabColFormats{8}  = 'numeric';
-    uitabColWidths{8}   = 70;
+    i = i + 1;
+    uitabColNames{i}    = 'Power after Air + Calib.';
+    uitabColEditable(i) = 0;
+    uitabColFormats{i}  = 'numeric';
+    uitabColWidths{i}   = 180;
 
-    uitabColNames{9}    = 'Power after Direct.';
-    uitabColEditable(9) = 0;
-    uitabColFormats{9}  = 'numeric';
-    uitabColWidths{9}   = 70;
+    i = i + 1;
+    uitabColNames{i}    = 'Power after Direct.';
+    uitabColEditable(i) = 0;
+    uitabColFormats{i}  = 'numeric';
+    uitabColWidths{i}   = 140;
 
-    uitabColNames{10}    = 'Power after all corrections';
-    uitabColEditable(10) = 0;
-    uitabColFormats{10}  = 'numeric';
-    uitabColWidths{10}   = 70;
+    i = i + 1;
+    uitabColNames{i}    = 'Power after all corrections';
+    uitabColEditable(i) = 0;
+    uitabColFormats{i}  = 'numeric';
+    uitabColWidths{i}   = 180;
 
     uitabColEditable = logical(uitabColEditable);
 
@@ -71,21 +95,21 @@ function fcgBuildBeamPanel(fig,k)
                     'columnformat',uitabColFormats,...
                     'columnEditable',uitabColEditable,...
                     'columnWidth',uitabColWidths,...
-                    'Tag','uitabFileCalls',...
-                    'CellEditCallback',@fpgUitabCellEdit);
-    guiD.uitabFileCalls = uitab;
+                    'Tag','uitabPowers');
+
+    guiD.uitabPowers = uitab;
 
     % raw axes object
-    axesPosition = [0,0,0.5,0.4];
+    axesPosition = [0.05,0.05,0.4,0.5];
     axesUnits = 'normalized';
-    axobj = axes('parent',guiD.panelLocalization,...
+    axobj = axes('parent',guiD.panelBeam,...
                     'units',axesUnits,...
                     'Position',axesPosition,...
                     'Tag','axesRaw');
     guiD.axesRaw = axobj;
 
     % beam axes object
-    axesPosition = [0.5,0,0.5,0.4];
+    axesPosition = [0.55,0.05,0.4,0.5];
     axesUnits = 'normalized';
     axobj = axes('parent',guiD.panelBeam,...
                     'units',axesUnits,...
@@ -93,4 +117,5 @@ function fcgBuildBeamPanel(fig,k)
                     'Tag','axesBeam');
     guiD.axesBeam = axobj;
 
+    guidata(fig,guiD);
 end

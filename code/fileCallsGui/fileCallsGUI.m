@@ -22,7 +22,7 @@ function varargout = fileCallsGUI(varargin)
 
 % Edit the above text to modify the response to help fileCallsGUI
 
-% Last Modified by GUIDE v2.5 29-Aug-2015 12:34:49
+% Last Modified by GUIDE v2.5 01-Sep-2015 13:38:46
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -60,7 +60,8 @@ guidata(hObject, handles);
 
 % UIWAIT makes fileCallsGUI wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
-
+k = varargin{1};
+fcgStart(hObject,k);
 
 % --- Outputs from this function are returned to the command line.
 function varargout = fileCallsGUI_OutputFcn(hObject, eventdata, handles) 
@@ -74,46 +75,192 @@ varargout{1} = handles.output;
 
 
 
-function edit1_Callback(hObject, eventdata, handles)
-% hObject    handle to edit1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit1 as text
-%        str2double(get(hObject,'String')) returns contents of edit1 as a double
-
+function textIdx_Callback(hObject, eventdata, handles)
+A = str2num(get(hObject,'String'));
+if isempty(A)
+    msgbox('File calls selection invalid');
+else
+    fcgRefreshBeamPanel()
+end
+   
 
 % --- Executes during object creation, after setting all properties.
-function edit1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
+function textIdx_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
 
 
-% --- Executes on selection change in popupmenu1.
-function popupmenu1_Callback(hObject, eventdata, handles)
-% hObject    handle to popupmenu1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu1 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popupmenu1
-
+% --- Executes on selection change in ddBaseChannel.
+function ddBaseChannel_Callback(hObject, eventdata, handles)
+fcgPopulateBaseCallsList();
+fcgPopulatePossibleMatches();
 
 % --- Executes during object creation, after setting all properties.
-function popupmenu1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to popupmenu1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
+function ddBaseChannel_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on selection change in ddBaseCall.
+function ddBaseCall_Callback(hObject, eventdata, handles)
+fcgPopulatePossibleMatches();
+
+% --- Executes during object creation, after setting all properties.
+function ddBaseCall_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function textErrTol_Callback(hObject, eventdata, handles)
+setParam('fileCalls:matching:triangleMaxError',str2double(get(hObject,'String'))/100+1);
+
+% --- Executes during object creation, after setting all properties.
+function textErrTol_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+set(hObject, 'String', num2str((getParam('fileCalls:matching:triangleMaxError')-1)*100));
+
+
+% --- Executes on button press in pbFindMatches.
+function pbFindMatches_Callback(hObject, eventdata, handles)
+fcgPopulatePossibleMatches();
+
+% --- Executes on selection change in ddSeqs.
+function ddSeqs_Callback(hObject, eventdata, handles)
+
+
+% --- Executes during object creation, after setting all properties.
+function ddSeqs_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pbAccept.
+function pbAccept_Callback(hObject, eventdata, handles)
+fcgAcceptCall();
+
+
+% --- Executes on button press in pbAcceptAll.
+function pbAcceptAll_Callback(hObject, eventdata, handles)
+fcgAcceptAll();
+
+
+% --- Executes on button press in pbNextBaseCall.
+function pbNextBaseCall_Callback(hObject, eventdata, handles)
+fcgNextBaseCall();
+
+
+% --- Executes on button press in pbPrev.
+function pbPrev_Callback(hObject, eventdata, handles)
+[k,a] = fcgGetCurrent();
+N = fileData(k,'Calls','Count','NoValidation',true);
+if a <= 1
+    a = 1;
+elseif a > N
+    a = N;
+else
+	a = a - 1;
+end
+set(handles.textIdx, 'String', num2str(a));
+fcgRefreshBeamPanel();
+
+
+
+% --- Executes on button press in pbNext.
+function pbNext_Callback(hObject, eventdata, handles)
+[k,a] = fcgGetCurrent();
+N = fileData(k,'Calls','Count','NoValidation',true);
+if a >= N
+    a = N;
+else
+    a = a+1;
+end
+set(handles.textIdx, 'String', num2str(a));
+fcgRefreshBeamPanel();
+
+
+% --- Executes on button press in pbSelectAll.
+function pbSelectAll_Callback(hObject, eventdata, handles)
+k = fcgGetCurrent();
+N = fileData(k,'Calls','Count','NoValidation',true);
+set(handles.textIdx,'String',strcat('1:',num2str(N)));
+
+
+% --- Executes on button press in pbX.
+function pbX_Callback(hObject, eventdata, handles)
+    k = fcgGetCurrent();
+    A = str2num(get(handles.textIdx,'String')); %#ok<ST2NM>
+    deleteFileCall(k,A);
+    set(handles.textIdx,'String','0');
+    fcgRefresh();
+
+
+% --- Executes on button press in pbCompRaw.
+function pbCompRaw_Callback(hObject, eventdata, handles)
+fcgPlotRaw();
+
+
+% --------------------------------------------------------------------
+function dmAirMenuItem_Callback(hObject, eventdata, handles)
+airAbsorptionDialog();
+
+% --------------------------------------------------------------------
+function beamComputeMenuItem_Callback(hObject, eventdata, handles)
+
+% --------------------------------------------------------------------
+function beamClearMenuItem_Callback(hObject, eventdata, handles)
+
+
+% --------------------------------------------------------------------
+function locComputeMenuItem_Callback(hObject, eventdata, handles)
+
+
+% --------------------------------------------------------------------
+function locFileMenuItem_Callback(hObject, eventdata, handles)
+D = dialogLoadFile();
+fpgReplaceLocations(D);
+
+% --------------------------------------------------------------------
+function locVarMenuItem_Callback(hObject, eventdata, handles)
+D = dialogLoadVar();
+fpgReplaceLocations(D);
+
+
+% --------------------------------------------------------------------
+function micAdminMenuItem_Callback(hObject, eventdata, handles)
+k = fcgGetCurrent();
+micsGUI(k);
+
+
+% --------------------------------------------------------------------
+function dmBeamSurf_Callback(hObject, eventdata, handles)
+% hObject    handle to dmBeamSurf (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function dmBeamGenetic_Callback(hObject, eventdata, handles)
+% hObject    handle to dmBeamGenetic (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function dmLocMlat_Callback(hObject, eventdata, handles)
+% hObject    handle to dmLocMlat (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function dmLocArray_Callback(hObject, eventdata, handles)
+% hObject    handle to dmLocArray (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

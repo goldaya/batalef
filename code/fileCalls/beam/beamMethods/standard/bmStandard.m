@@ -1,7 +1,7 @@
 function [ raw, interpolated ] = bmStandard( powers, micDirections, azCoors, elCoors, params )
 %BMSTANDARD
 
-    % create initial matrix and put know values in it
+    % create initial matrix and put known values in it
     M = NaN(length(elCoors),length(azCoors));
     for i = 1:length(powers)
         % get the most appropiate cell

@@ -9,6 +9,8 @@ function [ idx ] = addFileCall( k, channelCalls )
     
     % approximate time of call and position
     [t, x] = approxCallTimeLocation(channelCallsTimes, MicPositions);
+    
+    % find the power-at-mic-direction matrix
     M = fileCallPowersMatrix(k,x,channelCalls);
     
     % put new call in the right place
@@ -20,7 +22,7 @@ function [ idx ] = addFileCall( k, channelCalls )
             if ts > t
                 filesObject(k).fileCalls{a+1} = filesObject(k).fileCalls{a};
             else
-                createFileCall(k, a+1, channelCalls, t, x, true);
+                createFileCall(k, a+1, channelCalls, t, x, M, true);
                 idx = a+1;
                 return;
             end
