@@ -19,7 +19,12 @@ function [  ] = createFileObject( n, fullname, rawData, spectralData, fileCalls,
     
     % raw data (basic data) + channels
     if ( exist('rawData', 'var') && ~isempty(rawData) )
+
         filesObject(n).rawData = rawData;
+        if ~isfield(filesObject(n).rawData,'Ylim')
+            [m,M] = fileData(n,'TS','Value','MinMax');
+            filesObject(n).rawData.Ylim = [m,M];
+        end        
         
         % channels data
         filesObject(n).channels = struct;

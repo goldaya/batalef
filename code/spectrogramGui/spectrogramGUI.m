@@ -22,7 +22,7 @@ function varargout = spectrogramGUI(varargin)
 
 % Edit the above text to modify the response to help spectrogramGUI
 
-% Last Modified by GUIDE v2.5 30-Jul-2015 17:49:47
+% Last Modified by GUIDE v2.5 08-Sep-2015 16:41:23
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -271,3 +271,10 @@ j = get(gca,'UserData');
 t = [rect(1), rect(1) + rect(3)];
 channelCall.removeCalls(k,j,t,false);
 sogPlotChannelCalls(gca,k,j);
+
+
+% --- Executes when figure1 is resized.
+function figure1_SizeChangedFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

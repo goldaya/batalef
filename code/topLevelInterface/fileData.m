@@ -37,6 +37,9 @@ function [ out, add1 ] = fileData( k, par, varargin )
         
         case 'NakedName'
             out = filesObject(k).naked;
+
+        case 'Title'
+            out = filesObject(k).name;
             
         case 'Fs'
             out = filesObject(k).rawData.Fs;
@@ -64,7 +67,10 @@ function [ out, add1 ] = fileData( k, par, varargin )
                     out = Min;
                     add1 = Max;
             end
-            
+           
+        case 'Ylim'
+            out = filesObject(k).rawData.Ylim;
+
         case 'IsLoaded'
             try
                 if isempty(filesObject(k).rawData.data)
