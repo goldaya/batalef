@@ -12,16 +12,17 @@ classdef bMainGuiGraph < handle
         AxesTS
         AxesSpec
         Idx
+        DisplayType
+        DisplayWindow
+        Ylim
     end
     
     properties (Access = private)
 
         Group
-        FileIdx
-        ChannelIdx
-        DisplayType
-        DisplayWindow
-        Ylim
+        FileIdx = 0;
+        ChannelIdx = 0;
+        Title
 
         ParentUI
         Slider = NaN;
@@ -211,7 +212,7 @@ classdef bMainGuiGraph < handle
                 'HorizontalAlignment','left',...
                 'FontSize',   11,...
                 'Units',      'character',...
-                'Position',   [1,2,100,1],...
+                'Position',   [1,1.8,100,1.4],...
                 'String',     '' );
             
             % display type buttons
@@ -248,7 +249,7 @@ classdef bMainGuiGraph < handle
                 );
             
             % text boxes
-            textsPanel = uipanel('Parent',me.ButtonsPanel,'Units','character','Position',[42,0,72,2],'BorderType','none');
+            textsPanel = uipanel('Parent',me.ButtonsPanel,'Units','character','Position',[42,0,76,2],'BorderType','none');
             uicontrol(...
                 'Parent', textsPanel,...
                 'Style','text',...
@@ -381,6 +382,14 @@ classdef bMainGuiGraph < handle
         end
         function setDisplayType(me,displayType)
             me.DisplayType = displayType;
+            switch displayType
+                case me.tsDisplayType
+                    set(me.PushButtonTS,'Value',1);
+                case me.specDisplayType
+                    set(me.PushButtonSpec,'Value',1);
+                case me.bothDisplayType
+                    set(me.PushButtonBoth,'Value',1);
+            end
             me.resizeAxes();
             me.plot();
         end
@@ -393,6 +402,8 @@ classdef bMainGuiGraph < handle
             set(me.AxesPanel,'Visible','off');
             set(me.TextTime,'String','');
             set(me.TextTitle,'String','');
+            me.FileIdx = 0;
+            me.ChannelIdx = 0;
         end
         
         % SET THE CHANNEL TO DISPLAY
@@ -403,15 +414,19 @@ classdef bMainGuiGraph < handle
             me.Ylim = fileData(me.FileIdx,'Ylim');
             me.plot();
             title = fileData(me.FileIdx,'Title');
-            topString = strcat(['File: ',num2str(me.FileIdx),'   (',title,') ;  Channel:   ',num2str(me.ChannelIdx)]);
-            set(me.TextTitle,'String',topString);
+            me.Title = strcat(['File: ',num2str(me.FileIdx),'   (',title,') ;  Channel:   ',num2str(me.ChannelIdx)]);
+            set(me.TextTitle,'String',me.Title);
         end
         
         % SET SLIDER
         function setSlider(me)
             set(me.Slider, 'Visible','off');
-            audioLength = fileData(me.FileIdx,'Length');
-            M = max(audioLength-me.DisplayWindow,0);
+            if me.FileIdx == 0
+                M = 0;
+            else
+                audioLength = fileData(me.FileIdx,'Length');
+                M = max(audioLength-me.DisplayWindow,0);
+            end
             if M > 0
                 S = (me.DisplayWindow/M).*[0.5,1];
                 vis = 'on';
@@ -424,7 +439,6 @@ classdef bMainGuiGraph < handle
                 V = M;
             end
             set(me.Slider, 'Min',0,'Max',M,'SliderStep',S,'Value',V,'Visible',vis);
-            
         end
         
         
@@ -460,17 +474,25 @@ classdef bMainGuiGraph < handle
             set(me.AxesPanel,'Visible','on');
         end
         function plotTS(me,dataset)
-            plot(me.AxesTS,dataset(:,2),dataset(:,1));
-            axis(me.AxesTS,'tight','on');
-            axis(me.AxesTS,'tight','manual');
-            set(me.AxesTS,'Visible','on','Ylim',me.Ylim);
+            if isempty(dataset)
+                cla(me.AxesTS);
+            else
+                plot(me.AxesTS,dataset(:,2),dataset(:,1));
+                axis(me.AxesTS,'tight','on');
+                axis(me.AxesTS,'tight','manual');
+                set(me.AxesTS,'Visible','on','Ylim',me.Ylim);
+            end
         end
         function plotSpec(me,dataset)
-            spec = somAdminCompute(dataset(:,1), fileData(me.FileIdx,'Fs'));
-            spec.T = spec.T + dataset(1,2);
-            axes(me.AxesSpec);
-            me.SpecImage = imagesc(spec.T,spec.F,spec.P);
-            set(me.AxesSpec,'YDir','normal');            
+            if isempty(dataset)
+                cla(me.AxesSpec);
+            else
+                spec = somAdminCompute(dataset(:,1), fileData(me.FileIdx,'Fs'));
+                spec.T = spec.T + dataset(1,2);
+                axes(me.AxesSpec);
+                me.SpecImage = imagesc(spec.T,spec.F,spec.P);
+                set(me.AxesSpec,'YDir','normal');
+            end
         end
         
         % DISPLAY START TIME PROPERTY (GET/SET)
@@ -492,8 +514,12 @@ classdef bMainGuiGraph < handle
         % DISPLAYED DATASET (GET ONLY)
         function val = get.Dataset(me)
             window = [0,me.DisplayWindow] + me.DisplayStartTime;
-            [D,T] = channelData(me.FileIdx,me.ChannelIdx,'TS','TimeInterval',window);
-            val = [D,T];
+            if me.FileIdx == 0
+                val = [];
+            else
+                [D,T] = channelData(me.FileIdx,me.ChannelIdx,'TS','TimeInterval',window);
+                val = [D,T];
+            end
         end
         
         % VISIBLE PROPERTY (SET/GET)
@@ -562,7 +588,7 @@ classdef bMainGuiGraph < handle
             hold(me.AxesTS,'on');
             ylim = get(me.AxesTS,'Ylim');
             y = ylim(1) + diff(ylim)/2;
-            me.TSMark = plot(me.AxesTS,t,y,'ro');
+            me.TSMark = plot(me.AxesTS,t,y,'rx');
             hold(me.AxesTS,'off');            
         end
         function showSpecMark(me,t)
@@ -572,7 +598,7 @@ classdef bMainGuiGraph < handle
             hold(me.AxesSpec,'on');
             ylim = get(me.AxesSpec,'Ylim');
             y = ylim(1) + diff(ylim)/2;
-            me.SpecMark = plot(me.AxesSpec,t,y,'ro');
+            me.SpecMark = plot(me.AxesSpec,t,y,'rx');
             hold(me.AxesSpec,'off');
         end            
         
@@ -593,7 +619,7 @@ classdef bMainGuiGraph < handle
         
         % POPUP FULL TS
         function fullTS(me)
-            figure;
+            figure('NumberTitle','off','Name',me.Title);
             [TS,T] = channelData(me.FileIdx,me.ChannelIdx,'TS');
             plot(T,TS);
         end

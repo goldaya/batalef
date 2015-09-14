@@ -60,7 +60,10 @@ localization:array:zres float 0.1
 localization:array:zliml float -3
 localization:array:zlimh float 3
 mainGUI:autospectro integer 0
-mainGUI:nAxes integer 1.000000 
+mainGUI:nAxes integer 3
+mainGUI:displayType integer 1
+mainGUI:displayWindow float 0.3
+mainGUI:linkAxes integer 1
 mainGUI:axesHeight float 150.000000 
 mainGUI:showCalls integer 1.000000 
 mainGUI:decimateDisplay integer 0.000000 

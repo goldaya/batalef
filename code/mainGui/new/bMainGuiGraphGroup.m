@@ -72,7 +72,7 @@ classdef bMainGuiGraphGroup < handle
                 fprintf('Please increase the gui size or reduce number of graphs\n');
                 return;
             end
-            set(me.Panel, 'Units','character','Position',position - [0,0,3,0]);
+            set(me.Panel, 'Units','character','Position',[0,0,position(3)-3,position(4)]);
             set(me.Slider,'Units','character','Position',[position(3)-3,0,3,position(4)]);
             me.repositionGraphs();
         end
@@ -216,6 +216,9 @@ classdef bMainGuiGraphGroup < handle
                 linkaxes(specGroup,'off');
             end
             me.Link = link;
+            me.changeDisplayType(me.Graphs{1}.DisplayType,[]);
+            me.changeDisplayWindow(me.Graphs{1}.DisplayWindow,[])
+            me.changeStartTime(me.Graphs{1}.DisplayStartTime,[])
         end
         function val = get.Linked(me)
             val = me.Link;

@@ -10,7 +10,16 @@ classdef bSelectionRibbon < handle
         Panel
         TextDisplay
         TextProcess
-        AllowMultiDisplay
+        CheckboxLinkGuis
+        CheckboxLinkD2P
+        
+        AllowMultiDisplay        
+    end
+    
+    properties (Dependent = true)
+        DisplayVector
+        ProcessVector
+        RibbonsLinked
     end
     
     methods
@@ -35,8 +44,34 @@ classdef bSelectionRibbon < handle
                 'Units','character',...
                 'Position',[12,2.4,15,1.4],...
                 'String','',...
-                'Callback',@(hObject,~)me.displayTextChanged(str2int_compact(get(hObject,'String'))));
-                
+                'Callback',@(hObject,~)me.changeDisplay(str2int_compact(get(hObject,'String'))));
+            uicontrol(me.Panel,...
+                'Style','pushbutton',...
+                'Units','character',...
+                'Position',[29,2.4,5,1.4],...
+                'String','<',...
+                'TooltipString','Previous file',...
+                'Callback',@(hObject,~)me.displayPrev());
+            uicontrol(me.Panel,...
+                'Style','pushbutton',...
+                'Units','character',...
+                'Position',[35,2.4,5,1.4],...
+                'String','>',...
+                'TooltipString','Next file',...
+                'Callback',@(hObject,~)me.displayNext());
+            uicontrol(me.Panel,...
+                'Style','pushbutton',...
+                'Units','character',...
+                'Position',[41,2.4,12,1.4],...
+                'String','Select All',...
+                'Callback',@(hObject,~)me.changeDisplay(1:appData('Files','Count')));            
+            me.CheckboxLinkGuis = uicontrol(me.Panel,...
+                'Style','checkbox',...
+                'Units','character',...
+                'Position',[58,2.6,10,1],...
+                'String','Link GUIs',...
+                'Callback',@(h,~)me.changeLinkGuis(get(h,'Value')));
+            
             % process line
             uicontrol(me.Panel,...
                 'Style','text',...
@@ -48,7 +83,26 @@ classdef bSelectionRibbon < handle
                 'Units','character',...
                 'Position',[12,0.5,15,1.4],...
                 'String','',...
-                'Callback',@(hObject,~)me.processTextChanged(str2int_compact(get(hObject,'String'))));            
+                'Callback',@(hObject,~)me.changeProcess(str2int_compact(get(hObject,'String'))));            
+            uicontrol(me.Panel,...
+                'Style','pushbutton',...
+                'Units','character',...
+                'Position',[29,0.5,11,1.4],...
+                'String','D2P',...
+                'TooltipString','Copy display vector to process vector',...
+                'Callback',@(hObject,~)me.changeProcess(me.DisplayVector));
+            uicontrol(me.Panel,...
+                'Style','pushbutton',...
+                'Units','character',...
+                'Position',[41,0.5,12,1.4],...
+                'String','Select All',...
+                'Callback',@(hObject,~)me.changeProcess(1:appData('Files','Count')));            
+            me.CheckboxLinkD2P = uicontrol(me.Panel,...
+                'Style','checkbox',...
+                'Units','character',...
+                'Position',[58,0.7,22,1],...
+                'String','Link Display & Process',...
+                'Callback',@(h,~)me.changeLinkD2P(get(h,'Value')));            
             
         end
         
@@ -56,19 +110,25 @@ classdef bSelectionRibbon < handle
         function reposition(me,position)
             set(me.Panel,'Units','character','Position',position);
         end
-        % DISPLAY TEXT CHANGED
-        function displayTextChanged(me,vector)
-            if vector(length(vector)) > appData('Files','Count')
+        
+        % CHANGE DISPLAY VECTOR
+        function changeDisplay(me,vector)
+            if ~isempty(vector) && vector(length(vector)) > appData('Files','Count')
                 msgbox('Files out of range');
                 return;
             end
-            if me.Gui.RibbonsLinked
-                me.Gui.ribbonDisplayTextChanged(vector);
+            if me.RibbonsLinked
+                me.Gui.Top.ribbonDisplayTextChanged(vector);
             else
-                me.setDisplay(vector);
+                me.DisplayVector = vector;
             end
         end
-        function setDisplay(me,vector)
+        
+        % DISPLAY VECTOR (SET/GET)
+        function vector = get.DisplayVector(me)
+            vector = str2int_compact(get(me.TextDisplay,'String'));
+        end
+        function set.DisplayVector(me,vector)
             if length(vector) > 1 && ~me.AllowMultiDisplay
                 msgbox('Multiselection for display is not allowed for thid gui');
                 return;
@@ -76,22 +136,76 @@ classdef bSelectionRibbon < handle
             set(me.TextDisplay,'String',int2str_compact(vector));
             me.Gui.setDisplayedFiles(vector);
             if me.LinkD2P
-                me.setProcess(vector);
+                me.ProcessVector = vector;
+            end            
+        end
+
+        % DISPLAY NEXT / PREV
+        function displayPrev(me)
+            v = me.DisplayVector;
+            if isempty(v)
+                v = 0;
+            end
+            v = v(1) - 1;
+            n = appData('Files','Count');
+            if v < 1
+                msgbox('out of range');
+            elseif v > n
+                msgbox('out of range');
+%                 me.changeDisplay(n);
+            else
+                me.changeDisplay(v);
+            end
+        end
+        function displayNext(me)
+            v = me.DisplayVector;
+            if isempty(v)
+                v = 0;
+            end
+            v = v(1) + 1;
+            n = appData('Files','Count');
+            if v < 1
+                msgbox('out of range');
+            elseif v > n
+                msgbox('out of range');
+%                 me.changeDisplay(n);
+            else
+                me.changeDisplay(v);
+            end
+        end
+
+        % PROCESS TEXT CHANGED
+        function changeProcess(me,vector)
+            if ~isempty(vector) && vector(length(vector)) > appData('Files','Count')
+                msgbox('Files out of range');
+                return;
+            end
+            if me.RibbonsLinked
+                me.Gui.Top.ribbonProcessTextChanged(vector);
+            else
+                me.ProcessVector = vector;
             end
         end
         
-        % PROCESS TEXT CHANGED
-        function processTextChanged(me,vector)
-%             if me.Gui.RibbonLinked
-%                 me.Gui.ribbonProcessTextCHanged(vector);
-%             else
-%                 me.setProcess(vector);
-%             end
+        % PROCESS VECTOR (SET/GET)
+        function vector = get.ProcessVector(me)
+            vector = str2int_compact(get(me.TextProcess,'String'));
         end
-        function setProcess(me,vector)
+        function set.ProcessVector(me,vector)
             set(me.TextProcess,'String',int2str_compact(vector));
         end
+        
+        % LINK GUIS
+        function changeLinkGuis(me,link)
+        end
+        % LINK D2P
+        function changeLinkD2P(me,link)
+        end
+        
+        % RIBBONS ARE LINKED ?
+        function val = get.RibbonsLinked(me)
+            val = me.Gui.Top.RibbonsLinked;
+        end
     end
-    
 end
 

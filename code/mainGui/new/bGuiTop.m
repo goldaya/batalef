@@ -10,10 +10,16 @@ classdef bGuiTop < handle
         
         % CONSTRUCTOR
         
+        % REGISTER GUI
+        function registerGui(me,guiName,guiObject)
+        end
         % spawn main gui
         function mgInit(me)
             me.Main = bMainGui(me);
         end
+        
+        % RIBBONS
+        
     end
     
 end
