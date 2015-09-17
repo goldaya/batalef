@@ -1,0 +1,15 @@
+classdef bMainGuiMenus < handle
+    %BMAINGUIMENUS Main gui menus handling (build + functionality)
+    
+    properties (Access = private)
+        Gui
+        Figure
+        Menus
+    end
+    
+    methods
+        function me = bMainGuiMenus(
+    end
+    
+end
+

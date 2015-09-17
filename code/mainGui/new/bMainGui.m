@@ -35,7 +35,7 @@ classdef bMainGui < handle
                 'Visible','off',...
                 'ToolBar','none',...
                 'MenuBar','none',...
-                'Name','BATALEF',...
+                'Name','BATALEF TT1',...
                 'NumberTitle','off',...
                 'SizeChangedFcn',@(~,~)me.resize(),...
                 'CloseRequestFcn',@(~,~)me.kill());
@@ -57,7 +57,7 @@ classdef bMainGui < handle
         % BUILD GUI
         function buildGui(me)
             % selection ribbon
-            me.SelectionRibbon = bSelectionRibbon(me,true);
+            me.SelectionRibbon = bSelectionRibbon(me,true,false);
 
             % files table
             uitabColNames = {'Path + Name','Length','Fs','# Channels','# Calls','Raw Data Status'};
@@ -89,7 +89,10 @@ classdef bMainGui < handle
             me.Menus.batalef.Exit = uimenu(me.Menus.Batalef,'Label','Exit','Callback',@(~,~)batalefGuiKill(me));
             
             me.Menus.Files = uimenu(me.Figure,'Label','Files');
-            me.Menus.files.Add = uimenu(me.Menus.Files,'Label','Add File','Callback',@(~,~)me.addFiles());
+            me.Menus.files.Add = ...
+                uimenu(me.Menus.Files,'Label','Add Files','Callback',@(~,~)me.addFiles());
+            me.Menus.files.Remove = ...
+                uimenu(me.Menus.Files,'Label','Remove Files','Callback',@(~,~)me.removeFiles());            
             
             me.Menus.Settings = uimenu(me.Figure,'Label','Settings');
             me.Menus.settings.Display = ...
@@ -97,7 +100,13 @@ classdef bMainGui < handle
             me.Menus.settings.display.LinkGraphs = ...
                 uimenu(me.Menus.settings.Display,'Label','Link Graphs','Callback',@(h,~)me.linkGraphs(strcmp(get(h,'Checked'),'off')));
             me.Menus.settings.display.GraphsNumber = ...
-                uimenu(me.Menus.settings.Display,'Label','Set number of graphs','Callback',@(~,~)me.askAndSetGraphsNumber());
+                uimenu(me.Menus.settings.Display,'Label','Set number of graphs','Callback',@(~,~)me.askAndSetGraphsNumber());        
+            me.Menus.settings.Parameters = ...
+                uimenu(me.Menus.Settings,'Label','Parameters');
+            me.Menus.settings.parameters.Load = ...
+                uimenu(me.Menus.settings.Parameters,'Label','Load from file','Callback',@(~,~)loadParametersFile());
+            me.Menus.settings.parameters.Save = ...
+                uimenu(me.Menus.settings.Parameters,'Label','Save to file','Callback',@(~,~)saveParametersFile());
         end
         
         
@@ -138,10 +147,16 @@ classdef bMainGui < handle
             val = get(me.Figure,'Visible');
         end
         
-        % ADD FILES
+        % ADD / REMOVE FILES
         function addFiles(me)
             addFiles();
             me.refreshFilesTable();
+        end
+        function removeFiles(me)
+            removeFiles(me.SelectionRibbon.ProcessVector);
+            me.refreshFilesTable();
+            me.SelectionRibbon.changeDisplay([]);
+            me.SelectionRibbon.changeProcess([]);
         end
         
         % REFRESH FILES TABLE
@@ -172,7 +187,8 @@ classdef bMainGui < handle
         function setDisplayedFiles(me,filesVector)
             me.Graphs.FilesVector = filesVector;
         end
-        
+               
+
         % ASK AND SET NUMBER OF GRAPHS
         function askAndSetGraphsNumber(me)
             N = me.Graphs.Count;
@@ -194,9 +210,11 @@ classdef bMainGui < handle
                     me.Graphs.removeGraph(-d);
                 end
                 me.Graphs.refreshDisplay();
+                gsetParam('mainGUI:nAxes',n);
             end
-        end
-        
+        end    
+               
+               
     end
     
 end

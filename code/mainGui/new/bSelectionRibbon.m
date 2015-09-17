@@ -1,9 +1,5 @@
-classdef bSelectionRibbon < handle
+classdef bSelectionRibbon < handle & hgsetget
     %BSELECTIONRIBBON Selection ribbon (display and process) for guis
-    
-    properties (Access = public)
-        LinkD2P = false;
-    end
     
     properties (Access = private)
         Gui
@@ -13,25 +9,38 @@ classdef bSelectionRibbon < handle
         CheckboxLinkGuis
         CheckboxLinkD2P
         
-        AllowMultiDisplay        
+        AllowMultiDisplay
     end
     
-    properties (Dependent = true)
+    properties (Dependent = true, GetAccess = public, SetAccess = ?bGuiTop)
         DisplayVector
         ProcessVector
         RibbonsLinked
+        LinkD2P
     end
     
     methods
         
         % CONSTRUCTOR
-        function me = bSelectionRibbon(gui,allowMultiDisplay)
+        function me = bSelectionRibbon(gui,allowMultiDisplay,useTopParams)
             me.Gui = gui;
             me.AllowMultiDisplay = allowMultiDisplay;
             me.Panel = uipanel(me.Gui.Figure);
             fpos = uiPosition(me.Gui.Figure,'character');
             ribbonHeight = 4.3;
             set(me.Panel,'units','character','Position',[0,fpos(4)-ribbonHeight,fpos(3),ribbonHeight],'BorderType','line');
+            
+            if useTopParams
+                linkGuis = me.Gui.Top.RibbonsLinked;
+                if linkGuis
+                    linkD2P = me.Gui.Top.RibbonsD2P;
+                else
+                    linkD2P = ggetParem('ribbons:linkD2P');
+                end
+            else
+                linkGuis = ggetParam('ribbons:linkGuis');
+                linkD2P  = ggetParam('ribbons:linkD2P');
+            end
             
             % display line
             uicontrol(me.Panel,...
@@ -68,8 +77,9 @@ classdef bSelectionRibbon < handle
             me.CheckboxLinkGuis = uicontrol(me.Panel,...
                 'Style','checkbox',...
                 'Units','character',...
-                'Position',[58,2.6,10,1],...
+                'Position',[58,2.6,30,1],...
                 'String','Link GUIs',...
+                'Value',linkGuis,...
                 'Callback',@(h,~)me.changeLinkGuis(get(h,'Value')));
             
             % process line
@@ -100,9 +110,10 @@ classdef bSelectionRibbon < handle
             me.CheckboxLinkD2P = uicontrol(me.Panel,...
                 'Style','checkbox',...
                 'Units','character',...
-                'Position',[58,0.7,22,1],...
+                'Position',[58,0.7,30,1],...
                 'String','Link Display & Process',...
-                'Callback',@(h,~)me.changeLinkD2P(get(h,'Value')));            
+                'Value',linkD2P,...
+                'Callback',@(h,~)me.changeLinkD2P(get(h,'Value')));
             
         end
         
@@ -118,7 +129,7 @@ classdef bSelectionRibbon < handle
                 return;
             end
             if me.RibbonsLinked
-                me.Gui.Top.ribbonDisplayTextChanged(vector);
+                me.Gui.Top.ribbonsChangeDisplay(vector);
             else
                 me.DisplayVector = vector;
             end
@@ -130,7 +141,11 @@ classdef bSelectionRibbon < handle
         end
         function set.DisplayVector(me,vector)
             if length(vector) > 1 && ~me.AllowMultiDisplay
-                msgbox('Multiselection for display is not allowed for thid gui');
+                msgbox('Multiselection for display is not allowed for this gui');
+                return;
+            end
+            if length(vector) > 1 && me.RibbonsLinked
+                msgbox('Multiselection for display is not allowed when GUIs are linked');
                 return;
             end
             set(me.TextDisplay,'String',int2str_compact(vector));
@@ -181,7 +196,7 @@ classdef bSelectionRibbon < handle
                 return;
             end
             if me.RibbonsLinked
-                me.Gui.Top.ribbonProcessTextChanged(vector);
+                me.Gui.Top.ribbonsChangeProcess(vector);
             else
                 me.ProcessVector = vector;
             end
@@ -197,14 +212,42 @@ classdef bSelectionRibbon < handle
         
         % LINK GUIS
         function changeLinkGuis(me,link)
+            me.Gui.Top.RibbonsLinked = link;
+            if link
+                if length(me.DisplayVector) > 1
+                    msgbox('Display vector changed to a scalar. Vector display is not allowed on linked GUIs mode');
+                    me.DisplayVector = me.DisplayVector(1);
+                end
+                me.Gui.Top.ribbonsChangeDisplay(me.DisplayVector);
+                me.Gui.Top.ribbonsChangeProcess(me.ProcessVector);
+                me.Gui.Top.ribbonsChangeD2P(me.LinkD2P);
+            end
         end
         % LINK D2P
         function changeLinkD2P(me,link)
+            if me.RibbonsLinked
+                me.Gui.Top.ribbonsChangeD2P(link);
+            else
+                me.LinkD2P = link;
+            end
+        end
+        function set.LinkD2P(me,link)
+            set(me.CheckboxLinkD2P,'Value',link);
+            if link
+                me.ProcessVector = me.DisplayVector;
+            end
+        end
+        function linked = get.LinkD2P(me)
+            linked = get(me.CheckboxLinkD2P,'Value');
         end
         
         % RIBBONS ARE LINKED ?
         function val = get.RibbonsLinked(me)
-            val = me.Gui.Top.RibbonsLinked;
+%             val = me.Gui.Top.RibbonsLinked;
+            val = get(me.CheckboxLinkGuis,'Value');
+        end
+        function set.RibbonsLinked(me,link)
+            set(me.CheckboxLinkGuis,'Value',link);
         end
     end
 end

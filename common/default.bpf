@@ -112,3 +112,6 @@ spectrum:method integer 2.000000
 spectrum:window float 1024.000000 
 spectrogram:method integer 1.000000 
 CallsGUI:showValues float 6.000000 
+
+ribbons:linkGuis integer 1
+ribbons:linkD2P integer 1
