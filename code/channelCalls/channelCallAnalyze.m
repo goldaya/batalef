@@ -26,7 +26,7 @@ function call = channelCallAnalyze( k,j,s,type,window, dataset,envDataset, detec
             D2P(2) = length(envDataset);
         end
         [peakValue, peakPoint] = max( envDataset(D2P(1):D2P(2)) );
-        peakPoint = peakPoint+D2P(1);
+        peakPoint = peakPoint+D2P(1)-1;
         call.PeakTime  = peakPoint/Fs + window(1);
         call.PeakValue = peakValue;
 
