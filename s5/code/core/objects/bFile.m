@@ -27,8 +27,12 @@ classdef bFile < handle
             me.Title = title;
             
             % create parameters object
-            me.Parameters = bParameters(me,'file');
-            me.Parameters.loadFromFile(parametersFile);
+            if isa(parametersFile,'bParameters')
+                me.Parameters = parametersFile;
+            else
+                me.Parameters = bParameters(me.Application,'file');
+                me.Parameters.loadFromFile(parametersFile);
+            end
             
             % create raw data object
             me.RawData = bRawData(me.Parameters.get('rawData_position'),[],[],[],audioFile,me);
@@ -47,7 +51,7 @@ classdef bFile < handle
             me.ChannelCalls{j}.ridge     = cell(0,1);
             me.ChannelCalls{j}.forLocalization = [];
             me.ChannelCalls{j}.forBeam   = [];
-            me.ChannelPoI{j}   = cell(0,2); % time, text
+            me.ChannelPoI{j}   = cell(0,4); % time, text, amplitude, freq
         end
 
 	% GET CHANNEL INTERFACE OBJECT

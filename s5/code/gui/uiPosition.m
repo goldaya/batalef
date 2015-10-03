@@ -3,7 +3,11 @@ function [ position ] = uiPosition( h, units )
 
     uni = get(h,'Units');
     set(h,'Units',units);
-    position = get(h,'Position');
+    if h == 0
+        position = get(0,'ScreenSize');
+    else
+        position = get(h,'Position');
+    end
     set(h,'Units',uni);
 
 end

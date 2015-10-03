@@ -17,6 +17,7 @@ classdef bChannel < handle
     end
 
     methods
+        
         % CONSTRUCTOR
         function me = bChannel(fileobj,channelIdx)
             me.File = fileobj;
@@ -108,6 +109,7 @@ classdef bChannel < handle
             R = me.CallsData.ridge;
         end
         
+        % SET CALL DATA
         function setCallData(me,callIdx,detection,features,ridge,forLocalization,forBeam)
             D = me.CallsData;
             D.detection(callIdx,:) = detection;
@@ -118,17 +120,46 @@ classdef bChannel < handle
             me.CallData = D;
         end
         
-        % GET HIDDEN DATA
+        % CALLS DATA GET/SET
         function val = get.CallsData(me)
             val = me.File.ChannelCalls{me.j};
         end
         function set.CallsData(me,val)
             me.File.ChannelCalls{me.j} = val;
         end
+        
+        % ###############
+        % ##### POI #####
+        % ###############
+        
+        % ADD POIS
+        function addPois(me, C)
+        %ADDPOIS add points of interest
+        %   input has to be (N x 4) cell array with (time,text,amplitude,freq)
+            P = me.PoiData;
+            N = sortrows([P;C],1);
+            me.PoiData = N;            
+        end
+        
+        % REMOVE POIS BY TIME INTERVAL
+        function removePoisByTime(me,timeInterval)
+            P = me.PoiData;
+            I1 = cellfun(@(t) t < timeInterval(1),P(:,1));
+            I2 = cellfun(@(t) t > timeInterval(2),P(:,1));
+            I = logical(I1+I2);
+            N = P(I,:);
+            me.PoiData = N;
+            
+        end
+        
+        % POI DATA GET/SET
         function val = get.PoiData(me)
             val = me.File.ChannelPoI{me.j};
         end
-        
+        function set.PoiData(me,val)
+            me.File.ChannelPoI{me.j} = val;
+        end
+
         
         % GET DATA
         function varargout = getData(me, varargin)
@@ -138,12 +169,27 @@ classdef bChannel < handle
                 interval = [];
             end
             
-            % get deisred data
+            % get desired data
             switch varargin{1}
                 case 'TS'
                     [TS,T] = me.File.RawData.getTS(me.j,interval);
                     varargout{1} = TS;
                     varargout{2} = T;
+                    
+                case 'PoI'
+                    % [T,TXT,A,F]
+                    D = me.PoiData;
+                    if isempty(interval) || isempty(D)
+                        P = D;
+                    else
+                        I1 = [D{:,1}] >= interval(1);
+                        I2 = [D{:,1}] <= interval(2);
+                        P = D(logical(I1.*I2),:);
+                    end
+                    varargout{1} = [P{:,1}];
+                    varargout{2} = P(:,2);
+                    varargout{3} = [P{:,3}];
+                    varargout{4} = [P{:,4}];
             end
         end
     end

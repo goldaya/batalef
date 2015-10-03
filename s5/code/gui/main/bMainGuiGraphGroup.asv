@@ -8,7 +8,6 @@ classdef bMainGuiGraphGroup < handle
     end
     
     properties (Access = private)
-        ParentUI
         Graphs = {};
         Slider = NaN;
         Panel  = NaN;
@@ -23,10 +22,12 @@ classdef bMainGuiGraphGroup < handle
     end
     
     properties (GetAccess = ?bMainGuiGraph, SetAccess = private)
-        GuiTop
+        Gui
     end
     
     properties (Dependent = true)
+        GuiTop
+        ParentUI
         Count
         ChannelsCount
         ChannelsMatrix
@@ -45,11 +46,10 @@ classdef bMainGuiGraphGroup < handle
     methods
         
         % CONSTRUCTOR
-        function me = bMainGuiGraphGroup(guiTop,parentUI,displayType,displayWindow)
-            me.ParentUI      = parentUI;
+        function me = bMainGuiGraphGroup(gui,displayType,displayWindow)
+            me.Gui           = gui;
             me.DisplayType   = displayType;
             me.DisplayWindow = displayWindow;
-            me.GuiTop        = guiTop;
         end
         
         % BUILD DISPLAY
@@ -135,6 +135,10 @@ classdef bMainGuiGraphGroup < handle
                 end
             end
         end
+        
+        % PLOT
+        function plot(me)
+            cellfun(
         
         % COUNT PROPERTY (GET ONLY)
         function val = get.Count(me)
@@ -224,6 +228,7 @@ classdef bMainGuiGraphGroup < handle
             me.changeDisplayType(me.Graphs{1}.DisplayType,[]);
             me.changeDisplayWindow(me.Graphs{1}.DisplayWindow,[])
             me.changeStartTime(me.Graphs{1}.DisplayStartTime,[])
+            me.changeSpecRange(me.Graphs{1}.SpecRange,[]);
         end
         function val = get.Linked(me)
             val = me.Link;
@@ -243,10 +248,49 @@ classdef bMainGuiGraphGroup < handle
         function changeStartTime(me,startTime,exempt) %#ok<INUSD>
             cellfun(@(g) g.showFromTime(startTime),me.Graphs);
         end
+        
+        % CHANGE SPECTRO RANGE
+        function changeSpecRange(me,rangeID,exempt) %#ok<INUSD>
+            cellfun(@(g) set(g,'SpecRange',rangeID),me.Graphs);
+        end
        
+        % ADD SPECTRO RANGE
+        function addNewSpecRange(me)
+            Q{1}  = 'Specify range as dB vector: [min max]';
+            title = 'Add Custom Spectrogram Range';
+            A = inputdlg(Q,title);
+            if isempty(A)
+            else
+                % check new value is ok
+                try
+                    V = str2num(A{1}); %#ok<ST2NM>
+                    if V(1) > V(2)
+                        msgbox('Error: First value higher then second value');
+                    elseif length(V) > 2
+                        msgbox('Error: Vector cannot be longer than 2 scalars');
+                    else
+                        R = ggetParam('displaySpectrogram_ranges');
+                        R = [R,V];
+                        gsetParam('displaySpectrogram_ranges',R);
+                        cellfun(@(g) g.buildSpecRangeCombo(true),me.Graphs);
+                    end
+                    
+                catch err
+                    msgbox(err.message);
+                    return;
+                end
+            end
+        end
         
+        % GUI TOP
+        function val = get.GuiTop(me)
+            val = me.Gui.Top;
+        end
         
-        
+        % PARENT UI
+        function val = get.ParentUI(me)
+            val = me.Gui.Figure;
+        end
         
     end
     

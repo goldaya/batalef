@@ -16,13 +16,15 @@ classdef bGuiTop < handle
     properties (Dependent = true, Access = ?bSelectionRibbon)
         RibbonsLinked
         RibbonsD2P
+        DisplayVector
+        ProcessVector
     end
     methods
         
         % CONSTRUCTOR
         function me = bGuiTop(app,paramsFile)
             me.Application = app;
-            me.Parameters = bParameters(me,'gui');
+            me.Parameters = bParameters(app,'gui');
             me.Parameters.loadFromFile(paramsFile);
             me.RibbonsD2PInner = me.Parameters.get('ribbons_linkD2P');
             me.Methods.displaySpectrogram = bMethodSpectrogram('default','displaySpectrogram',me.Application,me);
@@ -41,11 +43,31 @@ classdef bGuiTop < handle
             me.Guis.Main = bMainGui(me);
         end
         
+        % SPAWN PARAMETERS VALUES MANAGEMENT GUI
+        function pgInit(me)
+            if me.guiAlive('params')
+                figure(me.Guis.params.Figure);
+            else
+                me.Guis.params = bParamsGui(me);
+            end
+        end
+        
         % REMOVE GUI
         function removeGui(me,gui,name)
             delete(gui.Figure);
             delete(gui);
             me.Guis = rmfield(me.Guis,name);
+        end
+        
+        % CHECK GUI IS ALIVE
+        function val = guiAlive(me,name)
+            if isfield(me.Guis,name)
+                if ishandle(me.Guis.(name).Figure)
+                    val = true;
+                    return;
+                end
+            end
+            val = false;
         end
         
         % RIBBONS
@@ -76,6 +98,14 @@ classdef bGuiTop < handle
         function ribbonsChangeD2P(me,link)
             G = fields(me.Guis);
             cellfun(@(guiName) set(me.Guis.(guiName).SelectionRibbon,'LinkD2P',link),G);
+        end
+        
+        % LINKED DISPLAY / VECTOR VECTORS
+        function v = get.DisplayVector(me)
+            v = me.Guis.Main.DisplayVector;
+        end
+        function v = get.ProcessVector(me)
+            v = me.Guis.Main.ProcessVector;
         end
             
         

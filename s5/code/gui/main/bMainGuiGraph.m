@@ -1,10 +1,11 @@
-classdef bMainGuiGraph < handle
+classdef bMainGuiGraph < handle & hgsetget
 %BMAINGUIGRAPH class for handling main gui grpah. an instance is child of a
 %bMainGuiGraphGroup object
 
     
     properties (Access = public)
-
+        FileIdx = 0;
+        ChannelIdx = 0;
     end
     
     properties (Access = ?bMainGuiGraphGroup)
@@ -20,8 +21,6 @@ classdef bMainGuiGraph < handle
     properties (Access = private)
 
         Group
-        FileIdx = 0;
-        ChannelIdx = 0;
         Title
 
         ParentUI
@@ -43,7 +42,7 @@ classdef bMainGuiGraph < handle
         TextDisplayWindow
         CheckboxMADL
         TextYlim
-        
+        ComboSpecRange
         
         AxesPanel
         AxesTSFigurePosition
@@ -61,6 +60,8 @@ classdef bMainGuiGraph < handle
         MADL
         GuiTop
         Application
+        SpecRange
+        Gui
     end
     
     properties (Constant = true)
@@ -105,7 +106,7 @@ classdef bMainGuiGraph < handle
                 'Style',     'slider',...
                 'Units',     'character',...
                 'Position',  [0,0,width,1],...
-                'Callback',  @(hObject,evt)me.startTimeChange(get(hObject,'Value')),...
+                'Callback',  @(hObject,evt)me.startTimeChanged(get(hObject,'Value')),...
                 'UserData',  me...            
                 );
 
@@ -255,7 +256,7 @@ classdef bMainGuiGraph < handle
                 );
             
             % text boxes
-            textsPanel = uipanel('Parent',me.ButtonsPanel,'Units','character','Position',[42,0,100,2],'BorderType','none');
+            textsPanel = uipanel('Parent',me.ButtonsPanel,'Units','character','Position',[42,0,120,2],'BorderType','none');
             uicontrol(...
                 'Parent', textsPanel,...
                 'Style','text',...
@@ -269,7 +270,7 @@ classdef bMainGuiGraph < handle
                 'Units','character',...
                 'Position',[13,0,14,1.5],...
                 'String', '0',...
-                'Callback',@(hObject,evt)me.startTimeChange(str2double(get(hObject,'String')))...
+                'Callback',@(hObject,evt)me.startTimeChanged(str2double(get(hObject,'String')))...
                 );
             uicontrol(...
                 'Parent', textsPanel,...
@@ -305,11 +306,24 @@ classdef bMainGuiGraph < handle
 %                 'Enable', 'off',...
 %                 'Callback',@(hObject,evt)me.ylimTextChanged(str2double(get(hObject,'String')))...
 %                 );
+            uicontrol(textsPanel,...
+                'Style','text',...
+                'Units','character',...
+                'Position',[56,0.25,25,1],...
+                'String','Spectrogram Range');
+            me.ComboSpecRange = uicontrol(textsPanel,...
+                'Style','popupmenu',...
+                'Units','character',...
+                'String','foo',...
+                'Value',1,...
+                'Position',[83,0,20,1.5],...
+                'Callback',@(h,~)me.specRangeChanged(get(h,'Value')));
+            me.buildSpecRangeCombo(false)
             uicontrol(...
                 'Parent', textsPanel,...
                 'Style','pushbutton',...
                 'Units','character',...
-                'Position',[78,0,11,1.5],...
+                'Position',[110,0,10,1.5],...
                 'String', 'Full TS',...
                 'Callback', @(~,~)me.fullTS()...
                 );                
@@ -327,11 +341,15 @@ classdef bMainGuiGraph < handle
                 );
             me.AxesTS = axes(...
                 'Parent',   me.AxesPanel,...
-                'Visible',  'off'...
+                'Visible',  'off',...
+                'UserData', {me,'TS'},...
+                'UIContextMenu',me.Gui.ContextMenu...
                 );
             me.AxesSpec = axes(...
                 'Parent',   me.AxesPanel,...
-                'Visible',  'off'...
+                'Visible',  'off',...
+                'UserData', {me,'Spec'},...
+                'UIContextMenu',me.Gui.ContextMenu...
                 );
             
             me.resizeAxes();
@@ -369,6 +387,10 @@ classdef bMainGuiGraph < handle
                 pos = pos + [8,4,-10,-6];
                 set(me.AxesSpec,'Position',pos,'Visible','on');
             end
+            
+            % context menu
+            set(me.AxesTS,  'UIContextMenu',me.Gui.ContextMenu);
+            set(me.AxesSpec,'UIContextMenu',me.Gui.ContextMenu);
             
             % find global position in pixels relative to figure
             absParentPanel = uiPosition(me.BasePanel,'pixels');
@@ -419,12 +441,32 @@ classdef bMainGuiGraph < handle
             me.plot();
         end
         
-        % MADL CHANGED
-        function madlCbChanged(me)
+%         % MADL CHANGED
+%         function madlCbChanged(me)
+%         end
+%         function ylimTextChanged(me,val)
+%         end
+           
+        % BUILD SPECTROGRAM RANGES COMBO
+        function buildSpecRangeCombo(me,useSelfValue)
+            R = ggetParam('displaySpectrogram_ranges');
+            if exist('useSelfValue','var') && ~useSelfValue
+                I = ggetParam('displaySpectrogram_range2use');
+            else
+                I = get(me.ComboSpecRange,'Value');
+            end
+            C = cellfun(@(v)strcat('[',num2str(v),']'),R,'UniformOutput',false);
+            S = ['Auto', C, 'Add custom'];
+            S{2} = strcat(['Low    ',S{2}]);
+            S{3} = strcat(['High   ',S{3}]);
+            S{4} = strcat(['Middle ',S{4}]);
+            S{5} = strcat(['Wide   ',S{5}]);
+            n = length(S);
+            for i = 6:(n-1)
+                S{i} = strcat(['Custom ',S{i}]);
+            end
+            set(me.ComboSpecRange,'String',S,'Value',I);
         end
-        function ylimTextChanged(me,val)
-        end
-            
             
         % CLEAR DISPLAY
         function clear(me)
@@ -484,7 +526,7 @@ classdef bMainGuiGraph < handle
             me.plot();
             set(me.TextTime,'String',num2str(me.DisplayStartTime));
         end
-        function startTimeChange(me,startTime)
+        function startTimeChanged(me,startTime)
             if me.Group.Linked
                 me.Group.changeStartTime(startTime,[]);
             else
@@ -496,6 +538,9 @@ classdef bMainGuiGraph < handle
         function plot(me)
             
             dataset = me.Dataset;
+            if isempty(dataset)
+                return;
+            end
             
             switch me.DisplayType
                 case me.tsDisplayType
@@ -507,16 +552,40 @@ classdef bMainGuiGraph < handle
                     me.plotSpec(dataset);
             end
             
+            set(me.AxesTS,  'UserData', {me,'TS'}  );
+            set(me.AxesSpec,'UserData', {me,'Spec'});
             set(me.AxesPanel,'Visible','on');
         end
         function plotTS(me,dataset)
             if isempty(dataset)
                 cla(me.AxesTS);
             else
-                plot(me.AxesTS,dataset(:,2),dataset(:,1));
+                p = plot(me.AxesTS,dataset(:,2),dataset(:,1));
+                set(p,'UIContextMenu',me.Gui.ContextMenu);
                 axis(me.AxesTS,'tight','on');
                 axis(me.AxesTS,'tight','manual');
+                Tlim = get(me.AxesTS,'Xlim');
+                Alim = get(me.AxesTS,'Ylim');
                 set(me.AxesTS,'Visible','on','Ylim',me.Ylim.*1.1);
+                axes(me.AxesTS);
+                switch ggetParam('mainGui_showPois')
+                    case 'dont'
+                    case 'marks'
+                        [T] = channelData(me.FileIdx,me.ChannelIdx,'PoI','TimeInterval',Tlim);
+                        A = diff(Alim)/2.*ones(size(T));
+                        hold on
+                        p = plot(T,A,'g*');
+                        set(p,'UIContextMenu',me.Gui.ContextMenu);
+                        hold off;
+                    case 'texts'
+                        [T,TXT] = channelData(me.FileIdx,me.ChannelIdx,'PoI','TimeInterval',Tlim);
+                        A = diff(Alim)/2.*ones(size(T)); 
+                        hold on
+                        p = plot(T,A,'g*');
+                        set(p,'UIContextMenu',me.Gui.ContextMenu);
+                        text(T,A,TXT);
+                        hold off;                        
+                end
             end
         end
         function plotSpec(me,dataset)
@@ -524,11 +593,38 @@ classdef bMainGuiGraph < handle
                 cla(me.AxesSpec);
             else
                 spec = me.GuiTop.Methods.displaySpectrogram.execute(dataset(:,1), fileData(me.FileIdx,'Fs'));
-%                 spec = somAdminCompute(dataset(:,1), fileData(me.FileIdx,'Fs'));
                 spec.T = spec.T + dataset(1,2);
                 axes(me.AxesSpec);
-                me.SpecImage = imagesc(spec.T,spec.F,spec.P);
+                R = me.SpecRange;
+                if isempty(R)
+                    me.SpecImage = imagesc(spec.T,spec.F,spec.P);
+                    set(me.SpecImage,'UIContextMenu',me.Gui.ContextMenu);
+                else
+                    me.SpecImage = imagesc(spec.T,spec.F,spec.P,R);
+                    set(me.SpecImage,'UIContextMenu',me.Gui.ContextMenu);
+                end
                 set(me.AxesSpec,'YDir','normal');
+                Tlim = get(me.AxesSpec,'Xlim');
+                Flim = get(me.AxesSpec,'Ylim');
+                axes(me.AxesSpec);
+                switch ggetParam('mainGui_showPois')
+                    case 'dont'
+                    case 'marks'
+                        [T] = channelData(me.FileIdx,me.ChannelIdx,'PoI','TimeInterval',Tlim);
+                        F = diff(Flim)/2.*ones(size(T));
+                        hold on
+                        p = plot(T,F,'g*');
+                        set(p,'UIContextMenu',me.Gui.ContextMenu);
+                        hold off;
+                    case 'texts'
+                        [T,TXT] = channelData(me.FileIdx,me.ChannelIdx,'PoI','TimeInterval',Tlim);
+                        F = diff(Flim)/2.*ones(size(T));
+                        hold on
+                        p = plot(T,F,'g*');
+                        set(p,'UIContextMenu',me.Gui.ContextMenu);
+                        text(T,F,TXT);
+                        hold off;                        
+                end                
             end
         end
         
@@ -568,19 +664,26 @@ classdef bMainGuiGraph < handle
         end
         
         % MOUSE MOTION
-        function mouseMotion(me,x) % X should be in pixels
+        function hit = mouseMotion(me,x) % X should be in pixels
             y = x - me.AxesTSFigurePosition(1:2);
             if min(y > 0) && min(y < me.AxesTSFigurePosition(3:4))
                 z = y./me.AxesTSFigurePosition(3:4);
                 me.mouseMotionTS(z);
+                hit = true;
+                me.Gui.LastAxesObject = me.AxesTS;
+                me.Gui.LastGraphObject = me;
                 return;
             end
             y = x - me.AxesSpecFigurePosition(1:2);
             if min(y > 0) && min(y < me.AxesSpecFigurePosition(3:4))
                 z = y./me.AxesSpecFigurePosition(3:4);
                 me.mouseMotionSpec(z);
+                hit = true;
+                me.Gui.LastAxesObject = me.AxesSpec;
+                me.Gui.LastGraphObject = me;
                 return;
-            end            
+            end
+            hit = false;
         end
         function mouseMotionTS(me,z)
             xlim = get(me.AxesTS,'Xlim');
@@ -653,6 +756,38 @@ classdef bMainGuiGraph < handle
                 me.setDisplayWindow(window);
             end
         end
+
+        % SPECTROGRAM RANGE PROPERTY
+        function specRangeChanged(me,rangeID)
+            n = length(get(me.ComboSpecRange,'String'));
+            if rangeID == n
+                me.Group.addNewSpecRange();
+            else
+                if me.Group.Linked
+                    me.Group.changeSpecRange(rangeID,[]);
+                else
+                    me.SpecRange = rangeIS;
+                end 
+            end
+        end
+        function set.SpecRange(me,rangeID)
+            if isempty(rangeID)
+                rangeID = 1;
+            end
+            set(me.ComboSpecRange,'Value',rangeID);
+            me.plotSpec(me.Dataset);
+        end
+        function val = get.SpecRange(me)
+            v = get(me.ComboSpecRange,'Value');
+            if isempty(v)
+                val = [];
+            elseif v == 1
+                val = [];
+            else
+                R = ggetParam('displaySpectrogram_ranges');
+                val = R{v-1};
+            end
+        end
         
 %         % MADL CHECKBOX / PROPERTY
 %         function val = get.MADL(me)
@@ -687,7 +822,12 @@ classdef bMainGuiGraph < handle
         % APPLICATION GET PROPERTY
         function val = get.Application(me)
             val = me.Group.GuiTop.Application;
-        end        
+        end
+        
+        % GUI
+        function val = get.Gui(me)
+            val = me.Group.Gui;
+        end
     end
     
 end

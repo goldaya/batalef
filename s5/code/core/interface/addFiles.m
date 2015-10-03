@@ -16,17 +16,21 @@ function addFiles( path,files )
     end            
     
     % ask for parameter files
-    [ paramFile ] = getParamsFileForDir( path, 'file');
-    paramFile = relativepath(paramFile,control.app.WorkingDirectory);
+    if control.app.FilesSingleParamsFile && control.app.FilesCount > 0
+        paramFile = [];
+    else
+        [ paramFile ] = getParamsFileForDir(path,'file');
+        paramFile = relativepath(paramFile,control.app.WorkingDirectory);
+    end
     
-    for i = 1:size(files,1)
-        if iscell(files)
+    if iscell(files)
+        for i = 1:length(files)
             audioFile = relativepath(strcat(path,files{i}),control.app.WorkingDirectory);
             control.app.addFile(audioFile,paramFile);
-        else
-            audioFile = relativepath(strcat(path,files),control.app.WorkingDirectory);
-            control.app.addFile(audioFile,paramFile);
-        end            
+        end
+    else
+        audioFile = relativepath(strcat(path,files),control.app.WorkingDirectory);
+        control.app.addFile(audioFile,paramFile);          
     end
 end
 

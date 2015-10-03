@@ -1,0 +1,13 @@
+function removePoi( fileIdx, channelIdx, varargin )
+%REMOVEPOI Remove Point of Interest
+
+    global control;
+    
+    timeInterval = getParFromVarargin('BetweenTimes',);
+    if timeInterval
+        control.app.file(fileIdx).channel(channelIdx).removePoisByTime(me,timeInterval)
+        return;
+    end
+
+end
+

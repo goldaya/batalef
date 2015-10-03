@@ -11,6 +11,9 @@ function [ fullpath ] = getParamsFileForDir( folder, type )
             ext = '*.bgp';
         case 'file'
             ext = '*.bfp';
+        otherwise
+            err = MException('batalef:parameters:objectWrongType',sprintf('Parameters-object type %s is not allowed',type));
+            throwAsCaller(err);
     end
     
     F = dir(strcat(folder,filesep(),ext));
@@ -18,7 +21,7 @@ function [ fullpath ] = getParamsFileForDir( folder, type )
         case 0
             fullpath = control.app.CommonParams.(type);
         case 1
-            fullpath = F(1).name;
+            fullpath = strcat(folder,filesep(),F(1).name);
         otherwise
             str = sprintf('There are several %s parameter files in the working directory. Which one to use?',type);
             a = menu(str,{F.name,'None, use batalef default instead'});

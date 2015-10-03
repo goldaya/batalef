@@ -6,6 +6,8 @@ classdef bSelectionRibbon < handle & hgsetget
         Panel
         TextDisplay
         TextProcess
+        PushButtonSelectAllProcess
+        PushButtonD2P
         CheckboxLinkGuis
         CheckboxLinkD2P
         
@@ -20,6 +22,10 @@ classdef bSelectionRibbon < handle & hgsetget
         LinkD2P
     end
     
+    properties (Constant=true)
+        HeightInChars = 4.3;
+    end
+    
     methods
         
         % CONSTRUCTOR
@@ -28,8 +34,7 @@ classdef bSelectionRibbon < handle & hgsetget
             me.AllowMultiDisplay = allowMultiDisplay;
             me.Panel = uipanel(me.Gui.Figure);
             fpos = uiPosition(me.Gui.Figure,'character');
-            ribbonHeight = 4.3;
-            set(me.Panel,'units','character','Position',[0,fpos(4)-ribbonHeight,fpos(3),ribbonHeight],'BorderType','line');
+            set(me.Panel,'units','character','Position',[0,fpos(4)-me.HeightInChars,fpos(3),me.HeightInChars],'BorderType','line');
             
             if useTopParams
                 linkGuis = me.Gui.Top.RibbonsLinked;
@@ -95,14 +100,14 @@ classdef bSelectionRibbon < handle & hgsetget
                 'Position',[12,0.5,15,1.4],...
                 'String','',...
                 'Callback',@(hObject,~)me.changeProcess(str2int_compact(get(hObject,'String'))));            
-            uicontrol(me.Panel,...
+            me.PushButtonD2P = uicontrol(me.Panel,...
                 'Style','pushbutton',...
                 'Units','character',...
                 'Position',[29,0.5,11,1.4],...
                 'String','D2P',...
                 'TooltipString','Copy display vector to process vector',...
                 'Callback',@(hObject,~)me.changeProcess(me.DisplayVector));
-            uicontrol(me.Panel,...
+            me.PushButtonSelectAllProcess = uicontrol(me.Panel,...
                 'Style','pushbutton',...
                 'Units','character',...
                 'Position',[41,0.5,12,1.4],...
@@ -113,8 +118,14 @@ classdef bSelectionRibbon < handle & hgsetget
                 'Units','character',...
                 'Position',[58,0.7,30,1],...
                 'String','Link Display & Process',...
-                'Value',linkD2P,...
+                'Value',0,...
                 'Callback',@(h,~)me.changeLinkD2P(get(h,'Value')));
+            me.LinkD2P = linkD2P;
+            
+           if useTopParams && linkGuis
+               me.DisplayVector = me.Gui.Top.DisplayVector;
+               me.ProcessVector = me.Gui.Top.ProcessVector;
+           end
             
         end
         
@@ -236,6 +247,13 @@ classdef bSelectionRibbon < handle & hgsetget
             set(me.CheckboxLinkD2P,'Value',link);
             if link
                 me.ProcessVector = me.DisplayVector;
+                set(me.TextProcess,'Enable','off');
+                set(me.PushButtonSelectAllProcess,'Enable','off');
+                set(me.PushButtonD2P,'Enable','off');
+            else
+                set(me.TextProcess,'Enable','on');
+                set(me.PushButtonSelectAllProcess,'Enable','on');
+                set(me.PushButtonD2P,'Enable','on');        
             end
         end
         function linked = get.LinkD2P(me)

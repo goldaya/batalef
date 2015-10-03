@@ -1,36 +1,30 @@
-classdef bMainGui < handle
+classdef bMainGui < bGuiDefinition
 %BMAINGUI Object to handle batalef's main gui
-    
-    properties (Access = public)
-        Figure;
-    end
-    
-    properties (Access = ?bSelectionRibbon)
-        Top
-    end
-    
-    properties (Access = ?bGuiTop)
-        SelectionRibbon
-    end
-    
+
     properties (Access = private)
         FilesTable
         Graphs
         Menus
     end
     
-    properties (Dependent = true)
-        Visible
-        RibbonsLinked
-        Parameters
-        Application
+    properties (SetAccess = private, GetAccess = public)
+        ContextMenuObject
     end
     
+    properties (Access = public)
+        LastAxesObject
+        LastGraphObject
+    end
+    
+    properties (Dependent = true)
+        ContextMenu
+    end
+       
     methods
         
         % CONSTRUCTOR
         function me = bMainGui(guiTop)
-            me.Top = guiTop;
+            me = me@bGuiDefinition(guiTop);
             me.Figure = figure(...
                 'Units','normalized',...
                 'OuterPosition',[0,0,1,1],...
@@ -57,6 +51,10 @@ classdef bMainGui < handle
         
         % BUILD GUI
         function buildGui(me)
+            
+            % context menu
+            me.buildContextMenu();
+            
             % selection ribbon
             me.SelectionRibbon = bSelectionRibbon(me,true,false);
 
@@ -73,12 +71,12 @@ classdef bMainGui < handle
             me.refreshFilesTable();
             
             % graphs
-            me.Graphs = bMainGuiGraphGroup(me.Top,me.Figure,ggetParam('mainGui_displayType'),ggetParam('mainGui_displayWindow'));
+            me.Graphs = bMainGuiGraphGroup(me,ggetParam('mainGui_displayType'),ggetParam('mainGui_displayWindow'));
             me.Graphs.buildDisplay(ggetParam('mainGui_nAxes'),uiPosition(me.Figure,'character'));
             
             % menu bars
-            me.buildMenus();
-
+            me.buildMenus();            
+            
             set(me.Figure,'Units','normalized','OuterPosition',[0,0,1,1]);
             me.resize();
             me.linkGraphs(ggetParam('mainGui_linkAxes'));
@@ -95,6 +93,7 @@ classdef bMainGui < handle
             me.Menus.files.Remove = ...
                 uimenu(me.Menus.Files,'Label','Remove Files','Callback',@(~,~)me.removeFiles());            
             
+            % settings
             me.Menus.Settings = uimenu(me.Figure,'Label','Settings');
             me.Menus.settings.Display = ...
                 uimenu(me.Menus.Settings,'Label','Display');
@@ -102,17 +101,55 @@ classdef bMainGui < handle
                 uimenu(me.Menus.settings.Display,'Label','Link Graphs','Callback',@(h,~)me.linkGraphs(strcmp(get(h,'Checked'),'off')));
             me.Menus.settings.display.GraphsNumber = ...
                 uimenu(me.Menus.settings.Display,'Label','Set number of graphs','Callback',@(~,~)me.askAndSetGraphsNumber());        
+            me.Menus.settings,display.Pois = ...
+                uimenu(me.Menus.settings.Display,'Label','Points of Interest');
+            me.Menus.settings.display.pois.Dont = ...
+                uimenu(me.Menus.settings.display.Pois,'Label','Dont show','Callback','
+            
             me.Menus.settings.Parameters = ...
                 uimenu(me.Menus.Settings,'Label','Parameters');
-            me.Menus.settings.parameters.Load = ...
-                uimenu(me.Menus.settings.Parameters,'Label','Load from file','Callback',@(~,~)loadParametersFile());
-            me.Menus.settings.parameters.Save = ...
-                uimenu(me.Menus.settings.Parameters,'Label','Save to file','Callback',@(~,~)saveParametersFile());
+            me.Menus.settings.parameters.Application = ...
+                uimenu(me.Menus.settings.Parameters,'Label','Application');
+            me.Menus.settings.parameters.application.Load = ...
+                uimenu(me.Menus.settings.parameters.Application,'Label','Load from file','Callback',@(~,~)me.paramsLoad('app'));
+            me.Menus.settings.parameters.application.Save = ...
+                uimenu(me.Menus.settings.parameters.Application,'Label','Save to file','Callback',@(~,~)me.paramsSave('app'));
+            
+            me.Menus.settings.parameters.Gui = ...
+                uimenu(me.Menus.settings.Parameters,'Label','GUI');
+            me.Menus.settings.parameters.gui.Load = ...
+                uimenu(me.Menus.settings.parameters.Gui,'Label','Load from file','Callback',@(~,~)me.paramsLoad('gui'));
+            me.Menus.settings.parameters.gui.Save = ...
+                uimenu(me.Menus.settings.parameters.Gui,'Label','Save to file','Callback',@(~,~)me.paramsSave('gui'));
+            
+            me.Menus.settings.parameters.File = ...
+                uimenu(me.Menus.settings.Parameters,'Label','File');
+            me.Menus.settings.parameters.file.Load = ...
+                uimenu(me.Menus.settings.parameters.File,'Label','Load from file','Callback',@(~,~)me.paramsLoad('file'));
+            me.Menus.settings.parameters.file.Save = ...
+                uimenu(me.Menus.settings.parameters.File,'Label','Save to file','Callback',@(~,~)me.paramsS('file'));
+            me.Menus.settings.parameters.file.SingleFile = ...
+                uimenu(me.Menus.settings.parameters.File,...
+                'Label','Use single parameter file',...
+                'Separator','on',...
+                'Callback',@(h,~) me.paramsSetSingleFile(h));
+            me.Menus.settings.parameters.QuickLoad = ...
+                uimenu(me.Menus.settings.Parameters,'Label','Quick Load','Separator','on','Callback',@(~,~)me.paramsQuickLoad());
+            me.Menus.settings.parameters.QuickSave = ...
+                uimenu(me.Menus.settings.Parameters,'Label','Quick Save','Callback',@(~,~)me.paramsQuickSave());
+            me.Menus.settings.parameters.ManageValues = ...
+                uimenu(me.Menus.settings.Parameters,'Label','Manage Values','Separator','on','Callback',@(~,~)me.Top.pgInit());            
+            
             me.Menus.settings.DefaultMethods = ...
                 uimenu(me.Menus.Settings,'Label','Default Methods');            
             me.Menus.settings.defaultMethods.DisplaySpectrogram = ...
                 uimenu(me.Menus.settings.DefaultMethods,'Label','Display Spectrogram');
             me.Top.Methods.displaySpectrogram.createMenu(me.Menus.settings.defaultMethods.DisplaySpectrogram);            
+        end
+        
+        % CONTEXT MENU
+        function buildContextMenu(me)
+            me.ContextMenuObject = bMainGuiContextMenu(me);
         end
         
         
@@ -144,15 +181,7 @@ classdef bMainGui < handle
             set(me.Menus.settings.display.LinkGraphs,'Checked',state);
             me.Graphs.linkAxes(link);
         end
-        
-        % VISIBLE PROPERTY (SET/GET)
-        function set.Visible(me,val) % val = 'on' / 'off'
-            set(me.Figure,'Visible',val);
-        end
-        function val = get.Visible(me)
-            val = get(me.Figure,'Visible');
-        end
-        
+               
         % ADD / REMOVE FILES
         function addFiles(me)
             addFiles([]);
@@ -180,12 +209,6 @@ classdef bMainGui < handle
             set(me.FilesTable,'Data',D);            
         end
         
-        % RIBBONS LINKED PROPERTY (GET/SET)
-        function val = get.RibbonsLinked(me)
-            val = me.Top.RibbonsLinked;
-        end
-        
-        
         % SET THE DISPLAYED FILES
         function setDisplayedFiles(me,filesVector)
             me.Graphs.FilesVector = filesVector;
@@ -204,12 +227,12 @@ classdef bMainGui < handle
                 elseif mod(d,1) > 0
                     msgbox('error, use integer value');
                     return;
-                elseif d > 1
+                elseif d > 0
                     me.Graphs.addGraph(d);
                 elseif -d > N
                     msgbox('error, use positive integer');
                     return;
-                elseif d < 1
+                elseif d < 0
                     me.Graphs.removeGraph(-d);
                 end
                 me.Graphs.refreshDisplay();
@@ -217,16 +240,65 @@ classdef bMainGui < handle
             end
         end    
         
-        % PARAMETERS GET
-        function val =  get.Parameters(me)
-            val = me.Top.Parameters;
+        % SAVE / LOAS PARAMETERS (for file, app, gui)
+        function paramsLoad(me,type)
+            [fName,fPath] = uigetfile(me.Application.WorkingDirectory);
+            relPath = relativepath(strcat(fPath,fName),me.Application.WorkingDirectory);
+            switch type
+                case 'app'
+                    me.Application.Parameters.loadFromFile(relPath);
+                case 'gui'
+                    me.Top.Parameters.loadFromFile(relPath);
+                case 'file'
+                    me.Application.loadFileParams(relPath,me.ProcessVector);
+                otherwise
+                    err = MException('batalef:parameters:objectWrongType',sprintf('Parameters-object type %s is not allowed',type));
+                    throwAsCaller(err);
+            end            
         end
-               
-        % APPLICATION
-        function val = get.Application(me)
-            val = me.Top.Application;
+        function paramsSave(me,type)
+            [fName,fPath] = uiputfile(me.Application.WorkingDirectory);
+            relPath = relativepath(strcat(fPath,fName),me.Application.WorkingDirectory);
+            switch type
+                case 'app'
+                    me.Application.Parameters.saveToFile(relPath);
+                case 'gui'
+                    me.Top.Parameters.saveToFile(relPath);
+                case 'file'
+                    me.Application.saveFileParams(relPath,me.ProcessVector);
+                otherwise
+                    err = MException('batalef:parameters:objectWrongType',sprintf('Parameters-object type %s is not allowed',type));
+                    throwAsCaller(err);
+            end            
         end
-               
+         function paramsQuickLoad(me)
+            me.Application.Parameters.loadFromFile([]);
+            me.Top.Parameters.loadFromFile([]);
+            me.Application.loadFileParams([]);
+        end
+        function paramsQuickSave(me)
+            me.Application.Parameters.saveToFile([]);
+            me.Top.Parameters.saveToFile([]);
+            me.Application.saveFileParams([],[]);
+        end        
+        
+        % SINGLE PARAMETRS FILE FOR FILES
+        function paramsSetSingleFile(me,h)
+            turnOn = strcmp(get(h,'Checked'),'off');
+            me.Application.FilesSingleParamsFile = turnOn;
+            if turnOn
+                set(h,'Checked','on');
+            else
+                set(h,'Checked','off');
+            end
+        end
+       
+        % CONTEXT MENU GET
+        function val = get.ContextMenu(me)
+            val = me.ContextMenuObject.UIObject;
+        end
+        
+        
     end
     
 end

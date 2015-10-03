@@ -1,30 +1,35 @@
 function batalef( varargin )
 %BATALEF batalef startup script
+global batalefAlfred;
 
     % SWITCHES
     gui = false;
     cli = false;
     verbose = false;
     silent = false;
+    batalefAlfred = false;
     
     if isempty(varargin)
         gui = true;
     else
         for i = 1:length(varargin)
             switch varargin{i}
-                case 'gui'
+                case '-gui'
                     gui = true;
-                case 'nogui'
+                case '-nogui'
                     gui = false;
-                case 'cli'
+                case '-cli'
                     cli = true;
                 case '-v'
                     verbose = true;
                 case '-s'
                     silent = true;
+                case '-alfred'
+                    batalefAlfred = true;
             end
         end
     end    
+    
     
     % START !!!
     disp(' ');
@@ -42,6 +47,9 @@ function batalef( varargin )
     global control;
     control = [];
     control.app = bApplication(batFolder,currFolder);
+    appParams = getParamsFileForDir(currFolder,'app');
+    relParamsPath = relativepath(appParams,currFolder);    
+    control.app.setParameters(relParamsPath);
     
     
     % GUI
@@ -51,7 +59,6 @@ function batalef( varargin )
         relGuiParamsPath = relativepath(guiParams,currFolder);
         control.gui = bGuiTop(control.app,relGuiParamsPath);
         control.gui.mgInit();
-        
     end
             
         

@@ -1,7 +1,8 @@
 classdef bApplication < handle
 
     properties (Access = private)
-       Files = cell(0)
+       Files = cell(0);
+       FilesSingleParamsFileInner = false;
     end
     
     properties (GetAccess = public, SetAccess = private)
@@ -9,6 +10,7 @@ classdef bApplication < handle
         BatalefDirectory
         WorkingDirectory
         Methods
+        Parameters
     end
     
     properties (Access = public)
@@ -19,6 +21,7 @@ classdef bApplication < handle
     properties (Dependent = true)
         FilesCount
         TempDirectory
+        FilesSingleParamsFile
     end
     
 	methods
@@ -35,8 +38,39 @@ classdef bApplication < handle
         % DESTRUCTOR
         function delete(me)
             cellfun(@(f) delete(f),me.Files);
-            M = fields2cell(me.Methods);
-            cellfun(@(m) delete(m),M);            
+            [M,~] = fields2cell(me.Methods);
+            cellfun(@(m) delete(m),M);
+            delete(me.Parameters);
+        end
+        
+        % SET PARAMETERS
+        function setParameters(me, paramsFile)
+            me.Parameters = bParameters(me,'app');
+            me.Parameters.loadFromFile(paramsFile);
+        end
+        
+        % FILES PARAMETERS HANDLED BY SINGLE PARAMETERS FILE
+        function val = get.FilesSingleParamsFile(me)
+            val = me.FilesSingleParamsFileInner;
+        end
+        function set.FilesSingleParamsFile(me,turnOn)
+            me.FilesSingleParamsFileInner = turnOn;
+            if turnOn
+                if me.FilesCount > 1
+                    parObj = me.Files{1}.Parameters.clone();
+                    for i = 1:me.FilesCount
+                        delete(me.Files{i}.Parameters);
+                        me.Files{i}.Parameters = parObj;
+                    end
+                end
+            else % turn off. handle each file separately
+                if me.FilesCount > 1
+                    parObj = me.Files{1}.Parameters.clone();
+                    for i = 2:me.FilesCount
+                        me.Files{i}.Parameters = parObj.clone();
+                    end
+                end
+            end
         end
         
         % GET COMMON PARAMETERS
@@ -60,6 +94,14 @@ classdef bApplication < handle
         % ADD FILE TO APPLICATION
 		function [FileIdx] = addFile(me,audioFile,parametersFile)
             [~,title] = fileparts(audioFile);
+            if ~isempty(parametersFile) && me.FilesSingleParamsFile && me.FilesCount > 0
+                errstr = 'Cannot add parameters file on "Single Parameters File for Files" mode.';
+                errid  = 'batalef:parameters:newfileViolatesSingleFileConstraint';
+                err    = MException(errid,errstr);
+                throwAsCaller(err);
+            elseif isempty(parametersFile)
+                parametersFile = me.Files{1}.Parameters;
+            end
             fileobj = bFile(me,title,audioFile,parametersFile);
             n = length(me.Files);
             me.Files{n+1} = fileobj;
@@ -68,7 +110,7 @@ classdef bApplication < handle
         
         % REMOVE FILE FROM APPLICATION
         function removeFiles(me,filesIdx)
-            delete(me.Files(filesIdx));
+            cellfun(@(f)delete(f),me.Files(filesIdx));
             me.Files(filesIdx) = [];
             % some extra work for file calls etc...
         end
@@ -77,6 +119,20 @@ classdef bApplication < handle
         function fileObj = file(me,fileIdx)
             me.validateFileIdx(fileIdx);
             fileObj = me.Files{fileIdx};
+        end
+        
+        % SAVE LOAD / FILES PARAMETERS
+        function saveFileParams(me,relFilePath,I)
+            if isempty(I)
+                I = 1:me.FilesCount;
+            end
+            cellfun(@(f) f.Parameters.saveToFile(relFilePath),me.Files(I));
+        end
+        function loadFileParams(me,relFilePath,I)
+            if isempty(I)
+                I = 1:me.FilesCount;
+            end
+            cellfun(@(f) f.Parameters.loadFromFile(relFilePath),me.Files(I));
         end
         
         % VALIDATE FILE INDEX
