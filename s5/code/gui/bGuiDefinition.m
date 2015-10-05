@@ -57,6 +57,11 @@ classdef bGuiDefinition < handle
             val = me.SelectionRibbon.ProcessVector;
         end
         
+        % REFRESH
+        function refresh(~)
+        end
+            
+        
     end
     
 end

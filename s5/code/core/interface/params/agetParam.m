@@ -1,8 +1,9 @@
-function [ parValue ] = agetParam( parName )
+function [ parValue ] = agetParam( pID )
 %AGETPARAM get batalef application paramater
 %   see also: ggetParam, fgetParam
 
-    parValue = getParam(parName);
+    global control;
+    parValue = control.app.Parameters.get(pID);
 
 end
 

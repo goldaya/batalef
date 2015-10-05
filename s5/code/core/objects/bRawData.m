@@ -35,6 +35,7 @@ classdef bRawData < handle
         function me = bRawData(position,matrix,Fs,operations,audioPath,parent)
             me.Position = position;
             me.Parent   = parent;            
+            me.Operations = operations;
             switch position
                 case 'internal'
                     if isempty(matrix)
@@ -49,14 +50,13 @@ classdef bRawData < handle
                     end
                     me.Matrix     = matrix;
                     me.Fs         = Fs;
-                    me.Operations = operations;
                     [me.NSamples, me.NChannels]  = size(matrix);
                     me.Ylim = [min(min(matrix)),max(max(matrix))];
                     
                 case 'external'
                     % read file metadata
                     try
-                        
+                        me.Matrix = [];
                         meta = audioinfo(audioPath);
                         me.AudioPath  = audioPath;
                         me.NChannels  = meta.NumChannels;
@@ -64,7 +64,7 @@ classdef bRawData < handle
                         me.Fs         = meta.SampleRate; 
                         TS = me.readAudio([]);
                         me.Ylim = [min(min(TS)),max(max(TS))];
-                        me.Operations = cell(0,1); % clean slate for external source
+                        me.Operations = cell(0,2); % clean slate for external source
                         
                     catch err
                         if strcmp(err.identifier,'MATLAB:audiovideo:audioinfo:fileNotFound')
@@ -106,6 +106,14 @@ classdef bRawData < handle
                 channels = 1:me.NChannels;
             else
                 channels = channels(channels <= me.NChannels);
+                if isempty(channels)
+                    warnid  = 'batalef:rawData:emptyRequest';
+                    warnstr = 'The channels you requested are out of the file scope';
+                    warning(warnid,warnstr);
+                    TS = [];
+                    T  = [];
+                    return;
+                end
             end
             
             % Time Signal
@@ -158,15 +166,55 @@ classdef bRawData < handle
                 [me.Matrix,me.Fs] = me.readAudio([]);
                 [me.NSamples,me.NChannels] = size(me.Matrix);
                 me.Position = 'internal';
+                me.Operations = cell(0,2); % clean slate for loaded audio
             catch err
                 if strcmp(err.identifier,'MATLAB:audiovideo:audioinfo:fileNotFound')
                     err = MException('batalef:rawData:readExternal:noFile',...
                         sprintf('Audio file "%s" unreachable. Can not load data',me.AudioPath));
-                    throw(err);
+                    throwAsCaller(err);
                 else
-                    throw(err) % something else, don't handle here
+                    err.rethrow() % something else, don't handle here
                 end                
             end
+        end
+        
+        % UNLOAD DATA EXPLICITLY
+        function unloadExplicit(me)
+            try
+                me.Matrix = [];
+                meta = audioinfo(me.AudioPath);
+                me.NChannels  = meta.NumChannels;
+                me.NSamples   = meta.TotalSamples;
+                me.Fs         = meta.SampleRate; 
+                TS = me.readAudio([]);
+                me.Ylim = [min(min(TS)),max(max(TS))];
+                me.Operations = cell(0,2); % clean slate for external source
+
+            catch err
+                if strcmp(err.identifier,'MATLAB:audiovideo:audioinfo:fileNotFound')
+                    err = MException('batalef:rawData:create:external:noFile',...
+                        sprintf('Audio file "%s" unreachable. Can not create raw-data object',me.AudioPath));
+                    throwAsCaller(err);
+                else
+                    rethrow(err) % something else, don't handle here
+                end
+            end            
+        end
+        
+        % FILTER
+        function filter(me,filterObject)
+            me.Matrix = filter(filterObject,me.getTS([],[]));
+            me.Position = 'internal';
+            me.Operations = [me.Operations;{'Filter',NaN}];
+        end
+        
+        % ALTER
+        function alter(me,TS,operation)
+        %ALTER change TS matrix, state internal data position and update
+        %operations array
+            me.Matrix = TS;
+            me.Position = 'internal';
+            me.Operations = [me.Operations;operation];            
         end
         
         % SAVE TO FILE
@@ -186,15 +234,25 @@ classdef bRawData < handle
             else
                 val = '';
                 if isempty(find(strcmp('Filter',me.Operations(:,1)),1))
-                    val = strcat([val,'Filtered,',' ']);
+%                     val = strcat(val,'Filtered');
+                    val = 'Filtered';
                 end
                 if isempty(find(strcmp('UserFunction',me.Operations(:,1)),1))
+                    if ~isempty(val)
+                        val = strcat([val,', ']);
+                    end
                     val = strcat([val,'Altered through function,',' ']);
                 end
                 if isempty(find(strcmp('Trim',me.Operations(:,1)),1))
+                    if ~isempty(val)
+                        val = strcat([val,', ']);
+                    end                    
                     val = strcat([val,'Trimmed,',' ']);
                 end
                 if isempty(find(strcmp('Pad',me.Operations(:,1)),1))
+                    if ~isempty(val)
+                        val = strcat([val,', ']);
+                    end                    
                     val = strcat([val,'Padded,',' ']);
                 end      
             end

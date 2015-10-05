@@ -85,14 +85,33 @@ classdef bMainGui < bGuiDefinition
         
         % BUILD MENUS
         function buildMenus(me)
+            % batalef
             me.Menus.Batalef = uimenu(me.Figure,'Label','Batalef');
             me.Menus.batalef.Exit = uimenu(me.Menus.Batalef,'Label','Exit','Callback',@(~,~)batalefGuiKill(me.Top));
             
+            % files
             me.Menus.Files = uimenu(me.Figure,'Label','Files');
             me.Menus.files.Add = ...
                 uimenu(me.Menus.Files,'Label','Add Files','Callback',@(~,~)me.addFiles());
             me.Menus.files.Remove = ...
-                uimenu(me.Menus.Files,'Label','Remove Files','Callback',@(~,~)me.removeFiles());            
+                uimenu(me.Menus.Files,'Label','Remove Files','Callback',@(~,~)me.removeFiles());
+            me.Menus.files.Overwrite = ...
+                uimenu(me.Menus.Files,'Separator','on','Label','Overwrite Files','Callback',@(~,~)me.overwriteFiles());
+            me.Menus.files.CreateFile = ...
+                uimenu(me.Menus.Files,'Label','Create File','Callback',@(~,~)me.createFile());
+            me.Menus.files.LoadExplicit = ...
+                uimenu(me.Menus.Files,'Label','Load Raw Data Explicitly','Separator','on','Callback',@(~,~)me.loadExplicit());
+            me.Menus.files.Unload = ...
+                uimenu(me.Menus.Files,'Label','Unload Raw Data','Callback',@(~,~)me.unloadRawData());            
+            
+            % pre-processing
+            me.Menus.PreProcessing = uimenu(me.Figure,'Label','Pre Processing');
+            me.Menus.preProcessing.Filter = ...
+                uimenu(me.Menus.PreProcessing,'Label','Filter');
+            me.Application.Methods.preProcFilter.createMenu(me.Menus.preProcessing.Filter,me);
+            % decimation
+            % wildcard function
+            % playground
             
             % settings
             me.Menus.Settings = uimenu(me.Figure,'Label','Settings');
@@ -149,7 +168,22 @@ classdef bMainGui < bGuiDefinition
                 uimenu(me.Menus.Settings,'Label','Default Methods');            
             me.Menus.settings.defaultMethods.DisplaySpectrogram = ...
                 uimenu(me.Menus.settings.DefaultMethods,'Label','Display Spectrogram');
-            me.Top.Methods.displaySpectrogram.createMenu(me.Menus.settings.defaultMethods.DisplaySpectrogram);            
+            me.Top.Methods.displaySpectrogram.createMenu(me.Menus.settings.defaultMethods.DisplaySpectrogram,me);
+            switch agetParam('rawData_position');
+                case 'internal'
+                    intCheck = 'on';
+                    extCheck = 'off';
+                case 'external'
+                    intCheck = 'off';
+                    extCheck = 'on';                    
+            end
+            me.Menus.settings.DefRawDataPosition = ...
+                uimenu(me.Menus.Settings,'Label','Default Raw Data Position');
+            me.Menus.settings.defRawDataPosition.Internal = ...
+                uimenu(me.Menus.settings.DefRawDataPosition,'Label','Internal','Callback',@(h,~)me.setDefRawDataPosition('internal',h),'Checked',intCheck);
+            me.Menus.settings.defRawDataPosition.External = ...
+                uimenu(me.Menus.settings.DefRawDataPosition,'Label','External','Callback',@(h,~)me.setDefRawDataPosition('external',h),'Checked',extCheck);
+            
         end
         
         % CONTEXT MENU
@@ -198,6 +232,81 @@ classdef bMainGui < bGuiDefinition
             me.SelectionRibbon.changeDisplay([]);
             me.SelectionRibbon.changeProcess([]);
         end
+        
+        % CREATE NEW FILE
+        function createFile(me)
+            V = me.ProcessVector;
+            if isempty(V)
+                msgbox('No files selected');
+                return;
+            end
+            Q{1} = sprintf('You are creating a new audio file from files: %s\n\nChannels to use (leave "All" if all channels are wanted',int2str_compact(V));
+            D{1} = 'All';
+            T    = 'Create Audio File';
+            A = inputdlg(Q,T,[1,100],D);
+            if ~isempty(A)
+                [name,path] = uiputfile('*.wav');
+                filepath = strcat(path,name);
+                if strcmp(A{1},'All')
+                    C = [];
+                else
+                    C = str2int_compact(A{1});
+                end
+                try
+                    createMixFile(V,C,filepath);
+                    A = questdlg(sprintf('Mix file created successfully\nDo you want to load the new file into batalef now?'),'Mix files','Yes','No','Yes');
+                    if strcmp(A,'Yes')
+                        addFiles(path,name);
+                        me.refreshFilesTable();
+                    end
+                catch err
+                    filterError(err,'batalef:files:mixFile:create');
+                    msgbox(err.message);
+                end
+            end
+        end
+        
+        % OVERWRITE FILES
+        function overwriteFiles(me)
+            V = me.ProcessVector;
+            if isempty(V)
+                msgbox('No files selected');
+                return;
+            end
+            overwriteFiles(V);
+        end
+                
+                
+        % LOAD EXPLICIT 
+        function loadExplicit(me)
+            V = me.ProcessVector;
+            if isempty(V)
+                msgbox('No files selected');
+                return;
+            else
+                A = questdlg('Any changes made to the raw data (in pre-prcess phase) will be lost. Continue?','Load Raw Data Explicitly','Yes','No','Yes');
+                if strcmp(A,'Yes')
+                    loadRawDataExplicit(V,'internal');
+                end
+            end
+            me.refreshFilesTable();
+        end
+        
+        % UNLOAD RAW DATA
+        function unloadRawData(me)
+            V = me.ProcessVector;
+            if isempty(V)
+                msgbox('No files selected');
+                return;
+            else
+                A = questdlg('Any changes made to the raw data (in pre-prcess phase) will be lost. Continue?','Unload Raw Data','Yes','No','Yes');
+                if strcmp(A,'Yes')
+                    loadRawDataExplicit(V,'external');
+                end
+            end
+            me.refreshFilesTable();
+        end
+            
         
         % REFRESH FILES TABLE
         function refreshFilesTable(me)
@@ -316,12 +425,24 @@ classdef bMainGui < bGuiDefinition
                 set(h,'Checked','off');
             end
         end
+        
+        % SET DEFAULT RAW DATA POSITION
+        function setDefRawDataPosition(me,pos,h)
+            asetParam('rawData_position',pos);
+            set(me.Menus.settings.defRawDataPosition.Internal,'Checked','off');
+            set(me.Menus.settings.defRawDataPosition.External,'Checked','off');
+            set(h,'Checked','on');
+        end           
        
         % CONTEXT MENU GET
         function val = get.ContextMenu(me)
             val = me.ContextMenuObject.UIObject;
         end
         
+        % REFRESH (OBLIGATORY FOR ALL GUIs)
+        function refresh(me)
+            me.Graphs.plot();
+        end
         
     end
     

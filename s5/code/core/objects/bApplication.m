@@ -1,6 +1,6 @@
 classdef bApplication < handle
 
-    properties (Access = private)
+    properties (Access = public)
        Files = cell(0);
        FilesSingleParamsFileInner = false;
     end
@@ -14,8 +14,8 @@ classdef bApplication < handle
     end
     
     properties (Access = public)
-        gpuProcAllowed = false
-        parProcAllowed = false
+        GpuProcAllowed = false
+        ParProcAllowed = false
     end
     
     properties (Dependent = true)
@@ -33,6 +33,7 @@ classdef bApplication < handle
             me.CommonParams.app  = me.batpath(strcat('common',filesep(),'common.bap'));
             me.CommonParams.gui  = me.batpath(strcat('common',filesep(),'common.bgp'));
             me.CommonParams.file = me.batpath(strcat('common',filesep(),'common.bfp'));
+            me.Methods.preProcFilter = bMethodFilter('onDemend','preProcFilter',me,[]);
         end
         
         % DESTRUCTOR
@@ -160,12 +161,17 @@ classdef bApplication < handle
         end
         
         % GET DATA FUNCTIONS
-        function out = getAppData(me,varargin)
+        function varargout = getAppData(me,varargin)
             switch varargin{1}
                 case 'Files'
                     switch varargin{2}
                         case 'Count'
-                            out = me.FilesCount;
+                            varargout{1} = me.FilesCount;
+                    end
+                case 'ParProc'
+                    switch varargin{2}
+                        case 'Allowed'
+                            varargout{1} = me.ParProcAllowed;
                     end
             end
         end

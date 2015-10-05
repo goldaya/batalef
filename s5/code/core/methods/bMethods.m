@@ -1,6 +1,6 @@
 classdef bMethods < handle
     
-    properties (Access = ?bMethodSpectrogram)
+    properties (Access = {?bApplication,?bMethodSpectrogram,?bMethodFilter})
         GuiTop
         Type
         Methods = [];
@@ -9,6 +9,7 @@ classdef bMethods < handle
         DefinitionExtention
         ParamPreamble
         Application
+        RefreshGui = false;
     end
     
     
@@ -127,11 +128,11 @@ classdef bMethods < handle
         end
         
         % CREATE MENU
-        function createMenu(me,menu)
+        function createMenu(me,menu,gui)
             me.Menus = [me.Menus,{menu}];
             for i = 1:length(me.Methods)
                 uimenu(menu,'Label',me.Methods(i).name,...
-                    'UserData',me.Methods(i).id,...
+                    'UserData',{me.Methods(i).id,gui},...
                     'Callback',@(h,~)me.onGuiMethodSelection(h));
             end
             if strcmp(me.Type,'default')
@@ -146,18 +147,22 @@ classdef bMethods < handle
             me.Menus(I) = [];
         end
 
-        % ON METHOD SELECTION
+        % ON GUI METHOD SELECTION
         function onGuiMethodSelection(me,h)
-            methodID = get(h,'UserData');
+            userData = get(h,'UserData');
+            methodID = userData{1};
             switch me.Type
                 case 'default'
-                    cellfun(@(m) selectMenuItem(m,get(h,'UserData')),me.Menus);
+                    cellfun(@(m) selectMenuItem(m,methodID),me.Menus);
                     me.askParamsGui(methodID,[]);
                     me.Default = methodID;
                 case 'onDemend'
+                    me.Default = methodID;
                     me.askParamsGui(methodID,[]);
-                    me.execute();
+                    gui = userData{2};
+                    me.executeGOD(gui);
             end
+            
         end
         
         % GUI PROMPT
@@ -186,7 +191,7 @@ classdef bMethods < handle
             for i = 1:length(m.params)
                 switch m.params(i).ptype
                     case 'app'
-                        p = me.Application.Paramsters;
+                        p = me.Application.Parameters;
                     case 'gui'
                         if isempty(me.GuiTop)
                             errstr = sprintf('Method has gui-parameter but there is no gui.\nMethod: %\nParameter(id/name): %s / %s', m.name,m.params(i).id,m.params(i).name);

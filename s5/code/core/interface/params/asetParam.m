@@ -2,7 +2,8 @@ function asetParam( pName, pValue )
 %ASETPARAM Set batalef application parameter
 %   See also: gsetParam, fsetParam.
 
-    setParam(pName,pValue);
+    global control;
+    control.app.Parameters.set(pName,pValue);
 
 end
 

@@ -6,7 +6,7 @@ classdef bFile < handle
         ChannelPoI   % a cell array containing the channels Points of Interest
     end
 
-    properties
+    properties (SetAccess = private, GetAccess = public)
         Title
         RawData
         Parameters
@@ -41,7 +41,7 @@ classdef bFile < handle
             n = me.RawData.NChannels;
             me.ChannelCalls = cell(1,n);
             me.ChannelPoI   = cell(1,n);
-            arrayfun(@(j) me.initChannelData(j),[1:n]);
+            arrayfun(@(j) me.initChannelData(j),1:n);
         end
 
         % INITIALIZE CHANNEL DATA STRUCTURES
@@ -54,9 +54,16 @@ classdef bFile < handle
             me.ChannelPoI{j}   = cell(0,4); % time, text, amplitude, freq
         end
 
-	% GET CHANNEL INTERFACE OBJECT
+        % GET CHANNEL INTERFACE OBJECT
         function cobj = channel(me,j)
             cobj = bChannel(me,j);
+        end
+        
+        % OVERWRITE AUDIOFILE
+        function overwriteAudio(me)
+            if strcmp(me.RawData.Position,'internal')
+                me.RawData.saveToFile(me.Application.physpath(me.RawData.AudioPath));
+            end
         end
         
         % GET DATA
@@ -94,6 +101,19 @@ classdef bFile < handle
                     
                 case 'DataStatus'
                     varargout{1} = me.RawData.Status;
+                    
+                case {'TS','TimeSeries','TimeSignal'}
+                    interval = getParFromVarargin('TimeInterval',varargin);
+                    if islogical(interval) && ~interval
+                        interval = [];
+                    end
+                    channels = getParFromVarargin('ChannelInterval',varargin);
+                    if islogical(channels) && ~channels
+                        channels = [];
+                    end            
+                    [TS,T] = me.RawData.getTS(channels,interval);
+                    varargout{1} = TS;
+                    varargout{2} = T;
                     
                 otherwise
                     err = MException('batalef:fileData:wrongParameter',...
