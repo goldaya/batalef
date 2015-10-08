@@ -80,7 +80,7 @@ classdef bParameters < handle
         end        
         
         % GET SINGLE VALUE /  ALL VALUES
-        function val = get(me,pID)
+        function val = get(me,pID,varargin)
             global batalefAlfred;
             
             if exist('pID','var') && ~isempty(pID)
@@ -101,6 +101,10 @@ classdef bParameters < handle
                         err=MException('batalef:parameters:noParam',sprintf('No such parameter: %s',pID));
                         throwAsCaller(err);
                     end
+                end
+                if vHas(varargin,'AsString')
+                    dtype = me.Params.(pID).dtype;
+                    val = me.par2str(val,dtype);
                 end
             else
                 val = me.Params;

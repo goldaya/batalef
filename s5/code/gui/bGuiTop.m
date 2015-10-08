@@ -1,16 +1,12 @@
 classdef bGuiTop < handle
     %BGUITOP batalef guis: object to rule them all
 
-
-    properties (Access = private)
-        Guis %$$$
-        RibbonsD2PInner
-    end
-    
     properties (SetAccess = private, GetAccess = public)
         Application
         Parameters %$$$
         Methods %$$$
+        Guis %$$$
+        RibbonsD2PInner
     end
     
     properties (Dependent = true, Access = ?bSelectionRibbon)

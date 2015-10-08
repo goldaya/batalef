@@ -109,9 +109,31 @@ classdef bMainGui < bGuiDefinition
             me.Menus.preProcessing.Filter = ...
                 uimenu(me.Menus.PreProcessing,'Label','Filter');
             me.Application.Methods.preProcFilter.createMenu(me.Menus.preProcessing.Filter,me);
-            % decimation
-            % wildcard function
-            % playground
+            me.Menus.preProcessing.Wildcard = ...
+                uimenu(me.Menus.PreProcessing,'Label','Wildcard Function','Callback',@(~,~)me.wildcardFunction());
+            me.Menus.preProcessing.Playground = ...
+                uimenu(me.Menus.PreProcessing,'Label','Playground','Callback',@(~,~)me.playground());
+            me.Menus.preProcessing.Refresh = ...
+                uimenu(me.Menus.PreProcessing,'Label','Refresh Raw Data','Separator','on','Callback',@(~,~)me.refreshRawData());
+
+            % channel level processing
+            me.Menus.ChannelCalls = uimenu(me.Figure,'Label','Channel Calls');
+            me.Menus.channelCalls.Detection = ...
+                uimenu(me.Menus.ChannelCalls,'Label','Detection');
+            me.Menus.channelCalls.detection.Detect = ...
+                uimenu(me.Menus.channelCalls.Detection,'Label','Detect');
+            me.Menus.channelCalls.detection.SegmentNone = ...
+                uimenu(me.Menus.channelCalls.Detection,...
+                'Label','No Segmentation','Callback',@(~,~)me.setSegmentation('none'),'Separator','on');
+            me.Menus.channelCalls.detection.SegmentPiecewise = ...
+                uimenu(me.Menus.channelCalls.Detection,...
+                'Label','Piecewise','Callback',@(~,~)me.setSegmentation('piecewise'));
+            me.Menus.channelCalls.detection.SegmentManual = ...
+                uimenu(me.Menus.channelCalls.Detection,...
+                'Label','Manual Interval','Callback',@(~,~)me.setSegmentation('manual'));
+            me.Menus.channelCalls.CallGui = ...
+                uimenu(me.Menus.ChannelCalls,'Label','Call Analysis GUI','Callback',@(~,~)me.callCallGui());
+            
             
             % settings
             me.Menus.Settings = uimenu(me.Figure,'Label','Settings');
@@ -275,8 +297,11 @@ classdef bMainGui < bGuiDefinition
             end
             overwriteFiles(V);
         end
-                
-                
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%% RAW DATA MANIPULATION %%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
         % LOAD EXPLICIT 
         function loadExplicit(me)
             V = me.ProcessVector;
@@ -290,6 +315,7 @@ classdef bMainGui < bGuiDefinition
                 end
             end
             me.refreshFilesTable();
+            me.refresh();
         end
         
         % UNLOAD RAW DATA
@@ -305,8 +331,108 @@ classdef bMainGui < bGuiDefinition
                 end
             end
             me.refreshFilesTable();
+            me.refresh();
         end
             
+        % WILDCARD
+        function wildcardFunction(me)
+            V = me.ProcessVector;
+            if isempty(V)
+                msgbox('No files selected');
+                return;
+            else
+                A = inputdlg('Function name','Apply Wildcard Function on TS',[1,80]);
+                if ~isempty(A)
+                    applyWildcardFunction(V,A{1});
+                end
+            end
+            me.refreshFilesTable();
+            me.refresh();
+        end
+        
+        % TS PLAYGROUND
+        function playground(me)
+            V = me.ProcessVector;
+            if isempty(V)
+                msgbox('No file selected');
+                return;
+            elseif length(V) > 1
+                msgbox('Cannot process more than one file');
+                return;
+            else
+                RawDataObject = me.Application.file(V).RawData;
+                clear V;
+                TS = RawDataObject.getTS([],[]);
+                Fs = RawDataObject.Fs;
+                msgbox('You entered playground mode. Type "dbcont" in console to finish. Please do not change / delete the "RawDataObject" and "me" variables. You can change the "TS" variable (Time Signal, samples X channels) and "Fs" (sampling rate).');
+                keyboard;
+                RawDataObject.alter(TS,{'Playground',NaN},Fs);
+            end
+            me.refreshFilesTable();
+            me.refresh();
+        end
+        
+        % REFRESH RAW DATA
+        function refreshRawData(me)
+           V = me.ProcessVector;
+            if isempty(V)
+                msgbox('No files selected');
+                return;
+            else
+                A = questdlg('Any changes made to the raw data (in pre-prcess phase) will be lost. Continue?','Refresh Raw Data','Yes','No','Yes');
+                if strcmp(A,'Yes')
+                    loadRawDataExplicit(V,agetParam('rawData_position'));
+                end
+            end
+            me.refreshFilesTable();
+            me.refresh();
+        end
+        
+        %%%%%%%%%%%%%%%%%%%%%
+        %%% CHANNEL CALLS %%%
+        %%%%%%%%%%%%%%%%%%%%%
+        
+        % SEGMENTATION
+        function setSegmentation(me,type)
+            aNO = 'off';
+            aPW = 'off';
+            aMN = 'off';
+            
+            segment.type   = type;
+            segment.params = [];
+
+            switch type
+                case 'none'
+                    aNO = 'on';
+
+                case 'piecewise'
+                    aPW = 'on';
+                    Q{1} = 'Window Length (msec)';
+                    D{1} = agetParam('channelCalls_detection_piecewiseWindow','AsString');
+                    Q{2} = 'Overlap (msec)';
+                    D{2} = agetParam('channelCalls_detection_piecewiseOverlap','AsString');
+                    T    = 'Piecewise Calls Detection Settings';
+                    A = inputdlg(Q,T,[70 1],D);
+                    if isempty(A)
+                        return;
+                    else
+                        segment.params.window  = str2double(A{1});
+                        segment.params.overlap = str2double(A{2});
+                    end
+                case 'manual'
+                    aMN = 'on';
+                    
+            
+            end
+            me.DetectionSettings.segmentation = segment;
+            set(me.Menus.channelCalls.detection.SegmentNone,'Checked',aNO);
+            set(me.Menus.channelCalls.detection.SegmentPiecewise,'Checked',aPW);
+            set(me.Menus.channelCalls.detection.SegmentManual,'Checked',aMN);            
+        end
+        
+        %%%%%%%%%%%%%%%%%
+        %%% GUI STUFF %%%
+        %%%%%%%%%%%%%%%%%
         
         % REFRESH FILES TABLE
         function refreshFilesTable(me)

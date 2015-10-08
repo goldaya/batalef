@@ -182,6 +182,7 @@ classdef bRawData < handle
         function unloadExplicit(me)
             try
                 me.Matrix = [];
+                me.Position = 'external';
                 meta = audioinfo(me.AudioPath);
                 me.NChannels  = meta.NumChannels;
                 me.NSamples   = meta.TotalSamples;
@@ -209,12 +210,16 @@ classdef bRawData < handle
         end
         
         % ALTER
-        function alter(me,TS,operation)
+        function alter(me,TS,operation,Fs)
         %ALTER change TS matrix, state internal data position and update
         %operations array
             me.Matrix = TS;
+            [me.NSamples, me.NChannels]  = size(TS);
             me.Position = 'internal';
             me.Operations = [me.Operations;operation];            
+            if exist('Fs','var')
+                me.Fs = Fs;
+            end
         end
         
         % SAVE TO FILE

@@ -150,10 +150,12 @@ classdef bApplication < handle
             val = length(me.Files);
         end
         
+        %--- PARAMETERS AND GET DATA FUNCTIONS ---%
+        
         % GET FILE PARAMETER
-        function pValue = getFileParameter(me,fileIdx,pName)
+        function pValue = getFileParameter(me,fileIdx,pID,varargin)
             me.validateFileIdx(fileIdx);
-            pValue = me.Files{fileIdx}.Parameters.get(pName);
+            pValue = me.Files{fileIdx}.Parameters.get(pID,varargin{:});
         end
         function setFileParameter(me,fileIdx,pName,pValue)
             me.validateFileIdx(fileIdx);

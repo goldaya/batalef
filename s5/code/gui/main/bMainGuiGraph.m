@@ -506,7 +506,7 @@ classdef bMainGuiGraph < handle & hgsetget
                 M = max(audioLength-me.DisplayWindow,0);
             end
             if M > 0
-                S = (me.DisplayWindow/M).*[0.5,1];
+                S = min(1,me.DisplayWindow/M).*[0.5,1];
                 vis = 'on';
             else
                 S = [0.5,1];
