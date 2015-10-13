@@ -1,6 +1,6 @@
 % butter filter method definition
 id   = 'butter';
-name = 'Butterwurth';
+name = 'Butterworth';
 func = 'filterButter';
 params(1).ptype = 'app';
 params(1).id    = 'type';

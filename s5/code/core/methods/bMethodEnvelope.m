@@ -1,5 +1,5 @@
-classdef bMethodFilter < bMethods
-    %BMETHODFILTER method handling for filter definition and execution
+classdef bMethodEnvelope < bMethods
+    %BMETHODENVELOPE Handling envelope methods and executing them
     
     properties
     end
@@ -7,26 +7,22 @@ classdef bMethodFilter < bMethods
     methods
         
         % CONSTRUCTOR
-        function me = bMethodFilter(type,paramPreamble,app,gui,withNone)
-            me = me@bMethods(type,paramPreamble,'filter',app,gui,withNone);
-            me.RefreshGui = true;
+        function me = bMethodEnvelope(type,paramPreamble,app,gui,withNone)
+            me = me@bMethods(type,paramPreamble,'envelope',app,gui,withNone);
+            me.RefreshGui = false;
         end        
         
-        % EXECUTE
-        function [filteredDataset,filterApplied,filterObject] = execute(me,dataset,Fs)
+        function [envDataset] = execute(me,dataset,Fs)
             m = me.getMethod(me.Default);
             if strcmp(m.id,'none')
-                filteredDataset = dataset;
-                filterApplied   = true;
-                filterObject    = [];
+                envDataset = dataset;
             else
                 [~,D,P] = buildParamList(me,m);
                 for i = 1:length(D)
                     params.(P{i,3}) = D{i};
                 end
                 methodFunc = str2func(m.func);
-                [filteredDataset,filterApplied,filterObject] = ...
-                    methodFunc(dataset,Fs,params);
+                envDataset = methodFunc(dataset,Fs,params);
             end
         end
        

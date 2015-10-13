@@ -50,6 +50,7 @@ global batalefAlfred;
     appParams = getParamsFileForDir(currFolder,'app');
     relParamsPath = relativepath(appParams,currFolder);    
     control.app.setParameters(relParamsPath);
+    control.app.initMethods();
     
     
     % GUI

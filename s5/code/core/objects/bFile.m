@@ -18,6 +18,7 @@ classdef bFile < handle
     properties (Dependent = true)
         Fs
         ChannelsCount
+        Length
     end
     
     methods
@@ -41,23 +42,48 @@ classdef bFile < handle
             n = me.RawData.NChannels;
             me.ChannelCalls = cell(1,n);
             me.ChannelPoI   = cell(1,n);
-            arrayfun(@(j) me.initChannelData(j),1:n);
+            me.initChannelCallsData();
+            me.initPoiData();
+%             arrayfun(@(j) me.initChannelCallsData(j),1:n);
+%             arrayfun(@(j) me.initChannelPoiData(j),1:n);
         end
 
-        % INITIALIZE CHANNEL DATA STRUCTURES
-        function initChannelData(me,j)
-            me.ChannelCalls{j}.detection = [];
-            me.ChannelCalls{j}.features  = [];
-            me.ChannelCalls{j}.ridge     = cell(0,1);
-            me.ChannelCalls{j}.forLocalization = [];
-            me.ChannelCalls{j}.forBeam   = [];
-            me.ChannelPoI{j}   = cell(0,4); % time, text, amplitude, freq
-        end
 
+        %%%%%%%%%%%%%%%%
+        % CHANNEL DATA %
+        %%%%%%%%%%%%%%%%
+        
         % GET CHANNEL INTERFACE OBJECT
         function cobj = channel(me,j)
             cobj = bChannel(me,j);
         end
+        
+        % INIT CALLS DATA
+        function initChannelCallsData(me)
+            for j = 1:me.ChannelsCount
+                me.ChannelCalls{j}.detection = [];
+                me.ChannelCalls{j}.features  = [];
+                me.ChannelCalls{j}.ridge     = cell(0,1);
+                me.ChannelCalls{j}.forLocalization = [];
+                me.ChannelCalls{j}.forBeam   = [];
+            end
+        end
+        
+        % INIT POI DATA
+        function initPoiData(me)
+            for j = 1:me.ChannelsCount
+                me.ChannelPoI{j} = cell(0,4); % time, text, amplitude, freq
+            end
+        end
+        
+        % CLEAR CHANNEL CALLS FOR FILE
+        function clearChannelCalls(me)
+            arrayfun(@(j) me.initChannelCallsData(j),1:me.RawData.NChannels);
+        end
+        
+        %%%%%%%%%%%%%%%
+        % AUDIO STUFF %
+        %%%%%%%%%%%%%%%
         
         % OVERWRITE AUDIOFILE
         function overwriteAudio(me)
@@ -65,6 +91,25 @@ classdef bFile < handle
                 me.RawData.saveToFile(me.Application.physpath(me.RawData.AudioPath));
             end
         end
+        
+        % FS
+        function val = get.Fs(me)
+            val = me.RawData.Fs;
+        end
+        
+        % CHANNELS COUNT
+        function val = get.ChannelsCount(me)
+            val = me.RawData.NChannels;
+        end
+        
+        % LENGTH
+        function val = get.Length(me)
+            val = me.RawData.Length;
+        end
+            
+        %%%%%%%%%%%%
+        % GET DATA %
+        %%%%%%%%%%%%
         
         % GET DATA
         function varargout = getData(me, varargin)

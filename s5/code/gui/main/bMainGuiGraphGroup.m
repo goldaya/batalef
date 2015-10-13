@@ -141,6 +141,20 @@ classdef bMainGuiGraphGroup < handle
             cellfun(@(g) g.plot(),me.Graphs);
         end
         
+        % REPLOT CHANNEL CALLS
+        function replotChannelCalls(me)
+            cellfun(@(g) g.plotChannelCalls(g.AxesTS,'ccTS','ccTxtTS',true),me.Graphs);
+            cellfun(@(g) g.plotChannelCalls(g.AxesSpec,'ccSpec','ccTxtSpec',false),me.Graphs);
+        end
+        
+        % REPLOT POI
+        function replotPoi(me)
+            cellfun(@(g) g.plotPoi(g.AxesTS,'poiTS','poiTxtTS'),me.Graphs);
+            cellfun(@(g) g.plotPoi(g.AxesSpec,'poiSpec','poiTxtSpec'),me.Graphs);
+                
+                            
+        end
+        
         % COUNT PROPERTY (GET ONLY)
         function val = get.Count(me)
             val = length(me.Graphs);

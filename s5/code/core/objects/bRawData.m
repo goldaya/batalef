@@ -97,6 +97,9 @@ classdef bRawData < handle
 
         % RETURN TS (WHOLE OR PART)
         function [TS,T] = getTS(me,channels,timeInterval)
+        %[TS,T]=GETTS(channels,timeInterval)
+        %   channels     = [] for all channels
+        %   timeInterval = [] for whole TS
             if isempty(timeInterval)
                 samplesInterval = [1,me.NSamples];
             else

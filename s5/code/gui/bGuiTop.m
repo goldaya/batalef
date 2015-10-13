@@ -23,7 +23,7 @@ classdef bGuiTop < handle
             me.Parameters = bParameters(app,'gui');
             me.Parameters.loadFromFile(paramsFile);
             me.RibbonsD2PInner = me.Parameters.get('ribbons_linkD2P');
-            me.Methods.displaySpectrogram = bMethodSpectrogram('default','displaySpectrogram',me.Application,me);
+            me.Methods.displaySpectrogram = bMethodSpectrogram('default','displaySpectrogram',me.Application,me,false);
         end
         
         % DESTRUCTOR

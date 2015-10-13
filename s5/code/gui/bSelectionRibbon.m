@@ -1,9 +1,13 @@
 classdef bSelectionRibbon < handle & hgsetget
     %BSELECTIONRIBBON Selection ribbon (display and process) for guis
     
+    properties
+        Panel
+    end
+    
     properties (Access = private)
         Gui
-        Panel
+        
         TextDisplay
         TextProcess
         PushButtonSelectAllProcess
@@ -24,6 +28,7 @@ classdef bSelectionRibbon < handle & hgsetget
     
     properties (Constant=true)
         HeightInChars = 4.3;
+        minWidth = 88;
     end
     
     methods
@@ -41,7 +46,7 @@ classdef bSelectionRibbon < handle & hgsetget
                 if linkGuis
                     linkD2P = me.Gui.Top.RibbonsD2P;
                 else
-                    linkD2P = ggetParem('ribbons_linkD2P');
+                    linkD2P = ggetParam('ribbons_linkD2P');
                 end
             else
                 linkGuis = ggetParam('ribbons_linkGuis');
@@ -96,7 +101,7 @@ classdef bSelectionRibbon < handle & hgsetget
                 'String','Process:');
             me.TextProcess = uicontrol(me.Panel,...
                 'Style','edit',...
-                'Units','character',...
+                 'Units','character',...
                 'Position',[12,0.5,15,1.4],...
                 'String','',...
                 'Callback',@(hObject,~)me.changeProcess(str2int_compact(get(hObject,'String'))));            

@@ -9,6 +9,7 @@ classdef bMainGui < bGuiDefinition
     properties (SetAccess = private, GetAccess = public)
         ContextMenuObject
         Graphs
+        DetectionSettings        
     end
     
     properties (Access = public)
@@ -81,6 +82,7 @@ classdef bMainGui < bGuiDefinition
             me.resize();
             me.linkGraphs(ggetParam('mainGui_linkAxes'));
             me.showPois(ggetParam('mainGui_showPois'));
+            me.showChannelCalls(ggetParam('mainGui_showChannelCalls'));
         end
         
         % BUILD MENUS
@@ -122,6 +124,17 @@ classdef bMainGui < bGuiDefinition
                 uimenu(me.Menus.ChannelCalls,'Label','Detection');
             me.Menus.channelCalls.detection.Detect = ...
                 uimenu(me.Menus.channelCalls.Detection,'Label','Detect');
+            me.Application.Methods.channelCallsDetection.createMenu(me.Menus.channelCalls.detection.Detect,me);
+            me.Menus.channelCalls.detection.Envelope = ...
+                uimenu(me.Menus.channelCalls.Detection,'Label','Envelope');
+            me.Application.Methods.detectionEnvelope.createMenu(me.Menus.channelCalls.detection.Envelope,me);
+            me.Menus.channelCalls.detection.Filter = ...
+                uimenu(me.Menus.channelCalls.Detection,'Label','Filter');
+            me.Application.Methods.detectionFilter.createMenu(me.Menus.channelCalls.detection.Filter,me);
+
+            me.Menus.channelCalls.Clear = ...
+                uimenu(me.Menus.ChannelCalls,'Label','Clear','Callback',@(~,~)me.clearChannelCalls());
+            
             me.Menus.channelCalls.detection.SegmentNone = ...
                 uimenu(me.Menus.channelCalls.Detection,...
                 'Label','No Segmentation','Callback',@(~,~)me.setSegmentation('none'),'Separator','on');
@@ -131,6 +144,8 @@ classdef bMainGui < bGuiDefinition
             me.Menus.channelCalls.detection.SegmentManual = ...
                 uimenu(me.Menus.channelCalls.Detection,...
                 'Label','Manual Interval','Callback',@(~,~)me.setSegmentation('manual'));
+            me.setSegmentation('none');
+            
             me.Menus.channelCalls.CallGui = ...
                 uimenu(me.Menus.ChannelCalls,'Label','Call Analysis GUI','Callback',@(~,~)me.callCallGui());
             
@@ -143,14 +158,28 @@ classdef bMainGui < bGuiDefinition
                 uimenu(me.Menus.settings.Display,'Label','Link Graphs','Callback',@(h,~)me.linkGraphs(strcmp(get(h,'Checked'),'off')));
             me.Menus.settings.display.GraphsNumber = ...
                 uimenu(me.Menus.settings.Display,'Label','Set number of graphs','Callback',@(~,~)me.askAndSetGraphsNumber());        
+            
             me.Menus.settings.display.Pois = ...
                 uimenu(me.Menus.settings.Display,'Label','Points of Interest');
             me.Menus.settings.display.pois.Dont = ...
-                uimenu(me.Menus.settings.display.Pois,'Label','Dont show','UserData','dont','Callback',@(~,~)me.showPois('dont'));
-            me.Menus.settings.display.pois.Dont = ...
-                uimenu(me.Menus.settings.display.Pois,'Label','Show marks','UserData','marks','Callback',@(~,~)me.showPois('marks'));
-            me.Menus.settings.display.pois.Dont = ...
-                uimenu(me.Menus.settings.display.Pois,'Label','Show marks & texts','UserData','texts','Callback',@(~,~)me.showPois('texts'));            
+                uimenu(me.Menus.settings.display.Pois,'Label','Dont show','UserData',{'dont',me},'Callback',@(~,~)me.showPois('dont'));
+            me.Menus.settings.display.pois.Marks = ...
+                uimenu(me.Menus.settings.display.Pois,'Label','Show marks','UserData',{'marks',me},'Callback',@(~,~)me.showPois('marks'));
+            me.Menus.settings.display.pois.Texts = ...
+                uimenu(me.Menus.settings.display.Pois,'Label','Show marks & texts','UserData',{'texts',me},'Callback',@(~,~)me.showPois('texts'));            
+
+            me.Menus.settings.display.ChannelCalls = ...
+                uimenu(me.Menus.settings.Display,'Label','Channel Calls');
+            me.Menus.settings.display.channelCalls.Dont = ...
+                uimenu(me.Menus.settings.display.ChannelCalls,'Label','Dont show','UserData',{'dont',me},'Callback',@(~,~)me.showChannelCalls('dont'));
+            me.Menus.settings.display.channelCalls.Marks = ...
+                uimenu(me.Menus.settings.display.ChannelCalls,'Label','Show marks','UserData',{'marks',me},'Callback',@(~,~)me.showChannelCalls('marks'));
+            me.Menus.settings.display.channelCalls.Numbered = ...
+                uimenu(me.Menus.settings.display.ChannelCalls,'Label','Show numbered marks','UserData',{'numbered',me},'Callback',@(~,~)me.showChannelCalls('numbered'));            
+            
+            me.Menus.settings.display.DisplaySpectrogram = ...
+                uimenu(me.Menus.settings.Display,'Label','Display Spectrogram');
+            me.Top.Methods.displaySpectrogram.createMenu(me.Menus.settings.display.DisplaySpectrogram,me);
             
             me.Menus.settings.Parameters = ...
                 uimenu(me.Menus.Settings,'Label','Parameters');
@@ -186,11 +215,6 @@ classdef bMainGui < bGuiDefinition
             me.Menus.settings.parameters.ManageValues = ...
                 uimenu(me.Menus.settings.Parameters,'Label','Manage Values','Separator','on','Callback',@(~,~)me.Top.pgInit());            
             
-            me.Menus.settings.DefaultMethods = ...
-                uimenu(me.Menus.Settings,'Label','Default Methods');            
-            me.Menus.settings.defaultMethods.DisplaySpectrogram = ...
-                uimenu(me.Menus.settings.DefaultMethods,'Label','Display Spectrogram');
-            me.Top.Methods.displaySpectrogram.createMenu(me.Menus.settings.defaultMethods.DisplaySpectrogram,me);
             switch agetParam('rawData_position');
                 case 'internal'
                     intCheck = 'on';
@@ -232,6 +256,11 @@ classdef bMainGui < bGuiDefinition
             
         end
         
+       
+        %%%%%%%%%%%%%%%%%
+        %%% GUI STUFF %%%
+        %%%%%%%%%%%%%%%%%
+
         % LINK GRAPHS
         function linkGraphs(me,link)
             if link
@@ -242,6 +271,159 @@ classdef bMainGui < bGuiDefinition
             set(me.Menus.settings.display.LinkGraphs,'Checked',state);
             me.Graphs.linkAxes(link);
         end
+        
+        % REFRESH FILES TABLE
+        function refreshFilesTable(me)
+            N = appData('Files','Count');
+            D = cell(N,6);
+            for k = 1:N
+                D{k,1} = fileData(k,'Name');
+                D{k,2} = fileData(k,'Length');
+                D{k,3} = fileData(k,'Fs');
+                D{k,4} = fileData(k,'Channels','Count');
+                D{k,5} = fileData(k,'Calls','Count');
+                D{k,6} = fileData(k,'DataStatus');
+            end
+            set(me.FilesTable,'Data',D);            
+        end
+        
+        % SET THE DISPLAYED FILES
+        function setDisplayedFiles(me,filesVector)
+            me.Graphs.FilesVector = filesVector;
+        end
+               
+
+        % ASK AND SET NUMBER OF GRAPHS
+        function askAndSetGraphsNumber(me)
+            N = me.Graphs.Count;
+            A = inputdlg('Set number of graphs','',[1 30],{num2str(N)});
+            if ~isempty(A)
+                n = str2double(A{1});
+                d = n - N;
+                if d == 0
+                    return;
+                elseif mod(d,1) > 0
+                    msgbox('error, use integer value');
+                    return;
+                elseif d > 0
+                    me.Graphs.addGraph(d);
+                elseif -d > N
+                    msgbox('error, use positive integer');
+                    return;
+                elseif d < 0
+                    me.Graphs.removeGraph(-d);
+                end
+                me.Graphs.refreshDisplay();
+                gsetParam('mainGui_nAxes',n);
+            end
+        end    
+        
+        
+        % SHOW POIS
+        function showPois(me,type)
+            switch type
+                case 'dont'
+                case 'marks'
+                case 'texts'
+                otherwise
+                    errid  = 'batalef:mainGui:showPois:wrongType';
+                    errstr = sprintf('Wrong showPois type: %s',type);
+                    err = MException(errid,errstr);
+                    throwAsCaller(err);
+            end
+            gsetParam('mainGui_showPois',type);
+            selectMenuItem(me.Menus.settings.display.Pois,type);
+            me.Graphs.replotPoi();
+        end
+        
+        % SHOW CHANNEL CALLS
+        function showChannelCalls(me,type)
+            switch type
+                case 'dont'
+                case 'marks'
+                case 'numbered'
+                otherwise
+                    errid  = 'batalef:mainGui:showChannelCalls:wrongType';
+                    errstr = sprintf('Wrong showChannelCalls type: %s',type);
+                    err = MException(errid,errstr);
+                    throwAsCaller(err);
+            end
+            gsetParam('mainGui_showChannelCalls',type);
+            selectMenuItem(me.Menus.settings.display.ChannelCalls,type);
+            me.Graphs.replotChannelCalls();
+        end        
+        
+        % CONTEXT MENU GET
+        function val = get.ContextMenu(me)
+            val = me.ContextMenuObject.UIObject;
+        end
+        
+        % REFRESH (OBLIGATORY FOR ALL GUIs)
+        function refresh(me)
+            me.Graphs.plot();
+        end                
+        
+        %%%%%%%%%%%%%%
+        % PARAMETERS %
+        %%%%%%%%%%%%%%
+        
+        % SAVE / LOAD PARAMETERS (for file, app, gui)
+        function paramsLoad(me,type)
+            [fName,fPath] = uigetfile(me.Application.WorkingDirectory);
+            relPath = relativepath(strcat(fPath,fName),me.Application.WorkingDirectory);
+            switch type
+                case 'app'
+                    me.Application.Parameters.loadFromFile(relPath);
+                case 'gui'
+                    me.Top.Parameters.loadFromFile(relPath);
+                case 'file'
+                    me.Application.loadFileParams(relPath,me.ProcessVector);
+                otherwise
+                    err = MException('batalef:parameters:objectWrongType',sprintf('Parameters-object type %s is not allowed',type));
+                    throwAsCaller(err);
+            end            
+        end
+        function paramsSave(me,type)
+            [fName,fPath] = uiputfile(me.Application.WorkingDirectory);
+            relPath = relativepath(strcat(fPath,fName),me.Application.WorkingDirectory);
+            switch type
+                case 'app'
+                    me.Application.Parameters.saveToFile(relPath);
+                case 'gui'
+                    me.Top.Parameters.saveToFile(relPath);
+                case 'file'
+                    me.Application.saveFileParams(relPath,me.ProcessVector);
+                otherwise
+                    err = MException('batalef:parameters:objectWrongType',sprintf('Parameters-object type %s is not allowed',type));
+                    throwAsCaller(err);
+            end            
+        end
+         function paramsQuickLoad(me)
+            me.Application.Parameters.loadFromFile([]);
+            me.Top.Parameters.loadFromFile([]);
+            me.Application.loadFileParams([]);
+        end
+        function paramsQuickSave(me)
+            me.Application.Parameters.saveToFile([]);
+            me.Top.Parameters.saveToFile([]);
+            me.Application.saveFileParams([],[]);
+        end        
+        
+        % SINGLE PARAMETRS FILE FOR FILES
+        function paramsSetSingleFile(me,h)
+            turnOn = strcmp(get(h,'Checked'),'off');
+            me.Application.FilesSingleParamsFile = turnOn;
+            if turnOn
+                set(h,'Checked','on');
+            else
+                set(h,'Checked','off');
+            end
+        end
+
+        
+        %%%%%%%%%%%%%%%%%%
+        % FILES HANDLING %
+        %%%%%%%%%%%%%%%%%%
                
         % ADD / REMOVE FILES
         function addFiles(me)
@@ -302,7 +484,15 @@ classdef bMainGui < bGuiDefinition
         %%% RAW DATA MANIPULATION %%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
-        % LOAD EXPLICIT 
+        % SET DEFAULT RAW DATA POSITION
+        function setDefRawDataPosition(me,pos,h)
+            asetParam('rawData_position',pos);
+            set(me.Menus.settings.defRawDataPosition.Internal,'Checked','off');
+            set(me.Menus.settings.defRawDataPosition.External,'Checked','off');
+            set(h,'Checked','on');
+        end
+        
+        % LOAD EXPLICIT
         function loadExplicit(me)
             V = me.ProcessVector;
             if isempty(V)
@@ -412,7 +602,7 @@ classdef bMainGui < bGuiDefinition
                     Q{2} = 'Overlap (msec)';
                     D{2} = agetParam('channelCalls_detection_piecewiseOverlap','AsString');
                     T    = 'Piecewise Calls Detection Settings';
-                    A = inputdlg(Q,T,[70 1],D);
+                    A = inputdlg(Q,T,[1 70],D);
                     if isempty(A)
                         return;
                     else
@@ -421,8 +611,14 @@ classdef bMainGui < bGuiDefinition
                     end
                 case 'manual'
                     aMN = 'on';
-                    
-            
+                    Q{1} = 'From time (sec)';
+                    Q{2} = 'To time (sec)';
+                    A = inputdlg(Q,'Manual detection segment');
+                    if isempty(A)
+                        return;
+                    else
+                        segment.params.interval = [str2double(A{1}),str2double(A{2})];
+                    end
             end
             me.DetectionSettings.segmentation = segment;
             set(me.Menus.channelCalls.detection.SegmentNone,'Checked',aNO);
@@ -430,145 +626,20 @@ classdef bMainGui < bGuiDefinition
             set(me.Menus.channelCalls.detection.SegmentManual,'Checked',aMN);            
         end
         
-        %%%%%%%%%%%%%%%%%
-        %%% GUI STUFF %%%
-        %%%%%%%%%%%%%%%%%
-        
-        % REFRESH FILES TABLE
-        function refreshFilesTable(me)
-            N = appData('Files','Count');
-            D = cell(N,6);
-            for k = 1:N
-                D{k,1} = fileData(k,'Name');
-                D{k,2} = fileData(k,'Length');
-                D{k,3} = fileData(k,'Fs');
-                D{k,4} = fileData(k,'Channels','Count');
-                D{k,5} = fileData(k,'Calls','Count');
-                D{k,6} = fileData(k,'DataStatus');
-            end
-            set(me.FilesTable,'Data',D);            
-        end
-        
-        % SET THE DISPLAYED FILES
-        function setDisplayedFiles(me,filesVector)
-            me.Graphs.FilesVector = filesVector;
-        end
-               
-
-        % ASK AND SET NUMBER OF GRAPHS
-        function askAndSetGraphsNumber(me)
-            N = me.Graphs.Count;
-            A = inputdlg('Set number of graphs','',[1 30],{num2str(N)});
-            if ~isempty(A)
-                n = str2double(A{1});
-                d = n - N;
-                if d == 0
-                    return;
-                elseif mod(d,1) > 0
-                    msgbox('error, use integer value');
-                    return;
-                elseif d > 0
-                    me.Graphs.addGraph(d);
-                elseif -d > N
-                    msgbox('error, use positive integer');
-                    return;
-                elseif d < 0
-                    me.Graphs.removeGraph(-d);
-                end
-                me.Graphs.refreshDisplay();
-                gsetParam('mainGui_nAxes',n);
-            end
-        end    
-        
-        
-        % SHOW POIS
-        function showPois(me,type)
-            switch type
-                case 'dont'
-                case 'marks'
-                case 'texts'
-                otherwise
-                    errid  = 'batalef:mainGui:showPois:wrongType';
-                    errstr = sprintf('Wrong showPois type: %s',type);
-                    err = MException(errid,errstr);
-                    throwAsCaller(err);
-            end
-            gsetParam('mainGui_showPois',type);
-            selectMenuItem(me.Menus.settings.display.Pois,type);
-            me.Graphs.plot();
-        end
-        
-        
-        % SAVE / LOAS PARAMETERS (for file, app, gui)
-        function paramsLoad(me,type)
-            [fName,fPath] = uigetfile(me.Application.WorkingDirectory);
-            relPath = relativepath(strcat(fPath,fName),me.Application.WorkingDirectory);
-            switch type
-                case 'app'
-                    me.Application.Parameters.loadFromFile(relPath);
-                case 'gui'
-                    me.Top.Parameters.loadFromFile(relPath);
-                case 'file'
-                    me.Application.loadFileParams(relPath,me.ProcessVector);
-                otherwise
-                    err = MException('batalef:parameters:objectWrongType',sprintf('Parameters-object type %s is not allowed',type));
-                    throwAsCaller(err);
-            end            
-        end
-        function paramsSave(me,type)
-            [fName,fPath] = uiputfile(me.Application.WorkingDirectory);
-            relPath = relativepath(strcat(fPath,fName),me.Application.WorkingDirectory);
-            switch type
-                case 'app'
-                    me.Application.Parameters.saveToFile(relPath);
-                case 'gui'
-                    me.Top.Parameters.saveToFile(relPath);
-                case 'file'
-                    me.Application.saveFileParams(relPath,me.ProcessVector);
-                otherwise
-                    err = MException('batalef:parameters:objectWrongType',sprintf('Parameters-object type %s is not allowed',type));
-                    throwAsCaller(err);
-            end            
-        end
-         function paramsQuickLoad(me)
-            me.Application.Parameters.loadFromFile([]);
-            me.Top.Parameters.loadFromFile([]);
-            me.Application.loadFileParams([]);
-        end
-        function paramsQuickSave(me)
-            me.Application.Parameters.saveToFile([]);
-            me.Top.Parameters.saveToFile([]);
-            me.Application.saveFileParams([],[]);
-        end        
-        
-        % SINGLE PARAMETRS FILE FOR FILES
-        function paramsSetSingleFile(me,h)
-            turnOn = strcmp(get(h,'Checked'),'off');
-            me.Application.FilesSingleParamsFile = turnOn;
-            if turnOn
-                set(h,'Checked','on');
+        % CLEAR
+        function clearChannelCalls(me)
+            V = me.ProcessVector;
+            if isempty(V)
+                msgbox('No files selected');
+                return;
             else
-                set(h,'Checked','off');
+                Files = me.Application.Files(V);
+                cellfun(@(f)f.initChannelCallsData(),Files,'UniformOutput',false);
+                me.refreshFilesTable();
+                me.refresh();
             end
         end
-        
-        % SET DEFAULT RAW DATA POSITION
-        function setDefRawDataPosition(me,pos,h)
-            asetParam('rawData_position',pos);
-            set(me.Menus.settings.defRawDataPosition.Internal,'Checked','off');
-            set(me.Menus.settings.defRawDataPosition.External,'Checked','off');
-            set(h,'Checked','on');
-        end           
-       
-        % CONTEXT MENU GET
-        function val = get.ContextMenu(me)
-            val = me.ContextMenuObject.UIObject;
-        end
-        
-        % REFRESH (OBLIGATORY FOR ALL GUIs)
-        function refresh(me)
-            me.Graphs.plot();
-        end
+
         
     end
     

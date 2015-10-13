@@ -33,7 +33,19 @@ classdef bApplication < handle
             me.CommonParams.app  = me.batpath(strcat('common',filesep(),'common.bap'));
             me.CommonParams.gui  = me.batpath(strcat('common',filesep(),'common.bgp'));
             me.CommonParams.file = me.batpath(strcat('common',filesep(),'common.bfp'));
-            me.Methods.preProcFilter = bMethodFilter('onDemend','preProcFilter',me,[]);
+        end
+        
+        % INIT METHODS
+        function initMethods(me)
+            me.Methods.preProcFilter = bMethodFilter('onDemend','preProcFilter',me,[],false);
+            me.Methods.channelCallsDetection = bMethodDetection('onDemend','channelCallsDetection',me,[],false);
+            me.Methods.detectionFilter = bMethodFilter('default','detectionFilter',me,[],true);
+            me.Methods.detectionEnvelope = bMethodEnvelope('default','detectionEnvelope',me,[],false);
+            me.Methods.callAnalysisFilter = bMethodFilter('default','callAnalysisFilter',me,[],true);
+            me.Methods.callAnalysisEnvelope = bMethodEnvelope('default','callAnalysisEnvelope',me,[],false);
+            me.Methods.callAnalysisSpectrogram = bMethodSpectrogram('default','callAnalysisSpectrogram',me,[],false);
+            me.Methods.callAnalysisSpectrum = bMethodSpectrum('default','callAnalysisSpectrum',me,[],false);
+                
         end
         
         % DESTRUCTOR
@@ -43,6 +55,27 @@ classdef bApplication < handle
             cellfun(@(m) delete(m),M);
             delete(me.Parameters);
         end
+        
+        %%%%%%%%%%%%%%%%%%%%
+        % FOLDERS HANDLING %
+        %%%%%%%%%%%%%%%%%%%%
+        
+        % GET FULL PHYSICAL PATH
+        function val = physpath(me,path)
+            val = strcat(me.WorkingDirectory,filesep(),path);
+        end
+        function val = batpath(me, path)
+            val = strcat(me.BatalefDirectory,filesep(),path);
+        end        
+        
+        % TEMP FOLDER
+        function val = get.TempDirectory(me)
+            val = strcat(me.BatalefDirectory,filesep(),'user',filesep(),'tmp');
+        end        
+        
+        %%%%%%%%%%%%%%%%%%
+        %%% PARAMETERS %%%
+        %%%%%%%%%%%%%%%%%%
         
         % SET PARAMETERS
         function setParameters(me, paramsFile)
@@ -81,17 +114,11 @@ classdef bApplication < handle
             val = load(commonFile);
         end
             
-        
-        % GET FULL PHYSICAL PATH
-        function val = physpath(me,path)
-            val = strcat(me.WorkingDirectory,filesep(),path);
-        end
-        function val = batpath(me, path)
-            val = strcat(me.BatalefDirectory,filesep(),path);
-        end
-        
-        % --- FILES HANDLING---
-        
+               
+        %%%%%%%%%%%%%%%%%%
+        % FILES HANDLING %
+        %%%%%%%%%%%%%%%%%%
+                
         % ADD FILE TO APPLICATION
 		function [FileIdx] = addFile(me,audioFile,parametersFile)
             [~,title] = fileparts(audioFile);
@@ -150,7 +177,10 @@ classdef bApplication < handle
             val = length(me.Files);
         end
         
-        %--- PARAMETERS AND GET DATA FUNCTIONS ---%
+
+        %%%%%%%%%%%%%%%%%%%%%%
+        % GET DATA FUNCTIONS %
+        %%%%%%%%%%%%%%%%%%%%%%
         
         % GET FILE PARAMETER
         function pValue = getFileParameter(me,fileIdx,pID,varargin)
@@ -186,10 +216,6 @@ classdef bApplication < handle
             [varargout{1:nargout}] = me.Files{fileIdx}.channel(channelIdx).getData(varargin{:});
         end     
         
-        % TEMP FOLDER
-        function val = get.TempDirectory(me)
-            val = strcat(me.BatalefDirectory,filesep(),'user',filesep(),'tmp');
-        end
             
     end
 end

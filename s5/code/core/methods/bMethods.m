@@ -1,6 +1,6 @@
 classdef bMethods < handle
     
-    properties (Access = {?bApplication,?bMethodSpectrogram,?bMethodFilter})
+    properties (Access = {?bApplication,?bMethodSpectrogram,?bMethodFilter,?bMethodEnvelope,?bMethodDetection})
         GuiTop
         Type
         Methods = [];
@@ -16,18 +16,26 @@ classdef bMethods < handle
     methods
         
         % SUPERCLASS CONSTRUCTOR
-        function me = bMethods(type,paramPreamble,definitionExtention,app,gui)
+        function me = bMethods(type,paramPreamble,definitionExtention,app,gui,withNone)
             me.ParamPreamble       = paramPreamble;
             me.Type                = type;
             me.DefinitionExtention = definitionExtention;
             me.Application         = app;
             me.GuiTop              = gui;
+            
+            if withNone
+                m.id = 'none';
+                m.name = 'None';
+                m.func = [];
+                m.params = [];
+                me.Methods{1} = m;
+            end
             me.readMethods();
             
             % select appropriate method
             if strcmp(type,'default') && ~isempty(me.Methods)
                 if isempty(gui)
-                    p = me.Application.Paramsters;
+                    p = me.Application.Parameters;
                 else
                     p = me.GuiTop.Parameters;
                 end
@@ -36,8 +44,8 @@ classdef bMethods < handle
                 if p.has(dpar)
                     me.Default = p.get(dpar);
                 else
-                    me.Default = me.Methods(1).id;
-                    p.add(dpar,me.Methods(1).id,'string');
+                    me.Default = me.Methods{1}.id;
+                    p.add(dpar,me.Methods{1}.id,'string');
                 end
             end
         end
@@ -62,10 +70,6 @@ classdef bMethods < handle
         
         % READ METHOD DEFINITION FILE
         function m = readDefinitionFile(~,definitionFile)
-%             global control;
-%             mfile = strcat(control.app.TempDirectory,filesep(),'method.m');
-%             copyfile(definitionFile,mfile,'f');
-%             run(mfile)
             run(definitionFile) 
             try
                 m.id   = id;
@@ -73,6 +77,11 @@ classdef bMethods < handle
                 m.func = func;
                 if exist('params','var')
                     m.params = params;
+                end
+                % extra method-type-specific data
+                % (currently for channel calls detection only)
+                if exist('extra','var') 
+                    m.extra = extra;
                 end
             catch err
                 if strcmp(err.identifier,'MATLAB:UndefinedFunction')
@@ -89,20 +98,20 @@ classdef bMethods < handle
             if isempty(me.Methods)
                 val = false;
             else
-                val = max(strcmp(id,{me.Methods.id}));
+                val = max(strcmp(id,cellfun(@(m) m.id,me.Methods,'UniformOutput',false)));
             end
         end
         
         % GET METHOD
         function m = getMethod(me, id)
-            I = find(strcmp(id,{me.Methods.id}),1);
+            I = find(strcmp(id,cellfun(@(m) m.id,me.Methods,'UniformOutput',false)),1);
             if isempty(I)
                 errstr = sprintf('No such method id: %s',id);
                 errid  = 'batalef:methods:noMethod';
                 err    = MException(errid,errstr);
                 throwAsCaller(err);
             end
-            m = me.Methods(I);
+            m = me.Methods{I};
         end
         
         % REGISTER
@@ -123,7 +132,7 @@ classdef bMethods < handle
             end
             
             % add
-            me.Methods = [me.Methods;method];
+            me.Methods = [me.Methods;{method}];
             
         end
         
@@ -131,8 +140,8 @@ classdef bMethods < handle
         function createMenu(me,menu,gui)
             me.Menus = [me.Menus,{menu}];
             for i = 1:length(me.Methods)
-                uimenu(menu,'Label',me.Methods(i).name,...
-                    'UserData',{me.Methods(i).id,gui},...
+                uimenu(menu,'Label',me.Methods{i}.name,...
+                    'UserData',{me.Methods{i}.id,gui},...
                     'Callback',@(h,~)me.onGuiMethodSelection(h));
             end
             if strcmp(me.Type,'default')
@@ -169,13 +178,16 @@ classdef bMethods < handle
         function askParamsGui(me,id,file)
             m = me.getMethod(id);
             [Q,D,P] = buildParamList(me,m,file);
-            title = sprintf('Parameters for %s',m.name);
-            D = cellfun(@(d) {num2str(d)},D);
-            A = inputdlg(Q,title,[1,70],D);
-            if isempty(A)
-                % do nothing
+            if isempty(Q)
             else
-                me.saveParams(P,A);
+                title = sprintf('Parameters for %s',m.name);
+                D = cellfun(@(d) {num2str(d)},D);
+                A = inputdlg(Q,title,[1,70],D);
+                if isempty(A)
+                    % do nothing
+                else
+                    me.saveParams(P,A);
+                end
             end
         end
         

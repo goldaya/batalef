@@ -3,7 +3,8 @@ function selectMenuItem( menu, userData )
 
     C = get(menu,'Children');
     for i = 1:length(C)
-        if strcmp(get(C(i),'UserData'),userData)
+        UD = get(C(i),'UserData');
+        if strcmp(UD{1},userData)
             set(C(i),'Checked','on');
         else
             set(C(i),'Checked','off');

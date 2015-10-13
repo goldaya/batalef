@@ -8,7 +8,7 @@ classdef bMainGuiContextMenu
     end
     
     properties (Dependent = true)
-        
+        Application
     end
     
     methods (Access = public)
@@ -21,19 +21,19 @@ classdef bMainGuiContextMenu
             uimenu(me.UIObject,'Label','Measure Time Diff.','Callback',@(~,~)me.measureTime);
             uimenu(me.UIObject,'Label','Zoom in','Callback',@(~,~)me.zoomIn());
             pois = uimenu(me.UIObject,'Label','POIs');
-            uimenu(pois,'Label','Add','Callback',@(~,~)me.addPoi());
+            uimenu(pois,'Label','Add','Callback',@(~,~)me.addPoiHere());
             uimenu(pois,'Label','Remove','Callback',@(~,~)me.removePois(false));
             uimenu(pois,'Label','Remove in all channels','Callback',@(~,~)me.removePois(true));
             cc = uimenu(me.UIObject,'Label','Channel Calls');
-            uimenu(cc,'Label','Add detection here');
-            uimenu(cc,'Label','Remove');
-            uimenu(cc,'Label','Remove in all channels');
+            uimenu(cc,'Label','Add detection here','Callback',@(~,~)me.addChannelCallHere());
+            uimenu(cc,'Label','Remove','Callback',@(~,~)me.removeChannelCalls(false));
+            uimenu(cc,'Label','Remove in all channels','Callback',@(~,~)me.removeChannelCalls(true));
             uimenu(cc,'Label','Show call info');              
         end
         
     end
     
-    methods (Access = private)
+    methods
        
         % MEASURE TIME
         function measureTime(me)
@@ -48,29 +48,29 @@ classdef bMainGuiContextMenu
             me.Gui.LastGraphObject.startTimeChanged(r(1));
         end
         
-        % POIS
+        % APPLICATION
+        function app = get.Application(me)
+            app = me.Gui.Application;
+        end
+        
+        %%%%%%%%
+        % POIS %
+        %%%%%%%%
+        
         % ADD
-        function addPoi(me)
-            axes(me.Gui.LastAxesObject);
-            [x,y] = ginput(1);
+        function addPoiHere(me)
             A = inputdlg('Point of Interest text:');
             if ~isempty(A)
-                UD = get(me.Gui.LastAxesObject,'UserData');
-                if strcmp(UD{2},'Spec')
-                    C = {x,A{1},0,y};
-                elseif strcmp(UD{2},'TS')
-                    C = {x,A{1},y,0};
-                else
-                    errid  = 'batalef:mainGui:wrongAxesType';
-                    errstr = sprintf('Wrong Axes Type: %s',UD{2});
-                    err = MException(errid,errstr);
-                    throwAsCaller(err);
-                end
-                
+                pos = me.Gui.LastGraphObject.LastPointerPosition;
+                C = {pos(1),A{1},pos(2),pos(3)};
                 k = me.Gui.LastGraphObject.FileIdx;
                 j = me.Gui.LastGraphObject.ChannelIdx;
                 addPois(k,j,C);
-                me.Gui.LastGraphObject.plot();
+                axobj = me.Gui.LastAxesObject;
+                UD = get(axobj,'UserData');
+                poiMarks = strcat('poi',UD{2});
+                poiTexts = strcat('poiTxt',UD{2});
+                me.Gui.LastGraphObject.plotPoi(axobj,poiMarks,poiTexts);
             end
         end
         
@@ -91,6 +91,41 @@ classdef bMainGuiContextMenu
                 me.Gui.LastGraphObject.plot();
             end
             
+        end
+        
+        %%%%%%%%%%%%%%%%%
+        % CHANNEL CALLS %
+        %%%%%%%%%%%%%%%%%
+        
+        % ADD HERE
+        function addChannelCallHere(me)
+            pos = me.Gui.LastGraphObject.LastPointerPosition;
+            D = [pos(1),pos(2)];
+            k = me.Gui.LastGraphObject.FileIdx;
+            j = me.Gui.LastGraphObject.ChannelIdx;
+            me.Application.file(k).channel(j).addCalls(D,[],[],[],[]);
+            me.Gui.Graphs.replotChannelCalls();
+%             axobj = me.Gui.LastAxesObject;
+%             UD = get(axobj,'UserData');
+%             ccMarks = strcat('cc',UD{2});
+%             ccTexts = strcat('ccTxt',UD{2});
+%             me.Gui.LastGraphObject.plotChannelCalls(axobj,ccMarks,ccTexts,true);            
+        end
+        
+        % REMOVE
+        function removeChannelCalls(me,inAllChannels)
+            axes(me.Gui.LastAxesObject);
+            r = getrect(me.Gui.LastAxesObject);
+            k = me.Gui.LastGraphObject.FileIdx;
+            f = me.Application.file(k);
+            if inAllChannels
+                J = f.ChannelsCount;
+                arrayfun(@(j) f.channel(j).removeCallsByTimeInterval([r(1),r(1)+r(3)]),1:J);
+            else
+                j = me.Gui.LastGraphObject.ChannelIdx;
+                f.channel(j).removeCallsByTimeInterval([r(1),r(1)+r(3)]);
+            end            
+            me.Gui.Graphs.replotChannelCalls();
         end
         
     end

@@ -80,7 +80,7 @@ classdef bChannel < handle
         % REMOVE CALLS
         function removeCallsByTimeInterval(me,timeInterval)
             D = me.CallsData;
-            I = logical(( D.detection(:,1) < timeInterval(1) ) .* ( D.detection(:,1) > timeInterval(2) ));
+            I = logical(( D.detection(:,1) > timeInterval(1) ) .* ( D.detection(:,1) < timeInterval(2) ));
             D.detection(I,:)       = [];
             D.features(I,:)        = [];
             D.ridge(I,:)           = [];
@@ -160,6 +160,9 @@ classdef bChannel < handle
             me.File.ChannelPoI{me.j} = val;
         end
 
+        %%%%%%%%%%%%%%%%%%%%%
+        % GET DATA FUNCTION %
+        %%%%%%%%%%%%%%%%%%%%%
         
         % GET DATA
         function varargout = getData(me, varargin)
@@ -179,18 +182,22 @@ classdef bChannel < handle
                 case 'PoI'
                     % [T,TXT,A,F]
                     D = me.PoiData;
-                    if isempty(interval) || isempty(D)
-                        P = D;
-                    else
-                        I1 = [D{:,1}] >= interval(1);
-                        I2 = [D{:,1}] <= interval(2);
-                        P = D(logical(I1.*I2),:);
-                    end
+                    P = getIntervalSubset(D,1,interval,true);
                     varargout{1} = [P{:,1}];
                     varargout{2} = P(:,2);
                     varargout{3} = [P{:,3}];
                     varargout{4} = [P{:,4}];
+                case 'Calls'
+                    
+                    switch varargin{2}
+                        case {'Detections','Detection'}
+                            D = me.CallsData.detection;
+                            [C,I] = getIntervalSubset(D,1,interval,false);
+                            varargout{1} = C;
+                            varargout{2} = I;    
+                    end                    
             end
         end
+        
     end
 end

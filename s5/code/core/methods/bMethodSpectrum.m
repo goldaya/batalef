@@ -1,5 +1,5 @@
-classdef bMethodSpectrogram < bMethods
-    %BMETHODSPECTROGRAM default method handling for spectrogram computation
+classdef bMethodSpectrum < bMethods
+    %BMETHODSPECTROGRAM default method handling for spectrum computation
     
     properties
     end
@@ -7,8 +7,8 @@ classdef bMethodSpectrogram < bMethods
     methods
         
         % CONSTRUCTOR
-        function me = bMethodSpectrogram(type,paramPreamble,app,gui,withNone)
-            me = me@bMethods(type,paramPreamble,'spectrogram',app,gui,withNone);
+        function me = bMethodSpectrum(type,paramPreamble,app,gui,withNone)
+            me = me@bMethods(type,paramPreamble,'spectrum',app,gui,withNone);
         end        
         
         function spec = execute(me,dataset,Fs)
