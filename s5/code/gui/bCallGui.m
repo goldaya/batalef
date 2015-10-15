@@ -8,6 +8,11 @@
        ChannelIdx
        CallIdx
        CallType
+       ChannelTimeSeries  = [];
+       ChannelTimeVector  = [];
+       ChannelFilteredTS  = [];
+       ChannelEnvelopedTS = [];
+       
    end
    
     properties % BUILD
@@ -458,11 +463,7 @@
         % SHOW FILTER DETAILS
         function showFilterDetails(me)
         end
-        
-        % ANALYZE BUTTON
-        function analyzeCall(me)
-        end
-        
+               
         % SAVE BUTTON
         function saveCall(me)
         end
@@ -492,24 +493,156 @@
         % DATASET %
         %%%%%%%%%%%
         
-        % SHOW CALL
-        function showCall(me,k,j,s,t)
-        end
-        
-        % DISPLAY CALL
-        function display(me)
-        end
-        
-        
         % SET DISPLAYED FILES
         function setDisplayedFiles(me,files)
             if isempty(files)
-                me.FileIdx = 0;
+                file = 0;
             else
-                me.FileIdx = files(1);
+                file = files(1);
+            end
+            me.changeFile(file,true);
+        end
+        
+        % CHANGE FILE
+        function changeFile(me,fileIdx,cascade)
+            
+            me.FileIdx = fileIdx;
+            
+            if fileIdx == 0
+                % disable everything
+            else
+                % rebuild channels list
+                N = me.Application.file(me.FileIdx).ChannelCount;
+                S = mat2cell(num2str((1:N)'),ones(N,1));
+                wid = 'MATLAB:hg:uicontrol:ValueMustBeWithinStringRange';
+                w = warning('query',wid);
+                warning(wid,'off');
+                set(me.ComboChannel,'String',S);
+                warning(wid,w.state);
+                if cascade
+                    me.changeChannel(me.ChannelIdx,true);
+                end
             end
         end
         
+        % CHANGE CHANNEL
+        function changeChannel(me,channelIdx,cascade)
+            N = me.Application.file(me.FileIdx).ChannelsCount;
+            if N < channelIdx
+                me.ChannelIdx = 1;
+                msgbox('Channel index out of range. Changed to 1');
+            else
+                me.ChannelIdx = channelIdx;
+            end
+            
+            % filter & envelope
+            if strcmp(me.WorkMode,'process')
+                me.filterAndEnvelope();
+            end
+            
+            % calls selector
+            channel = me.Application.file(me.FileIdx).channel(me.ChannelIdx);            
+            M = channel.CallsCount;
+            S = mat2cell(num2str((1:M)'),ones(M,1));
+            wid = 'MATLAB:hg:uicontrol:ValueMustBeWithinStringRange';
+            w = warning('query',wid);
+            warning(wid,'off');
+            set(me.ComboCall,'String',S);
+            warning(wid,w.state);
+            if cascade
+                me.changeCall(me.CallIdx,true);
+            end
+        end
+        
+        % CHANGE CALL
+        function changeCall(me,callIdx,cascade)
+            channel = me.Application.file(me.FileIdx).channel(me.ChannelIdx);            
+            if callIdx > channel.CallsCount
+                me.CallIdx = 1;
+                msgbox('Call index out of range. Changed to 1');
+            else
+                me.CallIdx = callIdx;
+            end
+            
+            if cascade
+                me.showCall();
+            end
+        end
+        
+        % FILTER AND ENVELOPE CHANNEL
+        function filterAndEnvelope(me)
+            channel = me.Application.file(me.FileIdx).channel(me.ChannelIdx);
+            [me.ChannelTimeSeries,me.ChannelTimeVector] = channel.getTS([]);
+            Fs = channel.RawData.Fs;
+            me.ChannelFilteredTS  = me.Application.Methods.callAnalysisFilter.execute(me.ChannelTimeSeries,Fs);
+            me.ChannelEnvelopedTS = me.Application.Methods.callAnalysisEnvelope.execute(me.FilteredDataset,Fs);
+        end
+                 
+        %%%%%%%%%%%
+        % DISPLAY %
+        %%%%%%%%%%%
+        
+        % SHOW CALL
+        function showCall(me)
+            me.Call = me.Application.file(me.FileIdx).channel(me.ChannelIdx).call(me.CallIdx);
+            switch me.WorkMode
+                case 'display'
+                    me.Call.loadCall(me.DisplayType);
+                case 'process'
+                    me.analyzeCall();
+            end
+            
+            % plot envelope + colors
+            me.plotEnvelope();
+            
+            % plot spectrogram + markers
+            % put analysis values
+            % plot TS
+            % plot spectrum
+            
+        end    
+        
+        % plot envelope with colors
+        function plotEnvelope(me)
+            if ~isempty(me.Call.AnalysisParameters.envelope)
+                E = me.CallAnalysisParameters.envelope.TS(1:me.Call.AnalysisParameters.envelope.sPoint);
+                T = me.CallAnalysisParameters.envelope.time(1:me.Call.AnalysisParameters.envelope.sPoint);
+                plot(me.AxesEnvelope,T,E,'b');
+                hold(me.AxesEnvelope,'on');
+                
+                E = me.CallAnalysisParameters.envelope.TS(me.Call.AnalysisParameters.envelope.sPoint:me.Call.AnalysisParameters.envelope.ePoint);
+                T = me.CallAnalysisParameters.time(me.Call.AnalysisParameters.envelope.sPoint:me.Call.AnalysisParameters.envelope.ePoint);
+                plot(me.AxesEnvelope,T,E,'r');
+            
+                E = me.CallAnalysisParameters.envelope.TS(me.Call.AnalysisParameters.envelope.ePoint:me.Call.AnalysisParameters.envelope.nPoints);
+                T = me.CallAnalysisParameters.time(me.Call.AnalysisParameters.envelope.ePoint:me.Call.AnalysisParameters.envelope.nPoints);
+                plot(me.AxesEnvelope,T,E,'b');
+
+            elseif strcmp(me.WorkMode,'display-relaxed')
+                Fs = me.Application.file(me.FileIdx).Fs;
+                window = me.Call.Detection.Time + [-0.5,+0.5].*me.Call.AnalysisParameters.analysisWindow;
+                wip = window .* Fs;
+                E = me.ChannelEnvelopedTS(wip(1):wip(2));
+                T = 
+            else
+                cla(me.AxesEnvelope);
+                return;
+            end
+            
+            window = me.Call.Detection.Time + [-0.5,+0.5].*me.Call.AnalysisParameters.analysisWindow;
+            wip = window .* Fs;
+            sip = round((me.Call.Start.Time - window(1)) .* Fs);
+            eip = me.Call.End.Time .* Fs;
+            np  = diff(wip) + 1;
+            E = 
+            
+        end
+        
+        %%%%%
+        
+        % ANALYZE CALL
+        function analyzeCall(me)
+        end
         
     end
     

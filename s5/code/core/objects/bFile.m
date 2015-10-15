@@ -61,11 +61,14 @@ classdef bFile < handle
         % INIT CALLS DATA
         function initChannelCallsData(me)
             for j = 1:me.ChannelsCount
-                me.ChannelCalls{j}.detection = [];
-                me.ChannelCalls{j}.features  = [];
-                me.ChannelCalls{j}.ridge     = cell(0,1);
+                me.ChannelCalls{j}.detection       = [];
+                me.ChannelCalls{j}.features        = [];
+                me.ChannelCalls{j}.ridge           = cell(0,1);
                 me.ChannelCalls{j}.forLocalization = [];
-                me.ChannelCalls{j}.forBeam   = [];
+                me.ChannelCalls{j}.forBeam         = [];
+                me.ChannelCalls{j}.featuresAP      = cell(0,1);
+                me.ChannelCalls{j}.localizationAP  = cell(0,1);
+                me.ChannelCalls{j}.beamAP          = cell(0,1);
             end
         end
         

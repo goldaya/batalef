@@ -112,7 +112,8 @@ classdef bMethodDetection < bMethods
             % save to data structure
             T = D(:,1) + timeOffset;
             A = D(:,2);
-            Channel.addCalls([T,A],[],[],[],[]);
+            Z = zeros(size(A));
+            Channel.addCallDetections([T,A]);
         end
         
         

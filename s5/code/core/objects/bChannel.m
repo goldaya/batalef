@@ -23,14 +23,28 @@ classdef bChannel < handle
             me.File = fileobj;
             me.j    = channelIdx;
         end
-
+        
+        % GET TS
+        function [TS, T] = getTS(me,interval)
+            [TS,T] = me.File.RawData.getTS(me.j,interval);
+        end
+        
+        
+        %%%%%%%%%
+        % CALLS %
+        %%%%%%%%%
+        
         % GET CALLS COUNT
         function val = get.CallsCount(me)
             val = size(me.File.ChannelCalls{me.j}.detection,1);
         end
         
+        % ADD CALLS DETECTION
+        function addCallDetections(me,detection)
+            me.addCalls(detection,[],{},[],[],{},{},{});
+        end
         % ADD CALLS
-        function addCalls(me,detection,features,ridge,forLocalization,forBeam)
+        function addCalls(me,detection,features,ridge,forLocalization,forBeam,featuresAP, forLocalizationAP, forBeamAP)
             % detection is obligatory
             if isempty(detection)
                 return;
@@ -39,7 +53,7 @@ classdef bChannel < handle
             end
             
             % make sure all other fields have data
-            m = 13;
+            m = 12;
             if isempty(features)
                 features = zeros(n,m);
             end
@@ -52,26 +66,41 @@ classdef bChannel < handle
             if isempty(ridge)
                 ridge = cell(n,1);
             end
+            if isempty(featuresAP)
+                featuresAP = cell(n,1);
+            end
+            if isempty(forLocalizationAP)
+                forLocalizationAP = cell(n,1);
+            end
+            if isempty(forBeamAP)
+                forBeamAP = cell(n,1);
+            end            
 
             % add
             D = me.CallsData;
             n = n + size(D.detection,1);
-            T.detection = [D.detection;detection];
-            T.features  = [D.features;features];
-            T.forLocalization ...
-                        = [D.forLocalization;forLocalization];
-            T.forBeam   = [D.forBeam;forBeam];
-            T.ridge     = [D.ridge;ridge];
+            T.detection       = [D.detection;detection];
+            T.features        = [D.features;features];
+            T.forLocalization = [D.forLocalization;forLocalization];
+            T.forBeam         = [D.forBeam;forBeam];
+            T.ridge           = [D.ridge;ridge];
+            T.featuresAP      = [D.featuresAP;featuresAP];
+            T.forLocalizationAP  = [D.forLocalizationAP;forLocalizationAP];
+            T.forBeamAP          = [D.forBeamAP;forBeamAP];
             
             % sort
-            s = [T.detection(:,1),[1:n]'];
+            s = [T.detection(:,1),(1:n)'];
             s = sortrows(s);
-            D.detection = T.detection(s(:,2),:);
-            D.features  = T.features(s(:,2),:);
+            D.detection  = T.detection(s(:,2),:);
+            D.features   = T.features(s(:,2),:);
             D.forLocalization ...
-                        = T.forLocalization(s(:,2),:);
-            D.forBeam   = T.forBeam(s(:,2),:);
-            D.ridge     = T.ridge(s(:,2),:);
+                         = T.forLocalization(s(:,2),:);
+            D.forBeam    = T.forBeam(s(:,2),:);
+            D.ridge      = T.ridge(s(:,2));
+            D.featuresAP = T.featuresAP(s(:,2),:);
+            D.forLocalizationAP ...
+                         = T.forLocalizationAP(s(:,2),:);
+            D.forBeamAP     = T.forBeamAP(s(:,2),:);            
             
             % put back in file data object
             me.CallsData = D;
@@ -86,6 +115,9 @@ classdef bChannel < handle
             D.ridge(I,:)           = [];
             D.forLocalization(I,:) = [];
             D.forBeam(I,:)         = [];
+            D.featuresAP(I,:)      = [];
+            D.forLocalizationAP(I,:)  = [];
+            D.forBeamAP(I,:)          = [];
             me.CallsData = D;
         end
         function removeCallsByIndex(me, I)
@@ -95,6 +127,9 @@ classdef bChannel < handle
             D.ridge(I,:)           = [];
             D.forLocalization(I,:) = [];
             D.forBeam(I,:)         = [];
+            D.featuresAP(I,:)      = [];
+            D.forLocalizationAP(I,:)  = [];
+            D.forBeamAP(I,:)          = [];            
             me.CallsData = D;            
         end
         
@@ -114,9 +149,12 @@ classdef bChannel < handle
             D = me.CallsData;
             D.detection(callIdx,:) = detection;
             D.features(callIdx,:) = features;
-            D.ridge(callIdx,:) = ridge;
+            D.ridge{callIdx} = ridge;
             D.forLocalization(callIdx,:) = forLocalization;
             D.forBeam(callIdx,:) = forBeam;
+            D.featuresAP{callIdx} = featuresAP;
+            D.forLocalizationAP{callIdx} = forLocalizationAP;
+            D.forBeamAP{callIdx} = forBeamAP;
             me.CallData = D;
         end
         
@@ -128,9 +166,14 @@ classdef bChannel < handle
             me.File.ChannelCalls{me.j} = val;
         end
         
-        % ###############
-        % ##### POI #####
-        % ###############
+        % GET CALL OBJECT
+        function c = call(me,callIdx)
+            c = bChannelCall(me,callIdx);
+        end
+        
+        %%%%%%%
+        % POI %
+        %%%%%%%
         
         % ADD POIS
         function addPois(me, C)
