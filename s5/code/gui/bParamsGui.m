@@ -19,8 +19,8 @@ classdef bParamsGui < bGuiDefinition
     methods
         
         % CONSTRUCTOR
-        function me = bParamsGui(guiTop)
-            me = me@bGuiDefinition(guiTop);
+        function me = bParamsGui(guiTop,name)
+            me = me@bGuiDefinition(guiTop,name);
             zeroPos = uiPosition(0,'character');
             me.Figure = figure(...
                 'Units','character',...
@@ -30,7 +30,7 @@ classdef bParamsGui < bGuiDefinition
                 'MenuBar','none',...
                 'Name','Parameters',...
                 'NumberTitle','off',...
-                'CloseRequestFcn',@(~,~)me.Top.removeGui(me,'params'));
+                'CloseRequestFcn',@(~,~)me.Top.removeGui(me.Name));
             
             me.SelectionRibbon = bSelectionRibbon(me,false,true);
             

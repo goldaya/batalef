@@ -14,8 +14,9 @@ classdef bMethodSpectrum < bMethods
         function spec = execute(me,dataset,Fs)
             m = me.getMethod(me.Default);
             [~,D,P] = buildParamList(me,m);
+            params = struct([]);
             for i = 1:length(D)
-                params.(P{i,3}) = D{i};
+                params(1).(P{i,3}) = D{i};
             end
             methodFunc = str2func(m.func);
             spec = methodFunc(dataset, Fs, params);

@@ -3,6 +3,7 @@ classdef bSelectionRibbon < handle & hgsetget
     
     properties
         Panel
+        Building
     end
     
     properties (Access = private)
@@ -52,6 +53,8 @@ classdef bSelectionRibbon < handle & hgsetget
                 linkGuis = ggetParam('ribbons_linkGuis');
                 linkD2P  = ggetParam('ribbons_linkD2P');
             end
+            
+            me.Building = true;
             
             % display line
             uicontrol(me.Panel,...
@@ -132,6 +135,8 @@ classdef bSelectionRibbon < handle & hgsetget
                me.ProcessVector = me.Gui.Top.ProcessVector;
            end
             
+           me.Building = false;
+           
         end
         
         % RESIZE
@@ -166,7 +171,9 @@ classdef bSelectionRibbon < handle & hgsetget
                 return;
             end
             set(me.TextDisplay,'String',int2str_compact(vector));
-            me.Gui.setDisplayedFiles(vector);
+            if ~me.Building
+                me.Gui.setDisplayedFiles(vector);
+            end                
             if me.LinkD2P
                 me.ProcessVector = vector;
             end            

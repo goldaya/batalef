@@ -1,6 +1,6 @@
 classdef bMethods < handle
     
-    properties (Access = {?bApplication,?bMethodSpectrogram,?bMethodFilter,?bMethodEnvelope,?bMethodDetection})
+    properties % (Access = {?bApplication,?bMethodSpectrogram,?bMethodFilter,?bMethodEnvelope,?bMethodDetection})
         GuiTop
         Type
         Methods = [];
@@ -77,6 +77,8 @@ classdef bMethods < handle
                 m.func = func;
                 if exist('params','var')
                     m.params = params;
+                else
+                    m.params = [];
                 end
                 % extra method-type-specific data
                 % (currently for channel calls detection only)

@@ -67,8 +67,8 @@ classdef bFile < handle
                 me.ChannelCalls{j}.forLocalization = [];
                 me.ChannelCalls{j}.forBeam         = [];
                 me.ChannelCalls{j}.featuresAP      = cell(0,1);
-                me.ChannelCalls{j}.localizationAP  = cell(0,1);
-                me.ChannelCalls{j}.beamAP          = cell(0,1);
+                me.ChannelCalls{j}.forLocalizationAP  = cell(0,1);
+                me.ChannelCalls{j}.forBeamAP          = cell(0,1);
             end
         end
         

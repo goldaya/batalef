@@ -24,8 +24,8 @@ classdef bMainGui < bGuiDefinition
     methods
         
         % CONSTRUCTOR
-        function me = bMainGui(guiTop)
-            me = me@bGuiDefinition(guiTop);
+        function me = bMainGui(guiTop,name)
+            me = me@bGuiDefinition(guiTop,name);
             me.Figure = figure(...
                 'Units','normalized',...
                 'OuterPosition',[0,0,1,1],...
@@ -147,7 +147,7 @@ classdef bMainGui < bGuiDefinition
             me.setSegmentation('none');
             
             me.Menus.channelCalls.CallGui = ...
-                uimenu(me.Menus.ChannelCalls,'Label','Call Analysis GUI','Callback',@(~,~)me.callCallGui());
+                uimenu(me.Menus.ChannelCalls,'Label','Call Analysis GUI','Callback',@(~,~)me.callCallGui([]));
             
             
             % settings
@@ -213,7 +213,7 @@ classdef bMainGui < bGuiDefinition
             me.Menus.settings.parameters.QuickSave = ...
                 uimenu(me.Menus.settings.Parameters,'Label','Quick Save','Callback',@(~,~)me.paramsQuickSave());
             me.Menus.settings.parameters.ManageValues = ...
-                uimenu(me.Menus.settings.Parameters,'Label','Manage Values','Separator','on','Callback',@(~,~)me.Top.pgInit());            
+                uimenu(me.Menus.settings.Parameters,'Label','Manage Values','Separator','on','Callback',@(~,~)me.Top.callGui('Parameters'));            
             
             switch agetParam('rawData_position');
                 case 'internal'
@@ -637,6 +637,14 @@ classdef bMainGui < bGuiDefinition
                 cellfun(@(f)f.initChannelCallsData(),Files,'UniformOutput',false);
                 me.refreshFilesTable();
                 me.refresh();
+            end
+        end
+        
+        % CALL CALL ANALYSIS GUI
+        function callCallGui(me,V)
+            g = me.Top.callGui('CallAnalysis');
+            if ~isempty(V)
+                g.gotoCall(V);
             end
         end
 

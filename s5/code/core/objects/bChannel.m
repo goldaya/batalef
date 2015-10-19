@@ -14,6 +14,7 @@ classdef bChannel < handle
         CallsCount
         CallsMatrix
         CallsRidges
+        Fs
     end
 
     methods
@@ -240,6 +241,11 @@ classdef bChannel < handle
                             varargout{2} = I;    
                     end                    
             end
+        end
+        
+        % FS
+        function val = get.Fs(me)
+            val = me.File.Fs;
         end
         
     end

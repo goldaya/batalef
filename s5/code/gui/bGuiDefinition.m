@@ -5,6 +5,7 @@ classdef bGuiDefinition < handle
         Figure;
         Top
         SelectionRibbon
+        Name
     end
     
     properties (Dependent = true)
@@ -19,8 +20,9 @@ classdef bGuiDefinition < handle
     methods
         
         % CONSTRUCTOR
-        function me = bGuiDefinition(guiTop)
+        function me = bGuiDefinition(guiTop,name)
             me.Top = guiTop;
+            me.Name = name;
         end
         
         % RIBBONS LINKED PROPERTY (GET/SET)

@@ -48,15 +48,15 @@
             AxesSpectrum
             AxesTS
           StaticValuesPanel
-            TextValueStartValue
+            TextValueStartEnv
             TextValueStartTime
             TextValueStartFreq
             TextValueStartPower
-            TextValuePeakValue
+            TextValuePeakEnv
             TextValuePeakTime
             TextValuePeakFreq
             TextValuePeakPower
-            TextValueEndValue
+            TextValueEndEnv
             TextValueEndTime
             TextValueEndFreq
             TextValueEndPower
@@ -373,8 +373,8 @@
             
             s = '';
             pos = pos + [p+vw,0,0,0];
-            me.TextValuePeakValue = uicontrol(SV,'Style','edit','Enable','inactive','String',s,'Units','character','Position',pos,'HorizontalAlignment','center');
-            me.StatsTexts = [me.StatsTexts,{me.TextValuePeakValue}];
+            me.TextValuePeakEnv = uicontrol(SV,'Style','edit','Enable','inactive','String',s,'Units','character','Position',pos,'HorizontalAlignment','center');
+            me.StatsTexts = [me.StatsTexts,{me.TextValuePeakEnv}];
             
             s = '';
             pos = pos + [p+vw,0,0,0];
@@ -399,8 +399,8 @@
             
             s = '';
             pos = pos + [p+vw,0,0,0];
-            me.TextValueEndValue = uicontrol(SV,'Style','edit','Enable','inactive','String',s,'Units','character','Position',pos,'HorizontalAlignment','center');
-            me.StatsTexts = [me.StatsTexts,{me.TextValueEndValue}];
+            me.TextValueEndEnv = uicontrol(SV,'Style','edit','Enable','inactive','String',s,'Units','character','Position',pos,'HorizontalAlignment','center');
+            me.StatsTexts = [me.StatsTexts,{me.TextValueEndEnv}];
             
             s = '';
             pos = pos + [p+vw,0,0,0];
@@ -795,8 +795,8 @@
                 end
             end
             
-            set(me.TextValueDuration,'String',num2str(me.Call.Duration));
-            set(me.TextValueIPI,'String',num2str(me.Call.IPI));
+            set(me.TextDuration,'String',num2str(me.Call.Duration));
+            set(me.TextIPI,'String',num2str(me.Call.IPI));
         
         end
         
