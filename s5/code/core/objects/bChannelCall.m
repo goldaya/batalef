@@ -4,7 +4,7 @@ classdef bChannelCall < handle
     properties
         Channel
         CallIdx
-        CallType
+        CallType = 'features';
         Detection
         Start
         Peak
@@ -17,7 +17,6 @@ classdef bChannelCall < handle
         Duration
         TS
         Fs
-        IPI
     end
     
     methods
@@ -85,7 +84,7 @@ classdef bChannelCall < handle
             me.End.Freq  = D(11);
             me.End.Power = D(12);
             
-            me.AnalysisParameters = me.Channel.CallsData.(strcat(type,'AP'));
+            me.AnalysisParameters = me.Channel.CallsData.(strcat(type,'AP')){me.CallIdx};
             
         end
         
@@ -134,10 +133,15 @@ classdef bChannelCall < handle
         end
         
         % IPI
-        function val = get.IPI(me)
+        function val = getIPI(me,callType)
             if me.CallIdx > 1
-                D = me.Channel.CallsData.(me.CallType);
-                val = me.Start.Time - D(me.CallIdx-1,1);
+                D = me.Channel.CallsData.(callType);
+                lastCallStart = D(me.CallIdx-1,1);
+                if lastCallStart > 0
+                    val = me.Start.Time - lastCallStart;
+                else
+                    val = [];
+                end
             else
                 val = [];
             end

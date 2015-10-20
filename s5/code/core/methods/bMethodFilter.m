@@ -20,7 +20,7 @@ classdef bMethodFilter < bMethods
                 filterApplied   = true;
                 filterObject    = [];
             else
-                [~,D,P] = buildParamList(me,m);
+                [~,D,P] = me.buildParamList(me,m);
                 for i = 1:length(D)
                     params.(P{i,3}) = D{i};
                 end

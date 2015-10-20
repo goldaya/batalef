@@ -70,7 +70,7 @@ function call = channelCallComputeSpectralData( call, dataset, offset )
         call.End.Freq   = F(argmax);
 
         % keep spectrogram
-        call.AnalysisParameters.sepctrogram = spec;
+        call.AnalysisParameters.spectrogram = spec;
 
         % spectrum
         call.AnalysisParameters.spectrum = control.app.Methods.callAnalysisSpectrum.execute(call.TS,call.Fs);

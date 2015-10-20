@@ -48,15 +48,15 @@
             AxesSpectrum
             AxesTS
           StaticValuesPanel
-            TextValueStartEnv
+            TextValueStartValue
             TextValueStartTime
             TextValueStartFreq
             TextValueStartPower
-            TextValuePeakEnv
+            TextValuePeakValue
             TextValuePeakTime
             TextValuePeakFreq
             TextValuePeakPower
-            TextValueEndEnv
+            TextValueEndValue
             TextValueEndTime
             TextValueEndFreq
             TextValueEndPower
@@ -373,8 +373,8 @@
             
             s = '';
             pos = pos + [p+vw,0,0,0];
-            me.TextValuePeakEnv = uicontrol(SV,'Style','edit','Enable','inactive','String',s,'Units','character','Position',pos,'HorizontalAlignment','center');
-            me.StatsTexts = [me.StatsTexts,{me.TextValuePeakEnv}];
+            me.TextValuePeakValue = uicontrol(SV,'Style','edit','Enable','inactive','String',s,'Units','character','Position',pos,'HorizontalAlignment','center');
+            me.StatsTexts = [me.StatsTexts,{me.TextValuePeakValue}];
             
             s = '';
             pos = pos + [p+vw,0,0,0];
@@ -399,8 +399,8 @@
             
             s = '';
             pos = pos + [p+vw,0,0,0];
-            me.TextValueEndEnv = uicontrol(SV,'Style','edit','Enable','inactive','String',s,'Units','character','Position',pos,'HorizontalAlignment','center');
-            me.StatsTexts = [me.StatsTexts,{me.TextValueEndEnv}];
+            me.TextValueEndValue = uicontrol(SV,'Style','edit','Enable','inactive','String',s,'Units','character','Position',pos,'HorizontalAlignment','center');
+            me.StatsTexts = [me.StatsTexts,{me.TextValueEndValue}];
             
             s = '';
             pos = pos + [p+vw,0,0,0];
@@ -536,6 +536,10 @@
                 val = 'proc';
             end
         end
+        
+        function val = get.CallType(me)
+            val = me.DisplayType;
+            if strcval
         
         % SET ANALYSIS WINDOW
         function setAnalysisWindow(me,window)
@@ -795,8 +799,8 @@
                 end
             end
             
-            set(me.TextDuration,'String',num2str(me.Call.Duration));
-            set(me.TextIPI,'String',num2str(me.Call.IPI));
+            set(me.TextValueDuration,'String',num2str(me.Call.Duration));
+            set(me.TextValueIPI,'String',num2str(me.Call.getIPI(me.CallType)));
         
         end
         

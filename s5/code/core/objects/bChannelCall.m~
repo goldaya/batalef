@@ -134,9 +134,15 @@ classdef bChannelCall < handle
         end
         
         % IPI
-        function val = get.IPI
-            D = me.Channel.CallsData.(me.Type);
-            me.D(me.CallIdx-1,1)
+        function val = getIPI(me,callType)
+            if me.CallIdx > 1
+                D = me.Channel.CallsData.(me.CallType);
+                lastCallStart =D(me.CallIdx-1,1);
+                val = me.Start.Time - lastCallStart;
+            else
+                val = [];
+            end
+        end
     end
     
 end

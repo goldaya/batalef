@@ -121,9 +121,9 @@
             me.buildMenus();
             
             % set desired position + visibility + start in display mode
-            me.setWorkMode('display-relaxed');
             me.setDisplayedFiles(me.DisplayVector)
             set(me,'Visible','on');            
+            me.setWorkMode('display-relaxed');
         end
         
         % DESTRUCTOR
@@ -150,8 +150,8 @@
                 set(me.DmodeGroup,'SelectedObject',s);
                 
             me.PmodePanel = uipanel(me.SelectionRibbon.Panel,'Units','character','Position',modePanelsPosition,'Visible','off');
-                me.CheckboxFeatures        = uicontrol(me.PmodePanel,'Style','checkbox','Units','normalized','Position',[0,0.333,1,0.333],'String','Features');
-                me.CheckboxForLocalization = uicontrol(me.PmodePanel,'Style','checkbox','Units','normalized','Position',[0,0.666,1,0.333],'String','Localization');
+                me.CheckboxFeatures        = uicontrol(me.PmodePanel,'Style','checkbox','Units','normalized','Position',[0,0.666,1,0.333],'String','Features');
+                me.CheckboxForLocalization = uicontrol(me.PmodePanel,'Style','checkbox','Units','normalized','Position',[0,0.333,1,0.333],'String','Localization');
                 me.CheckboxForBeam         = uicontrol(me.PmodePanel,'Style','checkbox','Units','normalized','Position',[0,0.001,1,0.333],'String','Beam');
                 
             % channel / call selectors
@@ -312,7 +312,7 @@
             p  = 2;
             sw = 20;
             sh = 1;
-            vw = 13;
+            vw = 17;
             vh = 1.4;
             b = PH - 2;
             
@@ -513,6 +513,12 @@
         
         % SAVE BUTTON
         function saveCall(me)
+            T = me.getProcCallTypes();
+            if isempty(T)
+                msgbox('No call types chosen');
+            else
+                cellfun(@(t)me.Call.saveCall(t),T);
+            end
         end
         
         % NEXT BUTTON
@@ -527,7 +533,7 @@
             end
         end
         
-        % DISPLAY TYPE PROPERTY
+        % CALL TYPE - DISPLAY & PROCESS
         function val = get.DisplayType(me)
             if strncmp(me.WorkMode,'display',7)
                 UD = get(get(me.DmodeGroup,'SelectedObject'),'UserData');
@@ -535,6 +541,29 @@
             else
                 val = 'proc';
             end
+        end
+        function val = get.CallType(me)
+            val = me.DisplayType;
+            if strcmp(val,'proc')
+                V = me.getProcCallTypes();
+                if isempty(V)
+                    val = [];
+                else
+                    val = V{1};
+                end
+            end
+        end
+        function V = getProcCallTypes(me)
+            V = {};
+            if get(me.CheckboxFeatures,'Value')
+                V = [V,{'features'}];
+            end
+            if get(me.CheckboxForLocalization,'Value')
+                V = [V,{'forLocalization'}];
+            end
+            if get(me.CheckboxForBeam,'Value')
+                V = [V,{'forBeam'}];
+            end            
         end
         
         % SET ANALYSIS WINDOW
@@ -664,16 +693,22 @@
                     me.analyzeCall();
             end
             
-            % plot envelope + colors
-            me.plotEnvelope();
-            % plot spectrogram + markers
-            me.plotSpectrogram();
+            % plot envelope, spectrogram + refresh filter
+            me.partialRefresh();
+
             % put analysis values
             me.showStats();
             % plot TS
             % plot spectrum
             
         end    
+        
+        % PARTIAL REFRESH
+        function partialRefresh(me)
+            me.plotEnvelope();
+            me.plotSpectrogram();
+            me.refreshFilterButton();
+        end
         
         % PLOT ENVELOPE WITH COLORS
         function plotEnvelope(me)
@@ -751,7 +786,7 @@
         
         % PLOT SPECTROGRAM
         function plotSpectrogram(me)
-            if ~strcmp(me.WorkMode,'process') && isfield(me.Call.AnalysisParameters,'envelope') && ~isempty(me.Call.AnalysisParameters.envelope)
+            if ~strcmp(me.WorkMode,'process') && isfield(me.Call.AnalysisParameters,'spectrogram') && ~isempty(me.Call.AnalysisParameters.spectrogram)
                 % get the spectrogram 
                 S = me.Call.AnalysisParameters.spectrogram;
             elseif ~strcmp(me.WorkMode,'display-hard')
@@ -796,8 +831,56 @@
             end
             
             set(me.TextValueDuration,'String',num2str(me.Call.Duration));
-            set(me.TextValueIPI,'String',num2str(me.Call.IPI));
+            callType = me.CallType;
+            if isempty(callType)
+                set(me.TextValueIPI,'String','');
+            else
+                set(me.TextValueIPI,'String',num2str(me.Call.getIPI(callType)));
+            end
         
+        end
+        
+        % REFRESH FILTER BUTTON
+        function refreshFilterButton(me)
+            switch me.WorkMode
+                case 'process'
+                    [buttonString,messageString] = me.getFilterSpec();
+                case 'display-relaxed'
+                    if isfield(me.Call.AnalysisParameters,'filter') && ~isempty(me.Call.AnalysisParameters.filter)
+                        buttonString = me.Call.AnalysisParameters.filter.nameString;
+                        messageString = me.Call.AnalysisParameters.filter.descString;
+                    else
+                        [buttonString,messageString] = me.getFilterSpec();
+                    end
+                case 'display-hard'
+                    if isfield(me.Call.AnalysisParameters,'filter') && ~isempty(me.Call.AnalysisParameters.filter)
+                        buttonString = me.Call.AnalysisParameters.filter.nameString;
+                        messageString = me.Call.AnalysisParameters.filter.descString;                        
+                    else
+                        buttonString = 'Unknown';
+                        messageString = 'Unknown';
+                    end
+            end
+            set(me.ButtonFilter,'String',buttonString,'Callback',@(~,~)msgbox(messageString));
+        end
+        
+        % GET FILTER SPECIFICATIONS
+        function [nameString,descString] = getFilterSpec(me)
+            methObj = me.Application.Methods.callAnalysisFilter;
+            if strcmp(methObj.Default,'none')
+                nameString = 'None';
+                descString = 'No filter used';
+            else
+                meth = methObj.getMethod(methObj.Default);
+                nameString = meth.name;
+                [Q,D] = methObj.buildParamList(meth);
+                D = cellfun(@(d) {num2str(d)},D);
+                str = strcat(['Filter Method: ',meth.name,'\n']);
+                for i = 1:length(Q)
+                    str = strcat([str,'\n',Q{i},': ',D{i}]);
+                end
+                descString = sprintf(str);
+            end
         end
         
         %%%%%
@@ -835,6 +918,11 @@
                 [],...
                 true,...
                 false );
+            
+            me.Call.AnalysisParameters.filter = [];
+            [f.nameString,f.descString] = me.getFilterSpec();
+            me.Call.AnalysisParameters.filter = f;
+            
         end
         
     end
