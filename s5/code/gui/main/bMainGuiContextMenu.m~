@@ -125,21 +125,14 @@ classdef bMainGuiContextMenu
         end
         
         % GOTO CALL ANALYSIS GUI
-        function callAnalysisGui(me)
+        function gotoCallAnalysisGui(me)
             axes(me.Gui.LastAxesObject);
             r = getrect(me.Gui.LastAxesObject);            
             k = me.Gui.LastGraphObject.FileIdx;
             j = me.Gui.LastGraphObject.ChannelIdx;
             c = me.Application.file(k).channel(j);
-            I = c.getCalls('Index','TimeInterval',[r(1),r(1)+r(3)]);
-            if ~isempty(I)
-                s = I(1);
-                g = me.Gui.Top.callGui('CallAnalysis');
-                g.changeFile(k,false);
-                g.changeChannel(j,false);
-                g.changeCall(s,true);
-            end
-        end
+            I = c.get[r(1),r(1)+r(3)]
+            
     end
     
 end

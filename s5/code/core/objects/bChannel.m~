@@ -135,19 +135,15 @@ classdef bChannel < handle
         end
         
         % GET CALLS IN TIME INTERVAL
-        function varargout = getCalls(me,varargin)
+        function getCalls(me,varargin)
             D = me.CallsData;
             [~,~,timeInterval] = vHas(varargin,'TimeInterval');
             if ~isempty(timeInterval)
-                U = logical(( D.detection(:,1) > timeInterval(1) ) .* ( D.detection(:,1) < timeInterval(2) ));
+                I = logical(( D.detection(:,1) > timeInterval(1) ) .* ( D.detection(:,1) < timeInterval(2) ));
             else
-                U = logical(ones(1,me.CallsCount));
+                I = 1:me.CallsCount;
             end
-            switch varargin{1}
-                case 'Index'
-                    I = 1:me.CallsCount;
-                    varargout{1} = I(U);
-            end
+            
         end
         
         % BUILD CALLS MATRIX
