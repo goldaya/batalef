@@ -12,6 +12,7 @@
        ChannelTimeVector  = [];
        ChannelFilteredTS  = [];
        ChannelEnvelopedTS = [];
+       SpecImage = [];
        
    end
    
@@ -37,6 +38,8 @@
             TextStartThreshold
             TextEndThreshold
             TextGapTolerance
+            ComboSpecRange
+            MessageDisplayRelaxed
           ActiveButtonsPanel
             ButtonAnalyze
             ButtonSave
@@ -86,6 +89,7 @@
     
     properties (Dependent = true)
         DisplayType
+        SpecRange
     end
     
     methods
@@ -240,6 +244,26 @@
             uicontrol(AP,'Style','text','Units','character','Position',[sp,b+0.5,sw,1],'HorizontalAlignment','left','String',s);
             me.TextGapTolerance = uicontrol(AP,'Style','edit','Units','character','Position',[sw+sp,b+0.3,vw,1.4],'String',v,'Callback',@(h,~)asetParam('channelCallAnalysis_gapTolerance',str2double(get(h,'String'))/1000));
             me.InteractiveUI = [me.InteractiveUI,{me.TextGapTolerance}];
+            
+            b = 0;
+            me.MessageDisplayRelaxed = uicontrol(AP,'Style','text','Units','character','Position',[sp,b+0.5,200,3],'String',sprintf('Relaxed Display Mode!\nGraphs might not represent data at original analysis'),'ForegroundColor',[1,0,0],'Visible','off','HorizontalAlignment','Left');
+            
+            b = 4;
+            uicontrol(AP,...
+                'Style','text',...
+                'Units','character',...
+                'Position',[sp,b+0.5,sw,1],...
+                'HorizontalAlignment','Left',...
+                'String','Spectrogram Range');
+            me.ComboSpecRange = uicontrol(AP,...
+                'Style','popupmenu',...
+                'Units','character',...
+                'String','foo',...
+                'Value',1,...
+                'Position',[sw+sp,b+0.3,vw,1.4],...
+                'Callback',@(h,~)me.specRangeChanged(get(h,'Value')));
+            me.buildSpecRangeCombo(false)            
+
             
             me.ActiveButtonsPanel = uipanel(me.ActivePanel,...
                 'BorderType','none',...
@@ -466,6 +490,27 @@
         function resize(me)
         end
         
+        % BUILD SPECTROGRAM RANGES COMBO
+        function buildSpecRangeCombo(me,useSelfValue)
+            R = ggetParam('displaySpectrogram_ranges');
+            if exist('useSelfValue','var') && ~useSelfValue
+                I = ggetParam('displaySpectrogram_range2use');
+            else
+                I = get(me.ComboSpecRange,'Value');
+            end
+            C = cellfun(@(v)strcat('[',num2str(v),']'),R,'UniformOutput',false);
+            S = ['Auto', C, 'Add custom'];
+            S{2} = strcat(['Low    ',S{2}]);
+            S{3} = strcat(['Middle ',S{3}]);
+            S{4} = strcat(['High   ',S{4}]);
+            S{5} = strcat(['Wide   ',S{5}]);
+            n = length(S);
+            for i = 6:(n-1)
+                S{i} = strcat(['Custom ',S{i}]);
+            end
+            set(me.ComboSpecRange,'String',S,'Value',I);
+        end
+        
         %%%%%%%%%%%%%%%%%%
         % PULLS & LEVERS %
         %%%%%%%%%%%%%%%%%%
@@ -481,6 +526,8 @@
                     set(me.ProcModeMenuItem,'Checked','off');
                     set(me.PmodePanel,'Visible','off');
                     cellfun(@(h)set(h,'Enable','off'),me.InteractiveUI);
+                    me.filterAndEnvelope();
+                    set(me.MessageDisplayRelaxed,'Visible','on');
                 case 'display-hard'
                     set(me.DisRelxModeMenuItem, 'Checked','off');
                     set(me.DisHardModeMenuItem, 'Checked','on');
@@ -488,6 +535,7 @@
                     set(me.ProcModeMenuItem,'Checked','off');
                     set(me.PmodePanel,'Visible','off');                 
                     cellfun(@(h)set(h,'Enable','off'),me.InteractiveUI);
+                    set(me.MessageDisplayRelaxed,'Visible','off');
                 case 'process'
                     set(me.DisRelxModeMenuItem, 'Checked','off');
                     set(me.DisHardModeMenuItem, 'Checked','off');
@@ -495,17 +543,16 @@
                     set(me.ProcModeMenuItem,'Checked','on');
                     set(me.PmodePanel,'Visible','on');
                     cellfun(@(h)set(h,'Enable','on'),me.InteractiveUI);
+                    me.filterAndEnvelope();
+                    set(me.MessageDisplayRelaxed,'Visible','off');
             end 
+            % filter & envelope
         end
         
         % CHANGE DISPLAY TYPE
         function disTypeChange(me,type,group)
         end
         
-        % SHOW FILTER DETAILS
-        function showFilterDetails(me)
-        end
-               
         % ANALYZE BUTTON
         function analyzeCallButton(me)
             me.showCall();
@@ -573,6 +620,43 @@
             me.plotEnvelope();
             me.plotSpectrogram();
         end
+        
+        % FILTER CHANGED
+        function filterChanged(me)
+            if strcmp(me.WorkMode,'process') || strcmp(me.WorkMode,'display-relaxed')
+                me.filterAndEnvelope();
+            end            
+            me.partialRefresh();            
+        end
+        
+        % SPECTROGRAM RANGE PROPERTY
+        function specRangeChanged(me,rangeID)
+            n = length(get(me.ComboSpecRange,'String'));
+            if rangeID == n
+                me.Top.Guis.Main.Graphs.addNewSpecRange();
+                me.buildSpecRangeCombo(true);
+            else
+                me.SpecRange = rangeID;
+            end
+        end
+        function set.SpecRange(me,rangeID)
+            if isempty(rangeID)
+                rangeID = 1;
+            end
+            set(me.ComboSpecRange,'Value',rangeID);
+            me.plotSpectrogram();
+        end
+        function val = get.SpecRange(me)
+            v = get(me.ComboSpecRange,'Value');
+            if isempty(v)
+                val = [];
+            elseif v == 1
+                val = [];
+            else
+                R = ggetParam('displaySpectrogram_ranges');
+                val = R{v-1};
+            end
+        end        
         
         %%%%%%%%%%%
         % DATASET %
@@ -802,7 +886,14 @@
             end
             
             axes(me.AxesSpectrogram);
-            imagesc(S.T,S.F,S.P);
+            R = me.SpecRange;
+            if isempty(R)
+                me.SpecImage = imagesc(S.T,S.F,S.P);
+%                 set(me.SpecImage,'UIContextMenu',me.Gui.ContextMenu);
+            else
+                me.SpecImage = imagesc(S.T,S.F,S.P,R);
+%                 set(me.SpecImage,'UIContextMenu',me.Gui.ContextMenu);
+            end
             set(me.AxesSpectrogram,'YDir','normal');
             hold(me.AxesSpectrogram,'on');
             Y = [min(S.F),max(S.F)];
@@ -904,7 +995,7 @@
             
             window = agetParam('channelCallAnalysis_window');
             I = me.Call.Detection.Time + window.*[-0.5,+0.5];
-            dataset = getInterval(me.ChannelTimeSeries, me.Call.Fs,I);
+            dataset = getInterval(me.ChannelFilteredTS, me.Call.Fs,I);
             envDataset = getInterval(me.ChannelEnvelopedTS, me.Call.Fs,I);
             
             me.Call = channelCallAnalyze( me.Call,...

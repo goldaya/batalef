@@ -441,8 +441,8 @@ classdef bMainGuiGraph < handle & hgsetget
             C = cellfun(@(v)strcat('[',num2str(v),']'),R,'UniformOutput',false);
             S = ['Auto', C, 'Add custom'];
             S{2} = strcat(['Low    ',S{2}]);
-            S{3} = strcat(['Middle ',S{3}]);
-            S{4} = strcat(['High   ',S{4}]);
+            S{3} = strcat(['High   ',S{3}]);
+            S{4} = strcat(['High ',S{4}]);
             S{5} = strcat(['Wide   ',S{5}]);
             n = length(S);
             for i = 6:(n-1)
@@ -472,7 +472,7 @@ classdef bMainGuiGraph < handle & hgsetget
                 if me.Group.Linked
                     me.Group.changeSpecRange(rangeID,[]);
                 else
-                    me.SpecRange = rangeID;
+                    me.SpecRange = rangeIS;
                 end 
             end
         end

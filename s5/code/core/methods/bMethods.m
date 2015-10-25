@@ -167,6 +167,12 @@ classdef bMethods < handle
                     cellfun(@(m) selectMenuItem(m,methodID),me.Menus);
                     me.askParamsGui(methodID,[]);
                     me.Default = methodID;
+                    % sometimes the gui does something when we change the
+                    % default method
+                    try
+                        me.propogateDefault2Gui(userData{2});
+                    catch % not all method objects do this
+                    end
                 case 'onDemend'
                     me.Default = methodID;
                     me.askParamsGui(methodID,[]);

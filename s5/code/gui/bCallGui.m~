@@ -37,6 +37,8 @@
             TextStartThreshold
             TextEndThreshold
             TextGapTolerance
+            ComboSpecRange
+            MessageDisplayRelaxed
           ActiveButtonsPanel
             ButtonAnalyze
             ButtonSave
@@ -121,9 +123,9 @@
             me.buildMenus();
             
             % set desired position + visibility + start in display mode
-            me.setWorkMode('display-relaxed');
             me.setDisplayedFiles(me.DisplayVector)
             set(me,'Visible','on');            
+            me.setWorkMode('display-relaxed');
         end
         
         % DESTRUCTOR
@@ -150,8 +152,8 @@
                 set(me.DmodeGroup,'SelectedObject',s);
                 
             me.PmodePanel = uipanel(me.SelectionRibbon.Panel,'Units','character','Position',modePanelsPosition,'Visible','off');
-                me.CheckboxFeatures        = uicontrol(me.PmodePanel,'Style','checkbox','Units','normalized','Position',[0,0.333,1,0.333],'String','Features');
-                me.CheckboxForLocalization = uicontrol(me.PmodePanel,'Style','checkbox','Units','normalized','Position',[0,0.666,1,0.333],'String','Localization');
+                me.CheckboxFeatures        = uicontrol(me.PmodePanel,'Style','checkbox','Units','normalized','Position',[0,0.666,1,0.333],'String','Features');
+                me.CheckboxForLocalization = uicontrol(me.PmodePanel,'Style','checkbox','Units','normalized','Position',[0,0.333,1,0.333],'String','Localization');
                 me.CheckboxForBeam         = uicontrol(me.PmodePanel,'Style','checkbox','Units','normalized','Position',[0,0.001,1,0.333],'String','Beam');
                 
             % channel / call selectors
@@ -241,6 +243,25 @@
             me.TextGapTolerance = uicontrol(AP,'Style','edit','Units','character','Position',[sw+sp,b+0.3,vw,1.4],'String',v,'Callback',@(h,~)asetParam('channelCallAnalysis_gapTolerance',str2double(get(h,'String'))/1000));
             me.InteractiveUI = [me.InteractiveUI,{me.TextGapTolerance}];
             
+            b = 0;
+            me.MessageDisplayRelaxed = uicontrol(AP,'Style','text','Units','character','Position',[sp,b+0.5,200,1],'String','Relaxed Display Mode: Showed graphs might not represent data at original analysis','ForegroundColor',[255,0,0],'Visible','off');
+            
+            b = 2;
+            uicontrol(AP,...
+                'Style','text',...
+                'Units','character',...
+                'Position',[sp,b+0.5,sw,1],...
+                'String','Spectrogram Range');
+            me.ComboSpecRange = uicontrol(AP,...
+                'Style','popupmenu',...
+                'Units','character',...
+                'String','foo',...
+                'Value',1,...
+                'Position',[sw+sp,b+0.3,vw,1.4],...
+                'Callback',@(h,~)me.specRangeChanged(get(h,'Value')));
+            me.buildSpecRangeCombo(false)            
+
+            
             me.ActiveButtonsPanel = uipanel(me.ActivePanel,...
                 'BorderType','none',...
                 'Units','character',...
@@ -312,7 +333,7 @@
             p  = 2;
             sw = 20;
             sh = 1;
-            vw = 13;
+            vw = 17;
             vh = 1.4;
             b = PH - 2;
             
@@ -466,6 +487,27 @@
         function resize(me)
         end
         
+        % BUILD SPECTROGRAM RANGES COMBO
+        function buildSpecRangeCombo(me,useSelfValue)
+            R = ggetParam('displaySpectrogram_ranges');
+            if exist('useSelfValue','var') && ~useSelfValue
+                I = ggetParam('displaySpectrogram_range2use');
+            else
+                I = get(me.ComboSpecRange,'Value');
+            end
+            C = cellfun(@(v)strcat('[',num2str(v),']'),R,'UniformOutput',false);
+            S = ['Auto', C, 'Add custom'];
+            S{2} = strcat(['Low    ',S{2}]);
+            S{3} = strcat(['Middle ',S{3}]);
+            S{4} = strcat(['High   ',S{4}]);
+            S{5} = strcat(['Wide   ',S{5}]);
+            n = length(S);
+            for i = 6:(n-1)
+                S{i} = strcat(['Custom ',S{i}]);
+            end
+            set(me.ComboSpecRange,'String',S,'Value',I);
+        end
+        
         %%%%%%%%%%%%%%%%%%
         % PULLS & LEVERS %
         %%%%%%%%%%%%%%%%%%
@@ -481,6 +523,8 @@
                     set(me.ProcModeMenuItem,'Checked','off');
                     set(me.PmodePanel,'Visible','off');
                     cellfun(@(h)set(h,'Enable','off'),me.InteractiveUI);
+                    me.filterAndEnvelope();
+                    set(me.MessageDisplayRelaxed,'Visible','on');
                 case 'display-hard'
                     set(me.DisRelxModeMenuItem, 'Checked','off');
                     set(me.DisHardModeMenuItem, 'Checked','on');
@@ -488,6 +532,7 @@
                     set(me.ProcModeMenuItem,'Checked','off');
                     set(me.PmodePanel,'Visible','off');                 
                     cellfun(@(h)set(h,'Enable','off'),me.InteractiveUI);
+                    set(me.MessageDisplayRelaxed,'Visible','off');
                 case 'process'
                     set(me.DisRelxModeMenuItem, 'Checked','off');
                     set(me.DisHardModeMenuItem, 'Checked','off');
@@ -495,17 +540,16 @@
                     set(me.ProcModeMenuItem,'Checked','on');
                     set(me.PmodePanel,'Visible','on');
                     cellfun(@(h)set(h,'Enable','on'),me.InteractiveUI);
+                    me.filterAndEnvelope();
+                    set(me.MessageDisplayRelaxed,'Visible','off');
             end 
+            % filter & envelope
         end
         
         % CHANGE DISPLAY TYPE
         function disTypeChange(me,type,group)
         end
         
-        % SHOW FILTER DETAILS
-        function showFilterDetails(me)
-        end
-               
         % ANALYZE BUTTON
         function analyzeCallButton(me)
             me.showCall();
@@ -513,6 +557,12 @@
         
         % SAVE BUTTON
         function saveCall(me)
+            T = me.getProcCallTypes();
+            if isempty(T)
+                msgbox('No call types chosen');
+            else
+                cellfun(@(t)me.Call.saveCall(t),T);
+            end
         end
         
         % NEXT BUTTON
@@ -527,7 +577,7 @@
             end
         end
         
-        % DISPLAY TYPE PROPERTY
+        % CALL TYPE - DISPLAY & PROCESS
         function val = get.DisplayType(me)
             if strncmp(me.WorkMode,'display',7)
                 UD = get(get(me.DmodeGroup,'SelectedObject'),'UserData');
@@ -536,10 +586,29 @@
                 val = 'proc';
             end
         end
-        
         function val = get.CallType(me)
             val = me.DisplayType;
-            if strcval
+            if strcmp(val,'proc')
+                V = me.getProcCallTypes();
+                if isempty(V)
+                    val = [];
+                else
+                    val = V{1};
+                end
+            end
+        end
+        function V = getProcCallTypes(me)
+            V = {};
+            if get(me.CheckboxFeatures,'Value')
+                V = [V,{'features'}];
+            end
+            if get(me.CheckboxForLocalization,'Value')
+                V = [V,{'forLocalization'}];
+            end
+            if get(me.CheckboxForBeam,'Value')
+                V = [V,{'forBeam'}];
+            end            
+        end
         
         % SET ANALYSIS WINDOW
         function setAnalysisWindow(me,window)
@@ -548,6 +617,46 @@
             me.plotEnvelope();
             me.plotSpectrogram();
         end
+        
+        % FILTER CHANGED
+        function filterChanged(me)
+            if strcmp(me.WorkMode,'process') || strcmp(me.WorkMode,'display-relaxed')
+                me.filterAndEnvelope();
+            end            
+            me.partialRefresh();            
+        end
+        
+        % SPECTROGRAM RANGE PROPERTY
+        function specRangeChanged(me,rangeID)
+            n = length(get(me.ComboSpecRange,'String'));
+            if rangeID == n
+                me.Group.addNewSpecRange();
+            else
+                if me.Group.Linked
+                    me.Group.changeSpecRange(rangeID,[]);
+                else
+                    me.SpecRange = rangeID;
+                end 
+            end
+        end
+        function set.SpecRange(me,rangeID)
+            if isempty(rangeID)
+                rangeID = 1;
+            end
+            set(me.ComboSpecRange,'Value',rangeID);
+            me.plotSpec(me.Dataset);
+        end
+        function val = get.SpecRange(me)
+            v = get(me.ComboSpecRange,'Value');
+            if isempty(v)
+                val = [];
+            elseif v == 1
+                val = [];
+            else
+                R = ggetParam('displaySpectrogram_ranges');
+                val = R{v-1};
+            end
+        end        
         
         %%%%%%%%%%%
         % DATASET %
@@ -668,16 +777,22 @@
                     me.analyzeCall();
             end
             
-            % plot envelope + colors
-            me.plotEnvelope();
-            % plot spectrogram + markers
-            me.plotSpectrogram();
+            % plot envelope, spectrogram + refresh filter
+            me.partialRefresh();
+
             % put analysis values
             me.showStats();
             % plot TS
             % plot spectrum
             
         end    
+        
+        % PARTIAL REFRESH
+        function partialRefresh(me)
+            me.plotEnvelope();
+            me.plotSpectrogram();
+            me.refreshFilterButton();
+        end
         
         % PLOT ENVELOPE WITH COLORS
         function plotEnvelope(me)
@@ -755,7 +870,7 @@
         
         % PLOT SPECTROGRAM
         function plotSpectrogram(me)
-            if ~strcmp(me.WorkMode,'process') && isfield(me.Call.AnalysisParameters,'envelope') && ~isempty(me.Call.AnalysisParameters.envelope)
+            if ~strcmp(me.WorkMode,'process') && isfield(me.Call.AnalysisParameters,'spectrogram') && ~isempty(me.Call.AnalysisParameters.spectrogram)
                 % get the spectrogram 
                 S = me.Call.AnalysisParameters.spectrogram;
             elseif ~strcmp(me.WorkMode,'display-hard')
@@ -800,8 +915,56 @@
             end
             
             set(me.TextValueDuration,'String',num2str(me.Call.Duration));
-            set(me.TextValueIPI,'String',num2str(me.Call.getIPI(me.CallType)));
+            callType = me.CallType;
+            if isempty(callType)
+                set(me.TextValueIPI,'String','');
+            else
+                set(me.TextValueIPI,'String',num2str(me.Call.getIPI(callType)));
+            end
         
+        end
+        
+        % REFRESH FILTER BUTTON
+        function refreshFilterButton(me)
+            switch me.WorkMode
+                case 'process'
+                    [buttonString,messageString] = me.getFilterSpec();
+                case 'display-relaxed'
+                    if isfield(me.Call.AnalysisParameters,'filter') && ~isempty(me.Call.AnalysisParameters.filter)
+                        buttonString = me.Call.AnalysisParameters.filter.nameString;
+                        messageString = me.Call.AnalysisParameters.filter.descString;
+                    else
+                        [buttonString,messageString] = me.getFilterSpec();
+                    end
+                case 'display-hard'
+                    if isfield(me.Call.AnalysisParameters,'filter') && ~isempty(me.Call.AnalysisParameters.filter)
+                        buttonString = me.Call.AnalysisParameters.filter.nameString;
+                        messageString = me.Call.AnalysisParameters.filter.descString;                        
+                    else
+                        buttonString = 'Unknown';
+                        messageString = 'Unknown';
+                    end
+            end
+            set(me.ButtonFilter,'String',buttonString,'Callback',@(~,~)msgbox(messageString));
+        end
+        
+        % GET FILTER SPECIFICATIONS
+        function [nameString,descString] = getFilterSpec(me)
+            methObj = me.Application.Methods.callAnalysisFilter;
+            if strcmp(methObj.Default,'none')
+                nameString = 'None';
+                descString = 'No filter used';
+            else
+                meth = methObj.getMethod(methObj.Default);
+                nameString = meth.name;
+                [Q,D] = methObj.buildParamList(meth);
+                D = cellfun(@(d) {num2str(d)},D);
+                str = strcat(['Filter Method: ',meth.name,'\n']);
+                for i = 1:length(Q)
+                    str = strcat([str,'\n',Q{i},': ',D{i}]);
+                end
+                descString = sprintf(str);
+            end
         end
         
         %%%%%
@@ -839,6 +1002,11 @@
                 [],...
                 true,...
                 false );
+            
+            me.Call.AnalysisParameters.filter = [];
+            [f.nameString,f.descString] = me.getFilterSpec();
+            me.Call.AnalysisParameters.filter = f;
+            
         end
         
     end

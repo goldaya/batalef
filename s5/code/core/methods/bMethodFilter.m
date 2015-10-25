@@ -20,7 +20,7 @@ classdef bMethodFilter < bMethods
                 filterApplied   = true;
                 filterObject    = [];
             else
-                [~,D,P] = me.buildParamList(me,m);
+                [~,D,P] = me.buildParamList(m);
                 for i = 1:length(D)
                     params.(P{i,3}) = D{i};
                 end
@@ -42,6 +42,17 @@ classdef bMethodFilter < bMethods
         function augustinus(me,File)
             fTS = me.execute(File.RawData.getTS([],[]),File.RawData.Fs);
             File.RawData.alter(fTS,{'Filter',NaN});
+        end
+        
+        % PROPOGATE TO GUI
+        function propogateDefault2Gui(me,gui)
+            try
+                switch me.ParamPreamble
+                    case 'callAnalysisFilter'
+                        gui.filterChanged();
+                end
+            catch
+            end
         end
         
     end
