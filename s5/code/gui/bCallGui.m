@@ -78,6 +78,7 @@
         MenuEnvelope
         MenuSpectrogram
         MenuSpectrum
+        MenuRidge
         MenuKeepOn
         MenuKeepOff
         
@@ -492,6 +493,12 @@
             me.Application.Methods.callAnalysisSpectrogram.createMenu(me.MenuSpectrogram,me);
             me.MenuSpectrum = uimenu(s,'Label','Spectrum');
             me.Application.Methods.callAnalysisSpectrum.createMenu(me.MenuSpectrum,me);
+            me.MenuRidge = uimenu(s,'Label','Ridge');
+            me.Application.Methods.callAnalysisRidge.createMenu(me.MenuRidge,me);            
+            
+            % output
+            me.OutputMenu = uimenu(me.Figure,'Label','Output');
+            uimenu(me.OutputMenu,'Label','Call object','Callback',@(~,~));
             
             % settings
             s = uimenu(me.Figure,'Label','Settings');
@@ -823,6 +830,9 @@
         
         % FILTER AND ENVELOPE CHANNEL
         function filterAndEnvelope(me)
+            if me.FileIdx == 0
+                return;
+            end
             channel = me.Application.file(me.FileIdx).channel(me.ChannelIdx);
             [me.ChannelTimeSeries,me.ChannelTimeVector] = channel.getTS([]);
             Fs = channel.Fs;
@@ -977,6 +987,8 @@
             end
             set(me.AxesSpectrogram,'YDir','normal');
             hold(me.AxesSpectrogram,'on');
+            
+            % start & end markers
             Y = [min(S.F),max(S.F)];
             startTime = me.Call.Start.Time;
             if startTime > 0
@@ -985,7 +997,16 @@
             endTime = me.Call.End.Time;
             if endTime > 0
                 line([endTime,endTime],Y,'LineWidth',2,'Color','white');
-            end            
+            end
+            
+            % ridge
+            R = me.Call.Ridge;
+            if ~isempty(R)
+                X = R(:,1);
+                Y = R(:,2);                
+                plot(me.AxesSpectrogram,X,Y,'LineWidth',2,'Color','white');
+            end
+            
             hold(me.AxesSpectrogram,'off');
             ylabel(me.AxesSpectrogram, {'Spectrogram','Frequency: Hz'});
             xlabel(me.AxesSpectrogram,'Time: seconds');                
@@ -1161,7 +1182,7 @@
                 agetParam('channelCallAnalysis_gapTolerance'),...
                 forcedBoundaries,...
                 true,...
-                false );
+                true );
             
             me.Call.AnalysisParameters.filter = [];
             [f.nameString,f.descString] = me.getFilterSpec();

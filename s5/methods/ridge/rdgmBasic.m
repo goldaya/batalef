@@ -1,7 +1,7 @@
-function [ ridge ] = rdgmBasic( spec,TS,params,extParams  )
+function [ ridge ] = rdgmBasic( spec,TS,params,extParams )
 %RDGMBASIC Basic ridge function
 
-    if params.useInternalSpectrogram
+    if strcmp(params.useInternalSpectrogram,'Yes')
         [~,F,T,P] = spectrogram(TS.dataset,params.internalSpecWindow,params.internalSpecOverlap,params.internalSpecNfft,TS.Fs);
         T = T + TS.offset;
     elseif isempty(spec)
@@ -18,20 +18,24 @@ function [ ridge ] = rdgmBasic( spec,TS,params,extParams  )
     nF = length(F);
     
     alphaSlice = find(T <= extParams.callStartTime,1,'last');
-    betaSlice  = find(T <= extParams.callendTime,1,'last');
+    betaSlice  = find(T <= extParams.callEndTime,1,'last');
     N = betaSlice - alphaSlice + 1;
     if N < 1
         ridge = zeros(0,3);
         return;
     else
         ridge = zeros(N,3);
+        T = T(alphaSlice:betaSlice);
+        P = P(:,alphaSlice:betaSlice);
+        % F is unchanged
     end
+    
     
     switch params.startPoint
         case 'Start'
-            startSlice = alphaSlice;
+            startSlice = 1;
         case 'Peak'
-            startSlice = find(T <= call.Peak.Time,1,'last');
+            startSlice = find(T <= extParams.callPeakTime,1,'last');
         otherwise
             errid  = 'batalef:ridge:wrongStartPoint';
             errstr = sprintf('The requested start point is invalid: %s. Use "Start" or "Peak"',params.startPoint);
@@ -44,7 +48,7 @@ function [ ridge ] = rdgmBasic( spec,TS,params,extParams  )
     ridge(startSlice,2) = F(pArgmax);
     
     fArgmax = pArgmax;
-    for a = -(startSlice-1):(-alphaSlice)
+    for a = -(startSlice-1):(-1)
         i = -a;
         I = round([-0.5, 0.5].*dF + fArgmax);
         if I(1) < 1
@@ -60,7 +64,7 @@ function [ ridge ] = rdgmBasic( spec,TS,params,extParams  )
             return;
         end
         
-        ridge(i,1) = T(i + startSlice - 1);
+        ridge(i,1) = T(i);
         [ridge(i,3), rfArgmax] = max(searchP);
         fArgmax = rfArgmax + I(1) - 1;
         ridge(i,2) = F(fArgmax);
@@ -68,7 +72,7 @@ function [ ridge ] = rdgmBasic( spec,TS,params,extParams  )
     end
 
     fArgmax = pArgmax;
-    for i = (startSlice+1):betaSlice
+    for i = (startSlice+1):N
         I = round([-0.5, 0.5].*dF + fArgmax);
         if I(1) < 1
             I(1) = 1;
@@ -83,7 +87,7 @@ function [ ridge ] = rdgmBasic( spec,TS,params,extParams  )
             return;
         end
         
-        ridge(i,1) = T(i + startSlice - 1);
+        ridge(i,1) = T(i);
         [ridge(i,3), rfArgmax] = max(searchP);
         fArgmax = rfArgmax + I(1) - 1;
         ridge(i,2) = F(fArgmax);

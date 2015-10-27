@@ -24,17 +24,17 @@ params(3).dtype = 'string';
 params(4).ptype = 'app';
 params(4).id    = 'internalSpecWindow';
 params(4).name  = 'STFT Window  (samples)';
-params(4).value = '300';
+params(4).value = 300;
 params(4).dtype = 'integer';
 
 params(5).ptype = 'app';
 params(5).id    = 'internalSpecOverlap';
 params(5).name  = 'STFT Overlap (samples)';
-params(5).value = '75';
+params(5).value = 75;
 params(5).dtype = 'integer';
 
 params(6).ptype = 'app';
 params(6).id    = 'internalSpecNfft';
 params(6).name  = 'STFT nfft (samples)';
-params(6).value = '512';
+params(6).value = 512;
 params(6).dtype = 'integer';

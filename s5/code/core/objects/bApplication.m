@@ -45,6 +45,7 @@ classdef bApplication < handle
             me.Methods.callAnalysisEnvelope = bMethodEnvelope('default','callAnalysisEnvelope',me,[],false);
             me.Methods.callAnalysisSpectrogram = bMethodSpectrogram('default','callAnalysisSpectrogram',me,[],false);
             me.Methods.callAnalysisSpectrum = bMethodSpectrum('default','callAnalysisSpectrum',me,[],false);
+            me.Methods.callAnalysisRidge = bMethodRidge('default','callAnalysisRidge',me,[],false);
                 
         end
         

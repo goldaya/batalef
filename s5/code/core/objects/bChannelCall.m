@@ -17,6 +17,7 @@ classdef bChannelCall < handle
         Duration
         TS
         Fs
+        Application
     end
     
     methods
@@ -112,7 +113,7 @@ classdef bChannelCall < handle
             me.Channel.CallsData.(type)(me.CallIdx,:) = D;
             me.Channel.CallsData.(strcat(type,'AP')){me.CallIdx} = me.AnalysisParameters;
             if strcmp(type,'features')
-                me.Channel.CallsData.Ridge{me.CallIdx} = me.Ridge;
+                me.Channel.CallsData.ridge{me.CallIdx} = me.Ridge;
             end
             
         end
@@ -145,6 +146,11 @@ classdef bChannelCall < handle
             else
                 val = [];
             end
+        end
+        
+        % APPLICATION
+        function val = get.Application(me)
+            val = me.Channel.Application;
         end
     end
     

@@ -96,7 +96,7 @@ function call = channelCallAnalyze( call, AnalysisWindow, dataset,envDataset, de
     
 %%% ridge %%%
     if computeRidge
-        call = channelCallComputeRidge(call, dataset, Fs);
+        call = channelCallComputeRidge(call);
     else
         call.Ridge = [];
     end

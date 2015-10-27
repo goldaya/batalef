@@ -3,11 +3,17 @@ function call = channelCallComputeRidge( call )
 
         try
 
-            call.Ridge = control.app.Methods.callAnalysisRidge.execute(call);
+            call.Ridge = call.Application.Methods.callAnalysisRidge.execute(call);
             
         catch err
-            err.message; % dummy line
-            call.Ridge = [];
+            % need dev: creat a new batalef excpetion and throw. this is a
+            % non-gui function in definition !
+            msgbox('Error in ridge computation, refer to console for error message');
+            disp('~~~~~~~~~~~');
+            disp('Ridge method error:');
+            disp(err.message);
+            disp('~~~~~~~~~~~');
+            call.Ridge = zeros(0,3);
         end
         
 end
