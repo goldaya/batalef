@@ -1,14 +1,9 @@
-function call = channelCallComputeRidge( call, dataset, offset )
+function call = channelCallComputeRidge( call )
 %CHANNELCALLCOMPUTERIDGE 
 
         try
-            
-            relStartTime  = call.Start.Time - offset;
-            relPeakTime  = call.Peak.Time - offset;
-            relEndTime  = call.End.Time - offset;
 
-            call.Ridge = control.app.Methods.callAnalysisRidge.execute(dataset, Fs, relStartTime, relPeakTime, relEndTime, extParams);
-            call.Ridge(:,1) = call.Ridge(:,1) + offset;
+            call.Ridge = control.app.Methods.callAnalysisRidge.execute(call);
             
         catch err
             err.message; % dummy line

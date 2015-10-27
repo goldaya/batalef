@@ -13,6 +13,9 @@
        ChannelFilteredTS  = [];
        ChannelEnvelopedTS = [];
        SpecImage = [];
+       SpectrumImage = [];
+       Keep = true;
+       
        
    end
    
@@ -67,6 +70,7 @@
             TextValueIPI
             TextValueBandwidth
             
+        Menus
         DisRelxModeMenuItem
         DisHardModeMenuItem
         ProcModeMenuItem
@@ -74,6 +78,8 @@
         MenuEnvelope
         MenuSpectrogram
         MenuSpectrum
+        MenuKeepOn
+        MenuKeepOff
         
         InteractiveUI
         StatsTexts
@@ -97,6 +103,7 @@
         % CONSTRUCTOR
         function me = bCallGui(guiTop,name)
             me = me@bGuiDefinition(guiTop,name);
+            me.Build = true;
             minWidth = max([me.TopPanelMinSize(1),me.ActivePanelMinSize(1),me.StaticPanelMinSize(1)]);
             minHeight = me.TopPanelMinSize(2) + me.ActivePanelMinSize(2) + me.StaticPanelMinSize(2);
             me.Figure = figure(...
@@ -128,6 +135,10 @@
             me.setDisplayedFiles(me.DisplayVector)
             set(me,'Visible','on');            
             me.setWorkMode('display-relaxed');
+            
+            % end build
+            me.Build = false;
+            me.showCall();
         end
         
         % DESTRUCTOR
@@ -146,24 +157,24 @@
             
             % dis/proc types
             modePanelsPosition = [pos(3)-20,0,20,pos(4)];
-            me.DmodePanel = uipanel(me.SelectionRibbon.Panel,'Units','character','Position',modePanelsPosition,'Visible','off');
-                me.DmodeGroup = uibuttongroup('Parent',me.DmodePanel,'Units','normalized','Position',[0,0,1,1],'SelectionChangedFcn',@(h,~)me.disTypeChange(get(get(h,'SelectedObject'),'UserData'),h));
+            me.DmodePanel = uipanel(me.SelectionRibbon.Panel,'Units','character','Position',modePanelsPosition,'Visible','off','BorderType','none');
+                me.DmodeGroup = uibuttongroup('Parent',me.DmodePanel,'Units','normalized','Position',[0,0,1,1],'SelectionChangedFcn',@(h,~)me.disTypeChange(get(get(h,'SelectedObject'),'UserData'),h),'BorderType','none');
                 s = uicontrol(me.DmodeGroup,'Style','radiobutton','Units','normalized','Position',[0,0.666,1,0.333],'String','Features','UserData',{'features'});
                 uicontrol(me.DmodeGroup,'Style','radiobutton','Units','normalized','Position',[0,0.333,1,0.333],'String','Localization','UserData',{'forLocalization'});
                 uicontrol(me.DmodeGroup,'Style','radiobutton','Units','normalized','Position',[0,0.001,1,0.333],'String','Beam','UserData',{'forBeam'});
                 set(me.DmodeGroup,'SelectedObject',s);
                 
-            me.PmodePanel = uipanel(me.SelectionRibbon.Panel,'Units','character','Position',modePanelsPosition,'Visible','off');
-                me.CheckboxFeatures        = uicontrol(me.PmodePanel,'Style','checkbox','Units','normalized','Position',[0,0.666,1,0.333],'String','Features');
+            me.PmodePanel = uipanel(me.SelectionRibbon.Panel,'Units','character','Position',modePanelsPosition,'Visible','off','BorderType','none');
+                me.CheckboxFeatures        = uicontrol(me.PmodePanel,'Style','checkbox','Units','normalized','Position',[0,0.666,1,0.333],'String','Features','Value',1);
                 me.CheckboxForLocalization = uicontrol(me.PmodePanel,'Style','checkbox','Units','normalized','Position',[0,0.333,1,0.333],'String','Localization');
                 me.CheckboxForBeam         = uicontrol(me.PmodePanel,'Style','checkbox','Units','normalized','Position',[0,0.001,1,0.333],'String','Beam');
                 
             % channel / call selectors
-            me.IndexPanel = uipanel(me.SelectionRibbon.Panel,'Units','character','Position',[pos(3)-20-20,0,20,pos(4)]);
+            me.IndexPanel = uipanel(me.SelectionRibbon.Panel,'Units','character','Position',[pos(3)-20-20,0,20,pos(4)],'BorderType','none');
                 uicontrol(me.IndexPanel,'Style','text','String','Channel:','HorizontalAlignment','right','Units','character','Position',[0,2.6,10,1]);
-                me.ComboChannel = uicontrol(me.IndexPanel,'Style','popupmenu','String','foo','Value',1,'Units','character','Position',[12,2.4,6,1.4],'Callback',@(h,~)me.changeChannel(get(h,'Value'),true));
+                me.ComboChannel = uicontrol(me.IndexPanel,'Style','popupmenu','String','foo','Value',1,'Units','character','Position',[11,2.4,7,1.4],'Callback',@(h,~)me.changeChannel(get(h,'Value'),true));
                 uicontrol(me.IndexPanel,'Style','text','String','Call:','HorizontalAlignment','right','Units','character','Position',[0,0.7,10,1]);
-                me.ComboCall = uicontrol(me.IndexPanel,'Style','popupmenu','String','foo','Value',1,'Units','character','Position',[12,0.5,6,1.4],'Callback',@(h,~)me.changeCall(get(h,'Value'),true));
+                me.ComboCall = uicontrol(me.IndexPanel,'Style','popupmenu','String','foo','Value',1,'Units','character','Position',[11,0.5,7,1.4],'Callback',@(h,~)me.changeCall(get(h,'Value'),true));
         end
         
         % BUILD ACTIVE SECTION
@@ -181,7 +192,7 @@
                 'Units','character',...
                 'Position',[0,me.StaticPanelMinSize(2),me.ActivePanelMinSize(1),PH]);
             
-            axesPos = [6,3,40,9]; % +2 for height du to top padding
+            axesPos = [12,3,34,9]; % +2 for height du to top padding
             me.ActiveAxesPanel = uipanel(me.ActivePanel,...
                 'BorderType','none',...
                 'Units','character',...
@@ -311,7 +322,7 @@
                 'Position',[0,0,150,PH],...
                 'BorderType','etchedin');                
         
-            axesPos = [6,3,40,9]; % +2 for height du to top padding
+            axesPos = [12,3,34,9]; % +2 for height du to top padding
             me.StaticAxesPanel = uipanel(me.StaticPanel,...
                 'BorderType','none',...
                 'Units','character',...
@@ -466,13 +477,14 @@
         
         % MENUS
         function buildMenus(me)
-            % settings
-            s = uimenu(me.Figure,'Label','Settings');
-            m = uimenu(s,'Label','Work Mode');
-            me.DisRelxModeMenuItem  = uimenu(m,'Label','Display - Plot always','Callback',@(~,~)me.setWorkMode('display-relaxed'));
-            me.DisHardModeMenuItem  = uimenu(m,'Label','Display - Saved data only','Callback',@(~,~)me.setWorkMode('display-hard'));
-            me.ProcModeMenuItem = uimenu(m,'Label','Process','Callback',@(~,~)me.setWorkMode('process'));
-            me.MenuFilter = uimenu(s,'Label','Filter');
+            % process
+            me.Menus.Process = uimenu(me.Figure,'Label','Process');
+            s = me.Menus.Process;
+            s2 = uimenu(me.Menus.Process,'Label','Analyze all calls in ...');
+            uimenu(s2,'Label','Current channel','Callback',@(~,~)me.do4All('channel'));
+            uimenu(s2,'Label','Selected Files','Callback',@(~,~)me.do4All('files'));
+            uimenu(me.Menus.Process,'Label','Manually determine call boundaries','Callback',@(~,~)me.manualBoundaries());
+            me.MenuFilter = uimenu(s,'Label','Filter','Separator','On');
             me.Application.Methods.callAnalysisFilter.createMenu(me.MenuFilter,me);
             me.MenuEnvelope = uimenu(s,'Label','Envelope');
             me.Application.Methods.callAnalysisEnvelope.createMenu(me.MenuEnvelope,me);
@@ -480,6 +492,17 @@
             me.Application.Methods.callAnalysisSpectrogram.createMenu(me.MenuSpectrogram,me);
             me.MenuSpectrum = uimenu(s,'Label','Spectrum');
             me.Application.Methods.callAnalysisSpectrum.createMenu(me.MenuSpectrum,me);
+            
+            % settings
+            s = uimenu(me.Figure,'Label','Settings');
+            m = uimenu(s,'Label','Work Mode');
+            me.DisRelxModeMenuItem  = uimenu(m,'Label','Display - Plot always','Callback',@(~,~)me.setWorkMode('display-relaxed'));
+            me.DisHardModeMenuItem  = uimenu(m,'Label','Display - Saved data only','Callback',@(~,~)me.setWorkMode('display-hard'));
+            me.ProcModeMenuItem = uimenu(m,'Label','Process','Callback',@(~,~)me.setWorkMode('process'));
+            s2 = uimenu(s,'Label','Keep Full Analysis Parameters');
+            me.MenuKeepOn  = uimenu(s2,'Label','On','Callback',@(~,~)me.setKeepFullParameters(true),'Checked','on');
+            me.MenuKeepOff = uimenu(s2,'Label','Off','Callback',@(~,~)me.setKeepFullParameters(false));
+
         end
         
         % CONTEXT MENU
@@ -528,6 +551,7 @@
                     cellfun(@(h)set(h,'Enable','off'),me.InteractiveUI);
                     me.filterAndEnvelope();
                     set(me.MessageDisplayRelaxed,'Visible','on');
+                    set(me.Menus.Process,'Enable','off');
                 case 'display-hard'
                     set(me.DisRelxModeMenuItem, 'Checked','off');
                     set(me.DisHardModeMenuItem, 'Checked','on');
@@ -536,6 +560,7 @@
                     set(me.PmodePanel,'Visible','off');                 
                     cellfun(@(h)set(h,'Enable','off'),me.InteractiveUI);
                     set(me.MessageDisplayRelaxed,'Visible','off');
+                    set(me.Menus.Process,'Enable','off');
                 case 'process'
                     set(me.DisRelxModeMenuItem, 'Checked','off');
                     set(me.DisHardModeMenuItem, 'Checked','off');
@@ -545,12 +570,18 @@
                     cellfun(@(h)set(h,'Enable','on'),me.InteractiveUI);
                     me.filterAndEnvelope();
                     set(me.MessageDisplayRelaxed,'Visible','off');
+                    set(me.Menus.Process,'Enable','on');
             end 
-            % filter & envelope
+            if ~me.Build
+                me.showCall();
+            end
         end
         
         % CHANGE DISPLAY TYPE
         function disTypeChange(me,type,group)
+            if ~me.Build
+                me.showCall();
+            end
         end
         
         % ANALYZE BUTTON
@@ -564,20 +595,48 @@
             if isempty(T)
                 msgbox('No call types chosen');
             else
+                if ~me.Keep
+                    me.Call.AnalysisParameters.spectrum = [];
+                    me.Call.AnalysisParameters.spectrogram = [];
+                    me.Call.AnalysisParameters.envelope = [];
+                    me.Call.AnalysisParameters.TS = [];
+                end
                 cellfun(@(t)me.Call.saveCall(t),T);
             end
         end
         
         % NEXT BUTTON
         function nextCall(me)
+            me.changeCall(me.CallIdx+1,true);
         end
         
         % DELETE BUTTON
         function deleteCall(me,inAllChannels)
             if strcmp(inAllChannels,'ask')
+                answer = questdlg('Do you want to remove calls in all channels?','Remove Call','Yes','No','Yes');
+                if strcmp(answer,'Yes')
+                    me.deleteCall(true);
+                else
+                    me.deleteCall(false);
+                end
+                return;
             elseif inAllChannels % true
+                window = ggetParam('callAnalysisGui_deleteCallWindow');
+                A = inputdlg('Window (msec)','Calls removal',[1 70],{num2str(window*1000)});
+                if isempty(A)
+                    return;
+                else
+                    window = str2double(A{1})/1000;
+                    gsetParam('callAnalysisGui_deleteCallWindow',window);
+                end
+                timeInterval = me.Call.Detection.Time + window.*[-0.5,+0.5];
+                file = me.Application.file(me.FileIdx);
+                arrayfun(@(j) file.channel(j).removeCallsByTimeInterval(timeInterval),1:file.ChannelsCount);
             else % false
+                me.Application.file(me.FileIdx).channel(me.ChannelIdx).removeCallsByIndex(me.CallIdx);
             end
+            me.changeCall(me.CallIdx,true);
+            me.Top.Guis.Main.Graphs.replotChannelCalls();
         end
         
         % CALL TYPE - DISPLAY & PROCESS
@@ -657,6 +716,18 @@
                 val = R{v-1};
             end
         end        
+        
+        % CHANGE KEEP
+        function setKeepFullParameters(me,keep)
+            me.Keep = keep;
+            if keep
+                set(me.MenuKeepOn,'Checked','on');
+                set(me.MenuKeepOff,'Checked','off');
+            else
+                set(me.MenuKeepOn,'Checked','off');
+                set(me.MenuKeepOff,'Checked','on');
+            end
+        end
         
         %%%%%%%%%%%
         % DATASET %
@@ -764,26 +835,34 @@
         %%%%%%%%%%%
         
         % SHOW CALL
-        function showCall(me)
+        function showCall(me,forcedBoundaries)
             if me.FileIdx == 0
                 return;
             end
                 
-            me.Call = me.Application.file(me.FileIdx).channel(me.ChannelIdx).call(me.CallIdx);
+            if ~exist('forcedBoundaries','var')
+                forcedBoundaries = [];
+            end
+            
+            try
+                me.Call = me.Application.file(me.FileIdx).channel(me.ChannelIdx).call(me.CallIdx);
+            catch err
+                disp(err.message);
+                return;
+            end
             switch me.WorkMode
                 case {'display-relaxed','display-hard'}
                     me.Call.loadCall(me.DisplayType);
                 case 'process'
-                    me.analyzeCall();
+                    me.analyzeCall(forcedBoundaries);
             end
             
-            % plot envelope, spectrogram + refresh filter
-            me.partialRefresh();
 
-            % put analysis values
+            me.partialRefresh();
+            me.refreshAnalysisParameters();
             me.showStats();
-            % plot TS
-            % plot spectrum
+            me.plotTS();
+            me.plotSpectrum();
             
         end    
         
@@ -865,6 +944,8 @@
             end
             hold(me.AxesEnvelope,'off');
             axis(me.AxesEnvelope,'tight');
+            ylabel(me.AxesEnvelope, {'Envelope','Amplitude'});
+            xlabel(me.AxesEnvelope,'Time: seconds');                            
             
         end
         
@@ -906,7 +987,8 @@
                 line([endTime,endTime],Y,'LineWidth',2,'Color','white');
             end            
             hold(me.AxesSpectrogram,'off');
-                
+            ylabel(me.AxesSpectrogram, {'Spectrogram','Frequency: Hz'});
+            xlabel(me.AxesSpectrogram,'Time: seconds');                
         end
         
         % PUT STATS
@@ -974,10 +1056,81 @@
             end
         end
         
-        %%%%%
+        % ANALYSIS PARAMETERS
+        function refreshAnalysisParameters(me)
+            if strcmp(me.WorkMode,'process')
+                
+                set(me.TextAnalysisWindow,'String',num2str(agetParam('channelCallAnalysis_window')*1000));
+                set(me.TextD2P,'String',num2str(agetParam('channelCallAnalysis_d2pWindow')*1000));
+                set(me.TextStartThreshold,'String',num2str(agetParam('channelCallAnalysis_startThreshold')));
+                set(me.TextEndThreshold,'String',num2str(agetParam('channelCallAnalysis_endThreshold')));
+                set(me.TextGapTolerance,'String',num2str(agetParam('channelCallAnalysis_gapTolerance')*1000));                
+                
+            elseif isfield(me.Call.AnalysisParameters,'startThreshold')
+                set(me.TextAnalysisWindow,'String',num2str(me.Call.AnalysisParameters.window*1000));
+                set(me.TextD2P,'String',num2str(me.Call.AnalysisParameters.d2pWindow*1000));
+                set(me.TextStartThreshold,'String',num2str(me.Call.AnalysisParameters.startThreshold));
+                set(me.TextEndThreshold,'String',num2str(me.Call.AnalysisParameters.endThreshold));
+                set(me.TextGapTolerance,'String',num2str(me.Call.AnalysisParameters.gapTolerance*1000));
+            else
+                set(me.TextAnalysisWindow,'String','N/A');
+                set(me.TextD2P,'String','N/A');
+                set(me.TextStartThreshold,'String','N/A');
+                set(me.TextEndThreshold,'String','N/A');
+                set(me.TextGapTolerance,'String','N/A');
+            end
+        end
+        
+        % PLOT TS
+        function plotTS(me)
+            if ~strcmp(me.WorkMode,'process') && isfield(me.Call.AnalysisParameters,'TS') && ~isempty(me.Call.AnalysisParameters.TS)
+                % get the spectrum data
+                TS = me.Call.AnalysisParameters.TS;
+                T = linspace(me.Call.Start.Time,me.Call.End.Time,length(TS));
+            elseif ~strcmp(me.WorkMode,'display-hard')
+                % get the spectrogram
+                Fs = me.Application.file(me.FileIdx).Fs;
+                I = [me.Call.Start.Time , me.Call.End.Time];
+                TS = getInterval(me.ChannelFilteredTS,Fs,I);
+                T = linspace(I(1),I(2),length(TS));
+            else
+                cla(me.AxesTS);
+                return;
+            end
+            
+            plot(me.AxesTS,T,TS);
+            ylabel(me.AxesTS, {'Time Signal','Amplitude'});
+            xlabel(me.AxesTS, 'Time: sec');  
+            axis(me.AxesTS,'tight');            
+        end
+        
+        % PLOT SPECTRUM
+        function plotSpectrum(me)
+            if ~strcmp(me.WorkMode,'process') && isfield(me.Call.AnalysisParameters,'spectrum') && ~isempty(me.Call.AnalysisParameters.spectrum)
+                % get the spectrum data
+                S = me.Call.AnalysisParameters.spectrum;
+            elseif ~strcmp(me.WorkMode,'display-hard')
+                % get the spectrogram
+                Fs = me.Application.file(me.FileIdx).Fs;
+                window = agetParam('channelCallAnalysis_window');
+                I = me.Call.Detection.Time + [-0.5,+0.5].*window;
+                S = me.Application.Methods.callAnalysisSpectrum.execute(getInterval(me.ChannelFilteredTS,Fs,I),Fs);
+            else
+                cla(me.AxesSpectrum);
+                return;
+            end
+            me.SpectrumImage = plot(me.AxesSpectrum,S.F,S.P);
+            ylabel(me.AxesSpectrum, {'Spectrum','Gain: dB'});
+            xlabel(me.AxesSpectrum, 'Frequency: Hz');  
+            axis(me.AxesSpectrum,'tight');
+        end
+        
+        %%%%%%%%%%%%
+        % ANALYSIS %
+        %%%%%%%%%%%%
         
         % ANALYZE CALL
-        function analyzeCall(me)
+        function analyzeCall(me,forcedBoundaries)
             
             %{
             call = channelCallAnalyze( call,...
@@ -997,7 +1150,7 @@
             I = me.Call.Detection.Time + window.*[-0.5,+0.5];
             dataset = getInterval(me.ChannelFilteredTS, me.Call.Fs,I);
             envDataset = getInterval(me.ChannelEnvelopedTS, me.Call.Fs,I);
-            
+                        
             me.Call = channelCallAnalyze( me.Call,...
                 window,...
                 dataset,...
@@ -1006,7 +1159,7 @@
                 agetParam('channelCallAnalysis_startThreshold'),...
                 agetParam('channelCallAnalysis_endThreshold'),...
                 agetParam('channelCallAnalysis_gapTolerance'),...
-                [],...
+                forcedBoundaries,...
                 true,...
                 false );
             
@@ -1016,6 +1169,68 @@
             
         end
         
+        % DO FOR ALL
+        function do4All(me,type)
+
+            types = me.getProcCallTypes();
+            if isempty(types)
+                msgbox('No call types chosen');
+                return;
+            end
+            
+            params.analysisWindow = agetParam('channelCallAnalysis_window');
+            params.d2pWindow = agetParam('channelCallAnalysis_d2pWindow');
+            params.startThreshold = agetParam('channelCallAnalysis_startThreshold');
+            params.endThreshold = agetParam('channelCallAnalysis_endThreshold');
+            params.gapTolerance = agetParam('channelCallAnalysis_gapTolerance');
+            params.computeSpectral = true;
+            params.computeRidge = false;
+            [f.nameString,f.descString] = me.getFilterSpec();
+            params.filterSpecification = f;
+            params.keep = me.Keep;
+            
+            switch type
+                case 'channel'
+                    channelCallsAnalyzeChannel(me.Application.file(me.FileIdx),...
+                        me.ChannelIdx,...
+                        types,...
+                        params );                           
+                case 'files'
+                    channelCallsAnalyze( me.Application,...
+                        me.ProcessVector,...
+                        [],...
+                        types,...
+                        params );                   
+            end
+            
+            me.showCall();
+            msgbox('Analysis finished');
+            
+        end
+        
+       
+        % MANUAL BOUNDARIES
+        function manualBoundaries(me)
+
+            % rubberand selection
+            r = getrect(me.AxesSpectrogram);
+            me.showCall([r(1),r(1)+r(3)]);
+
+            % approximate start threshold
+            s = me.Call.Start.Value / me.Call.Peak.Value;
+            dB = 20*log10(s);
+            set(me.TextStartThreshold,'String',num2str(dB));
+            asetParam('channelCallAnalysis_startThreshold',dB);
+
+            % approximate end threshold
+            e = me.Call.Start.Value / me.Call.Peak.Value;
+            dB = 20*log10(e);
+            set(me.TextEndThreshold,'String',num2str(dB));
+            asetParam('channelCallAnalysis_endThreshold',dB);
+
+            % the gap is undetermined. consider future dev.
+        end
+                
     end
     
 end

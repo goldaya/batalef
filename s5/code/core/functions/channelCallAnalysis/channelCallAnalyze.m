@@ -16,6 +16,7 @@ function call = channelCallAnalyze( call, AnalysisWindow, dataset,envDataset, de
     
         
     window = call.Detection.Time+[-0.5,0.5].*AnalysisWindow;
+    call.AnalysisParameters.offset = window(1);
     if isempty(forcedBoundries)
     %%% find peak %%%
         D2P = round((call.Detection.Time - window(1)+[-1,1].*(detectionPeakWindow/2)).*Fs);

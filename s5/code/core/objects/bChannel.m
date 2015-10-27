@@ -11,6 +11,7 @@ classdef bChannel < handle
     end
 
     properties (Dependent = true)
+        Application
         CallsCount
         CallsMatrix
         CallsRidges
@@ -111,6 +112,8 @@ classdef bChannel < handle
         function removeCallsByTimeInterval(me,timeInterval)
             D = me.CallsData;
             I = logical(( D.detection(:,1) > timeInterval(1) ) .* ( D.detection(:,1) < timeInterval(2) ));
+            me.removeCallsByIndex(I);
+            %{
             D.detection(I,:)       = [];
             D.features(I,:)        = [];
             D.ridge(I,:)           = [];
@@ -120,6 +123,7 @@ classdef bChannel < handle
             D.forLocalizationAP(I,:)  = [];
             D.forBeamAP(I,:)          = [];
             me.CallsData = D;
+            %}
         end
         function removeCallsByIndex(me, I)
             D = me.CallsData;
@@ -262,6 +266,11 @@ classdef bChannel < handle
         % FS
         function val = get.Fs(me)
             val = me.File.Fs;
+        end
+        
+        % APPLICATION
+        function val = get.Application(me)
+            val = me.File.Application;
         end
         
     end

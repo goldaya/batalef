@@ -103,7 +103,7 @@ classdef bMainGuiContextMenu
             D = [pos(1),pos(2)];
             k = me.Gui.LastGraphObject.FileIdx;
             j = me.Gui.LastGraphObject.ChannelIdx;
-            me.Application.file(k).channel(j).addCalls(D,[],[],[],[]);
+            me.Application.file(k).channel(j).addCallDetections(D);
             me.Gui.Graphs.replotChannelCalls();
 
         end

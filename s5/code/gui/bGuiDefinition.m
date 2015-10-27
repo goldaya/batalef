@@ -6,6 +6,7 @@ classdef bGuiDefinition < handle
         Top
         SelectionRibbon
         Name
+        Build = false;
     end
     
     properties (Dependent = true)
