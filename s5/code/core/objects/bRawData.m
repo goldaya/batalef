@@ -1,7 +1,7 @@
 classdef bRawData < handle
     %BRAWDATA Batalef - Raw Data Object
     
-    properties (GetAccess = public)
+    properties
         Position % internal / external
         Matrix
         Fs
@@ -76,7 +76,7 @@ classdef bRawData < handle
                         end
                     end
                 case 'empty'
-                    % create empty object. useful ??
+                    % create empty object. used in imported objects
                 otherwise
                     err = MException('batalef:rawData:create:wrongPosition',...
                         sprintf('The data position specified ("%s") is invalid',position));
@@ -297,7 +297,41 @@ classdef bRawData < handle
         function val = get.Length(me)
             val = me.NSamples / me.Fs;
         end
+        
+        % TRANSLATE TO EXPORTABLE STRUCTURE
+        function X = toStruct(me,withRaw)
+            X = struct;
+            X.Position   = me.Position;
+            X.Matrix     = me.Matrix;
+            X.Fs         = me.Fs;
+            X.AudioPath  = me.AudioPath;
+            X.Operations = me.Operations;
+            X.NSamples   = me.NSamples;
+            X.NChannels  = me.NChannels;
+            X.Ylim       = me.Ylim;
+            X.RefDir     = me.Application.WorkingDirectory;
+            
+            if withRaw && ~strcmp(me.Position,'internal')
+                O = bRawData.buildObject(X,me.Parent);
+                O.loadExplicit();
+                X = O.toStruct(false);
+            end
+        end
 
+    end
+    
+    methods (Static)
+        % create object from structure
+        function O = buildObject(X,parent)
+            O = bRawData('empty',[],[],X.Operations,[],parent);
+            O.Matrix    = X.Matrix;
+            O.Fs        = X.Fs;
+            O.AudioPath = X.AudioPath;
+            O.NSamples  = X.NSamples;
+            O.NChannels = X.NChannels;
+            O.Ylim      = X.Ylim;
+            O.Position  = X.Position;
+        end
     end
     
 end

@@ -6,11 +6,19 @@ classdef bMics < handle
         Positions
         GainVector
         Directionality
+        UseInMatching
+        UseInLocalization
+        UseInBeam
     end
     
     methods
         function me = bMics(nMics)
             me.N = nMics;
+            me.Positions         = zeros(nMics,3);
+            me.GainVector        = zeros(nMics,1);
+            me.UseInMatching     = true(nMics,1);
+            me.UseInLocalization = true(nMics,1);
+            me.UseInBeam         = true(nMics,1);
         end
         
         % ENFORCE NUMBER OF MICS FOR ROWS DIMENSION
@@ -106,4 +114,3 @@ classdef bMics < handle
     end
     
 end
-

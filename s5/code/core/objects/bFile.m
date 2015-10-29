@@ -1,12 +1,9 @@
 classdef bFile < handle
     %BFILE Batalef - File Object
     
-    properties (Access = ?bChannel)
+    properties
         ChannelCalls % a cell array containing the channels calls
         ChannelPoI   % a cell array containing the channels Points of Interest
-    end
-
-    properties (SetAccess = private, GetAccess = public)
         Title
         RawData
         Parameters
@@ -21,9 +18,12 @@ classdef bFile < handle
         Length
     end
     
-    methods
-        % CONSTRUCTOR
-        function me = bFile(applicationObject,title,audioFile,parametersFile)
+    % STATIC METHODS
+    methods (Static)
+        
+        % CRETAE NEW OBJECT
+        function me = new(applicationObject,title,audioFile,parametersFile)
+            me = bFile();
             me.Application = applicationObject;
             me.Title = title;
             
@@ -44,10 +44,64 @@ classdef bFile < handle
             me.ChannelPoI   = cell(1,n);
             me.initChannelCallsData();
             me.initPoiData();
-%             arrayfun(@(j) me.initChannelCallsData(j),1:n);
-%             arrayfun(@(j) me.initChannelPoiData(j),1:n);
+            
+            % microphones data
+            me.MicData = bMics(n);
         end
+        
+        % BUILD OBJECT FROM STRUCTURE (IMPORT)
+        function O = buildObject(X,applicationObject,rawDataObject,parametersObject,micsObject)
+            O = bFile();
+            O.Application = applicationObject;
+            O.ChannelCalls = X.ChannelCalls;
+            O.ChannelPoI   = X.ChannelPoI;
+            O.Title        = X.Title;
+            O.Calls        = X.Calls;
+            if isempty(rawDataObject)
+                O.RawData = bRawData.buildObject(X.RawData,O);
+            else
+                O.RawData = rawDataObject;
+                O.RawData.Parent = O;
+            end
+            if isempty(parametersObject)
+                O.Parameters = bParameters.buildObject(X.Parameters,applicationObject);
+            else
+                O.Parameters = parametersObject;
+            end            
+            if isempty(micsObject)
+                O.MicData = bmics.buildObject(X.MicData,O);
+            else
+                O.MicData = micsObject;
+                O.MicData.Parent = O;
+            end
 
+        end
+        
+    end    
+    
+    % INSTANCE METHODS
+    methods
+        
+        % TRANSLATE TO EXPORTABLE STRUCTURE
+        function X = toStruct(me,withRaw,discardAP)
+            X = struct;
+            X.ChannelCalls = me.ChannelCalls;
+            X.ChannelPoI   = me.ChannelPoI;
+            X.Title        = me.Title;
+            X.RawData      = me.RawData.toStruct(withRaw);
+            X.Parameters   = me.Parameters.toStruct();
+            X.MicData      = me.MicData.toStruct();
+            X.Calls        = me.Calls;
+            X.RefDir       = me.Application.WorkingDirectory;
+            
+            if discardAP
+                for j = 1:me.ChannelsCount
+                    X.ChannelCalls{j}.featuresAP        = cell(0,1);
+                    X.ChannelCalls{j}.forLocalizationAP = cell(0,1);
+                    X.ChannelCalls{j}.forBeamAP         = cell(0,1);
+                end                
+            end
+        end
 
         %%%%%%%%%%%%%%%%
         % CHANNEL DATA %
@@ -61,14 +115,14 @@ classdef bFile < handle
         % INIT CALLS DATA
         function initChannelCallsData(me)
             for j = 1:me.ChannelsCount
-                me.ChannelCalls{j}.detection       = [];
-                me.ChannelCalls{j}.features        = [];
-                me.ChannelCalls{j}.ridge           = cell(0,1);
-                me.ChannelCalls{j}.forLocalization = [];
-                me.ChannelCalls{j}.forBeam         = [];
-                me.ChannelCalls{j}.featuresAP      = cell(0,1);
-                me.ChannelCalls{j}.forLocalizationAP  = cell(0,1);
-                me.ChannelCalls{j}.forBeamAP          = cell(0,1);
+                me.ChannelCalls{j}.detection         = [];
+                me.ChannelCalls{j}.features          = [];
+                me.ChannelCalls{j}.ridge             = cell(0,1);
+                me.ChannelCalls{j}.forLocalization   = [];
+                me.ChannelCalls{j}.forBeam           = [];
+                me.ChannelCalls{j}.featuresAP        = cell(0,1);
+                me.ChannelCalls{j}.forLocalizationAP = cell(0,1);
+                me.ChannelCalls{j}.forBeamAP         = cell(0,1);
             end
         end
         
@@ -113,6 +167,18 @@ classdef bFile < handle
         %%%%%%%%%%%%
         % GET DATA %
         %%%%%%%%%%%%
+        
+        % GET CHANNEL CALLS TABLE
+        function T = getChannelCallsTable(me,withPoI,callType)
+            nJ = me.ChannelsCount;
+            C = arrayfun(@(j)me.channel(j).getChannelCallsTable(withPoI,callType),1:nJ,'UniformOutput',false);
+            T1 = cell(nJ,1);
+            for j = 1:nJ
+                ChannelIdx = ones(size(C{j},1),1)*j;
+                T1{j} = [table(ChannelIdx),C{j}];
+            end
+            T = vertcat(T1{:});
+        end
         
         % GET DATA
         function varargout = getData(me, varargin)

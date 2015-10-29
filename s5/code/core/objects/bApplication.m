@@ -1,19 +1,13 @@
 classdef bApplication < handle
 
-    properties (Access = public)
-       Files = cell(0);
-       FilesSingleParamsFileInner = false;
-    end
-    
-    properties (GetAccess = public, SetAccess = private)
+    properties
+        Files = cell(0,1);
+        FilesSingleParamsFileInner = false;
         CommonParams
         BatalefDirectory
         WorkingDirectory
         Methods
         Parameters
-    end
-    
-    properties (Access = public)
         GpuProcAllowed = false
         ParProcAllowed = false
     end
@@ -131,9 +125,9 @@ classdef bApplication < handle
             elseif isempty(parametersFile)
                 parametersFile = me.Files{1}.Parameters;
             end
-            fileobj = bFile(me,title,audioFile,parametersFile);
+            fileobj = bFile.new(me,title,audioFile,parametersFile);
             n = length(me.Files);
-            me.Files{n+1} = fileobj;
+            me.Files{n+1,1} = fileobj;
             FileIdx = n+1;
         end
         
@@ -176,6 +170,27 @@ classdef bApplication < handle
         % FILES COUNT
         function val = get.FilesCount(me)
             val = length(me.Files);
+        end
+        
+        % TRANSLATE FILES TO EXPORTABLE STRUCTURE
+        function X = filesToStruct(me,files,withRaw,discardAP)
+            C = arrayfun(@(f)me.file(f).toStruct(withRaw,discardAP),files,'UniformOutput',false);
+            X = vertcat(C{:});
+        end
+        
+        % ADD FILE OBJECTS FROM IMPORT STRUCTURE
+        function addFilesFromStructre(me,X)
+            if me.FilesSingleParamsFile
+                if me.FilesCount > 1
+                    paramsObject = me.Files{1}.Parameters;
+                else
+                    paramsObject = buildObject(X(1).Parameters,me);
+                end
+            else
+                paramsObject = [];
+            end
+            C = arrayfun(@(x)bFile.buildObject(x,me,[],paramsObject,[]),X,'UniformOutput',false);
+            me.Files = [me.Files;C];
         end
         
 

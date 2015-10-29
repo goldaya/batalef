@@ -145,13 +145,103 @@ classdef bChannel < handle
             if ~isempty(timeInterval)
                 U = logical(( D.detection(:,1) > timeInterval(1) ) .* ( D.detection(:,1) < timeInterval(2) ));
             else
-                U = logical(ones(1,me.CallsCount));
+                U = true(1,me.CallsCount);
             end
             switch varargin{1}
                 case 'Index'
                     I = 1:me.CallsCount;
                     varargout{1} = I(U);
             end
+        end
+        
+        % GET CALLS TABLE
+        function T = getChannelCallsTable(me,withPoI,type)
+            D = me.CallsData;
+            nD = size(D.detection,1);
+            starts = D.(type)(:,1);
+            ipi = [NaN;starts(2:nD) - starts(1:nD-1)];
+            duration = D.(type)(:,9) - D.(type)(:,1);
+            CD = [num2cell(false(nD,1)),... % isPoi indicator
+                cell(nD,1),... % PoI descriptions column
+                num2cell(1:nD)',... % call index
+                num2cell(D.detection(:,1)),...
+                num2cell(D.(type)),...
+                num2cell(ipi),...
+                num2cell(duration),...
+                cell(nD,1)]; % ridges
+            if strcmp(type,'features')
+                CD(:,19) = me.CallsData.ridge;
+            end 
+            % consider outputing the analysis parameters
+            
+            if withPoI
+                P = me.PoiData;
+                nP = size(P,1);
+                CP = cell(nP,size(CD,2));
+                CP(:,1) = num2cell(true(nP,1));
+                CP(:,2) = P(:,2);                    
+                CP(:,3) = num2cell(NaN(nP,1));
+                CP(:,4) = P(:,1); 
+                CP(:,5:19) = num2cell(NaN(nP,15));
+                
+                CT = [CP;CD];
+                t = [cell2mat(CT(:,4)),(1:size(CT,1))'];
+                t = sortrows(t);
+                C = CT(t(:,2),:);
+            else
+                C = CD;
+            end
+            
+            IsPoi = cell2mat(C(:,1));
+            PoiDesc = C(:,2);
+            CallIdx = cell2mat(C(:,3));
+            CallDetectionTime = cell2mat(C(:,4));
+            S = cell2mat(C(:,5:8));
+            CallStartTime     = S(:,1);
+            CallStartEnvValue = S(:,2);
+            CallStartFundFreq = S(:,3);
+            CallStartPower    = S(:,4);
+            P = cell2mat(C(:,9:12));
+            CallPeakTime     = P(:,1);
+            CallPeakEnvValue = P(:,2);
+            CallPeakFundFreq = P(:,3);
+            CallPeakPower    = P(:,4);            
+            E = cell2mat(C(:,13:16));
+            CallEndTime     = E(:,1);
+            CallEndEnvValue = E(:,2);
+            CallEndFundFreq = E(:,3);
+            CallEndPower    = E(:,4);
+            IPI = cell2mat(C(:,17));
+            Duration = cell2mat(C(:,18));
+            Ridge = C(:,19);
+
+            T = table(CallIdx,...
+                CallDetectionTime,...
+                CallStartTime,...
+                CallStartEnvValue,...
+                CallStartFundFreq,...
+                CallStartPower,...
+                CallPeakTime,...
+                CallPeakEnvValue,...
+                CallPeakFundFreq,...
+                CallPeakPower,...
+                CallEndTime,...
+                CallEndEnvValue,...
+                CallEndFundFreq,...
+                CallEndPower,...
+                IPI,...
+                Duration);
+            
+            if withPoI
+                T2 = table(IsPoi,PoiDesc);
+                T = horzcat(T2,T);
+            end
+            
+            if strcmp(type,'features')
+                T2 = table(Ridge);
+                T = horzcat(T,T2);
+            end
+            
         end
         
         % BUILD CALLS MATRIX

@@ -89,7 +89,9 @@ classdef bMainGui < bGuiDefinition
         function buildMenus(me)
             % batalef
             me.Menus.Batalef = uimenu(me.Figure,'Label','Batalef');
-            me.Menus.batalef.Exit = uimenu(me.Menus.Batalef,'Label','Exit','Callback',@(~,~)batalefGuiKill(me.Top));
+            me.Menus.batalef.Export = uimenu(me.Menus.Batalef,'Label','Export Data','Callback',@(~,~)me.exportData());
+            me.Menus.batalef.Import = uimenu(me.Menus.Batalef,'Label','Import Data','Callback',@(~,~)me.importData());
+            me.Menus.batalef.Exit = uimenu(me.Menus.Batalef,'Label','Exit','Callback',@(~,~)batalefGuiKill(me.Top),'Separator','on');
             
             % files
             me.Menus.Files = uimenu(me.Figure,'Label','Files');
@@ -148,6 +150,9 @@ classdef bMainGui < bGuiDefinition
             
             me.Menus.channelCalls.CallGui = ...
                 uimenu(me.Menus.ChannelCalls,'Label','Call Analysis GUI','Callback',@(~,~)me.callCallGui([]));
+            
+            me.Menus.channelCalls.GetTable = ...
+                uimenu(me.Menus.ChannelCalls,'Label','Get calls table','Callback',@(~,~)me.getChannelCallsTable());
             
             
             % settings
@@ -240,7 +245,6 @@ classdef bMainGui < bGuiDefinition
         
         % RESIZE
         function resize(me)
-            me.Visible = 'on';
             
             tabHeight    = 8;
             ribbonHeight = 4.3;
@@ -480,6 +484,38 @@ classdef bMainGui < bGuiDefinition
             overwriteFiles(V);
         end
         
+        % EXPORT DATA
+        function exportData(me)
+            Q = {'Discard channel call analysis datasets','Include audio explicitly'};
+            D = true(2,1);
+            T = 'Export Data';
+            A = cbdlg(Q,T,D);
+            if isempty(A)
+                return;
+            end
+                
+            [fname,fpath] = uiputfile('*.mat');
+            if isnumeric(fname)
+                return;
+            else
+                X = me.Application.filesToStruct(me.ProcessVector,A(2),A(1));
+                save(strcat(fpath,fname),'X','-v7.3');
+                msgbox('Exported');
+            end
+        end
+        
+        % IMPORT DATA
+        function importData(me)
+            [fname,fpath] = uigetfile('*.mat','MultiSelect','on');
+            if ~fname
+                return;
+            else
+                hello = load(strcat(fpath,fname));
+                me.Application.addFilesFromStructre(hello.X)
+            end
+            me.refreshFilesTable();
+        end
+        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% RAW DATA MANIPULATION %%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -645,6 +681,30 @@ classdef bMainGui < bGuiDefinition
             g = me.Top.callGui('CallAnalysis');
             if ~isempty(V)
                 g.gotoCall(V);
+            end
+        end
+
+        % GET TABLE
+        function getChannelCallsTable(me)
+            Q = {'With points of interest? [Yes/No]','Variable to assign'};
+            D = {'Yes','callsTable'};
+            A = inputdlg(Q,'Output Channel Calls Table',[1,70],D);
+            if isempty(A)
+                withPoi = true;
+            else
+                if strcmp(A{1},'Yes')
+                    withPoi = true;
+                else
+                    withPoi = false;
+                end
+            end
+
+            T = getChannelCallsTable(me.Application,me.ProcessVector,withPoi,'features');
+            disp(T)
+            fprintf('\n  All times are in seconds.\n  All frequencies are in Hz.\n  All power values are in dB.\n  Ridge matrix is [time,freq,power].\n\n');            
+            
+            if ~isempty(A)
+                assignin('base',A{2},T);
             end
         end
 

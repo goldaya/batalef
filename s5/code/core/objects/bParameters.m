@@ -1,7 +1,7 @@
 classdef bParameters < handle
     %BPARAMETERS Parameters object
     
-    properties (SetAccess = ?bParameters, GetAccess = public)
+    properties
         File
         Type
         Application
@@ -30,6 +30,13 @@ classdef bParameters < handle
             doli.Params = me.Params;
         end
         
+        % TRANSLATE TO EXPORTABLE STRUCTURE
+        function X = toStruct(me)
+            X.File   = me.File;
+            X.Type   = me.Type;
+            X.Params = me.Params;
+            X.RefDir = me.Application.WorkingDirectory;
+        end        
         
         % LOAD FROM FILE
         function loadFromFile(me,filePath)
@@ -216,7 +223,14 @@ classdef bParameters < handle
                     throwAsCaller(MException(errid,errstr));
             end
         end
+        
+        % CREATE OBJECT FROM STRUCTURE (IMPORT)
+        function O = buildObject(X,appObject)
+            O = bParameters(appObject,X.Type);
+            O.File = X.File;
+            O.Params = X.Params;
+        end
+        
     end
-
     
 end

@@ -81,6 +81,7 @@
         MenuRidge
         MenuKeepOn
         MenuKeepOff
+        MenuOutput
         
         InteractiveUI
         StatsTexts
@@ -92,6 +93,8 @@
         TopPanelMinSize    = [150,4.3];
         ActivePanelMinSize = [150,28];
         StaticPanelMinSize = [150,28];
+        FigureMinSize      = [150,4.3+28+28]; 
+        % a warning is raised whenever the user resize to a size smaller than this        
     end
     
     properties (Dependent = true)
@@ -323,7 +326,7 @@
                 'Position',[0,0,150,PH],...
                 'BorderType','etchedin');                
         
-            axesPos = [12,3,34,9]; % +2 for height du to top padding
+            axesPos = [12,3,34,9]; % +2 for height due to top padding
             me.StaticAxesPanel = uipanel(me.StaticPanel,...
                 'BorderType','none',...
                 'Units','character',...
@@ -497,8 +500,9 @@
             me.Application.Methods.callAnalysisRidge.createMenu(me.MenuRidge,me);            
             
             % output
-            me.OutputMenu = uimenu(me.Figure,'Label','Output');
-            uimenu(me.OutputMenu,'Label','Call object','Callback',@(~,~));
+            me.MenuOutput = uimenu(me.Figure,'Label','Output');
+            uimenu(me.MenuOutput,'Label','Call Data',  'Callback',@(~,~)me.outputCallTable());
+            uimenu(me.MenuOutput,'Label','Call object','Callback',@(~,~)me.outputCallObject());
             
             % settings
             s = uimenu(me.Figure,'Label','Settings');
@@ -518,6 +522,62 @@
         
         % RESIZE
         function resize(me)
+            fpos = uiPosition(me.Figure,'character');
+            if fpos(3) < me.FigureMinSize(1) || fpos(4) < me.FigureMinSize(2)
+                warning('off','backtrace');
+                warning('batalef:callAnalysisGui:guiTooSmall','Channel Call Analysis: The GUI size is too small');
+                warning('on','backtrace');
+                return;
+            end
+            
+            % resize top panel
+            rpos = uiPosition(me.SelectionRibbon.Panel,'character');
+            rpos(2) = fpos(4) - rpos(4);
+            rpos(3) = fpos(3);
+            set(me.SelectionRibbon.Panel,'Units','character','Position',rpos);
+            pos = uiPosition(me.DmodePanel,'character');
+            pos(1) = fpos(3) - pos(3);
+            set(me.DmodePanel,'Units','character','Position',pos);
+            set(me.PmodePanel,'Units','character','Position',pos);
+            pos(1) = pos(1) - 20;
+            set(me.IndexPanel,'Units','character','Position',pos);
+            
+            % resize active panel
+            bodySize = [fpos(3),fpos(4)-rpos(4)];
+            apos = [0,0.5*bodySize(2),bodySize(1),0.5*bodySize(2)];
+            set(me.ActivePanel,'Position',apos);
+            abpPos = get(me.ActiveButtonsPanel,'Position');
+            abpPos(1) = apos(3) - abpPos(3);
+            abpPos(2) = apos(4) - abpPos(4);
+            set(me.ActiveButtonsPanel,'Position',abpPos);
+            appPos = get(me.ActiveParamsPanel,'Position');
+            appPos(1) = apos(3) - abpPos(3) - appPos(3);
+            appPos(2) = apos(4) - appPos(4);
+            set(me.ActiveParamsPanel,'Position',appPos);
+            aapPos = get(me.ActiveAxesPanel,'Position');
+            aapPos(3) = apos(3) - abpPos(3) - appPos(3);
+            aapPos(4) = apos(4);
+            set(me.ActiveAxesPanel,'Position',aapPos);
+            eapos = [12,3+0.5*aapPos(4),aapPos(3)-18,0.5*aapPos(4)-5];
+            set(me.AxesEnvelope,'Position',eapos);
+            sapos = [12,3,aapPos(3)-18,0.5*aapPos(4)-5];
+            set(me.AxesSpectrogram,'Position',sapos);
+            
+            % resize static panel
+            spos = [0,0,bodySize(1),0.5*bodySize(2)];
+            set(me.StaticPanel,'Position',spos);
+            svpPos = get(me.StaticValuesPanel,'Position');
+            svpPos(1) = apos(3) - svpPos(3);
+            svpPos(2) = apos(4) - svpPos(4);
+            set(me.StaticValuesPanel,'Position',svpPos);
+            sapPos = get(me.StaticAxesPanel,'Position');
+            sapPos(3) = spos(3) - svpPos(3);
+            sapPos(4) = spos(4);
+            set(me.StaticAxesPanel,'Position',sapPos);
+            tsapos = [12,3+0.5*sapPos(4),sapPos(3)-18,0.5*sapPos(4)-5];
+            set(me.AxesTS,'Position',tsapos);
+            srapos = [12,3,sapPos(3)-18,0.5*sapPos(4)-5];
+            set(me.AxesSpectrum,'Position',srapos);            
         end
         
         % BUILD SPECTROGRAM RANGES COMBO
@@ -1205,7 +1265,7 @@
             params.endThreshold = agetParam('channelCallAnalysis_endThreshold');
             params.gapTolerance = agetParam('channelCallAnalysis_gapTolerance');
             params.computeSpectral = true;
-            params.computeRidge = false;
+            params.computeRidge = true;
             [f.nameString,f.descString] = me.getFilterSpec();
             params.filterSpecification = f;
             params.keep = me.Keep;
@@ -1251,7 +1311,35 @@
 
             % the gap is undetermined. consider future dev.
         end
-                
+        
+        %%%%%%%%%%
+        % OUTPUT %
+        %%%%%%%%%%
+        
+        % OUTPUT CALL OBJECT
+        function outputCallObject(me)
+            A = inputdlg('Variable name to assign output');
+            if ~isempty(A)
+                assignin('base',A{1},me.Call);                
+            end
+        end
+           
+        % OUTPUT CALL TABLE
+        function outputCallTable(me)
+            if strcmp(me.WorkMode,'process')
+                msgbox('Cannot use this option in process mode');
+                return;
+            end
+
+            T = me.Application.file(me.FileIdx).channel(me.ChannelIdx).getChannelCallsTable(false,me.CallType);
+            disp(T(me.CallIdx,:))
+            fprintf('\n  All times are in seconds.\n  All frequencies are in Hz.\n  All power values are in dB.\n  Ridge matrix is [time,freq,power].\n\n');
+
+            A = inputdlg('Variable name to assign output');
+            if ~isempty(A)
+                assignin('base',A{1},T(me.CallIdx,:));
+            end
+        end        
     end
     
 end
