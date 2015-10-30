@@ -25,13 +25,13 @@ classdef bMics < handle
         
         % TRANSLATE TO EXPORTABLE STRUCTURE
         function X = toStruct(me)
-            X.N                 = me.N;
-            X.Positions         = me.Positions;
-            X.GainVector        = me.GainVector;
-            X.Directionality    = me.Directionality;
-            X.UseInMatching     = me.UseInMatching;
-            X.UseInLocalization = me.UseInLocalization;
-            X.UseInBeam         = me.UseInBeam;
+            X.N
+            X.Positions
+            X.GainVector
+            X.Directionality
+            X.UseInMatching
+            X.UseInLocalization = me.UseInLocazlization
+            X.UseInBeam
         end
         
         % ENFORCE NUMBER OF MICS FOR ROWS DIMENSION
@@ -122,22 +122,6 @@ classdef bMics < handle
                 vG(i) = me.Directionality.FreqSpecific{i,3}(angleIdx);
             end
             gain = interp1(vF,vG,freq,'linear','extrap');
-        end
-        
-    end
-    
-    % STATIC METHODS
-    methods(Static)
-       
-        % CREATE OBJECT FROM STRUCT
-        function O = buildObject(X)
-            O = bMics(X.N);
-            O.Positions         = X.Positions;
-            O.GainVector        = X.GainVector;
-            O.Directionality    = X.Directionality;
-            O.UseInMatching     = X.UseInMatching;
-            O.UseInLocalization = X.UseInLocalization;
-            O.UseInBeam         = X.UseInBeam;            
         end
         
     end
