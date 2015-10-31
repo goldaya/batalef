@@ -15,6 +15,9 @@ classdef bMics < handle
         
         % CONSTRUCTOR
         function me = bMics(nMics)
+        %BMICS Constructor
+        %    h = bMics(NMICS) returns the object's handle, with NMICS the
+        %    number of mics to handle
             me.N = nMics;
             me.Positions         = zeros(nMics,3);
             me.GainVector        = zeros(nMics,1);
@@ -32,20 +35,6 @@ classdef bMics < handle
             X.UseInMatching     = me.UseInMatching;
             X.UseInLocalization = me.UseInLocalization;
             X.UseInBeam         = me.UseInBeam;
-        end
-        
-        % ENFORCE NUMBER OF MICS FOR ROWS DIMENSION
-        function matOut = enforceSize(matIn)
-            s = size(matIn);
-            if s(1) == me.N
-                matOut = matIn;
-            elseif s(2) == me.N
-                matOut = matIn';
-            else
-                err = MException('batalef:mics:wrongSize',...
-                        sprintf('Microphones: input size [%i,%i] is invalid for #mics of %i',s(1),s(2),me.N));
-                throw(err);
-            end
         end
         
         % SET POSITIONS MATRIX
@@ -124,6 +113,23 @@ classdef bMics < handle
             gain = interp1(vF,vG,freq,'linear','extrap');
         end
         
+    end
+    
+    % HIDDEN INSTANCE METHODS
+    methods (Hidden)
+        % ENFORCE NUMBER OF MICS FOR ROWS DIMENSION
+        function matOut = enforceSize(matIn)
+            s = size(matIn);
+            if s(1) == me.N
+                matOut = matIn;
+            elseif s(2) == me.N
+                matOut = matIn';
+            else
+                err = MException('batalef:mics:wrongSize',...
+                        sprintf('Microphones: input size [%i,%i] is invalid for #mics of %i',s(1),s(2),me.N));
+                throw(err);
+            end
+        end        
     end
     
     % STATIC METHODS

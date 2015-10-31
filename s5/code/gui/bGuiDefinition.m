@@ -1,21 +1,29 @@
 classdef bGuiDefinition < handle
     %BGUIDEFINITION Partial class for guis definition
+    %DO NOT USE AS STAND-ALONE OBJECT
     
-    properties (Access = public)
-        Figure;
+    properties
+        Figure
+        Name
+    end
+    
+    properties (Hidden)
         Top
         SelectionRibbon
-        Name
         Build = false;
     end
     
-    properties (Dependent = true)
+    properties (Dependent)
         RibbonsLinked    
         Visible
         Parameters
         Application        
         DisplayVector
         ProcessVector
+    end
+    
+    properties (Constant)
+        ResizeVersion = 'R2014b';
     end
     
     methods

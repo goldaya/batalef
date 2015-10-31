@@ -1,6 +1,29 @@
  classdef bCallGui < bGuiDefinition & hgsetget
    %BCALLGUI Channel call analysis
     
+    % properties coming from gui definition:
+    %{
+    properties
+        Figure
+        Name
+    end
+    
+    properties (Hidden)
+        Top
+        SelectionRibbon
+        Build = false;
+    end
+    
+    properties (Dependent)
+        RibbonsLinked    
+        Visible
+        Parameters
+        Application        
+        DisplayVector
+        ProcessVector
+    end
+    %}
+    
    properties % GENERAL
        WorkMode = 'display-relaxed';
        Call % a bChanelCall object
@@ -8,6 +31,9 @@
        ChannelIdx = 1;
        CallIdx    = 1;
        CallType
+   end
+
+    properties (Hidden) % Internal data
        ChannelTimeSeries  = [];
        ChannelTimeVector  = [];
        ChannelFilteredTS  = [];
@@ -15,11 +41,9 @@
        SpecImage = [];
        SpectrumImage = [];
        Keep = true;
-       
-       
-   end
+    end
    
-    properties % BUILD
+    properties (Hidden) % BUILD
         IndexPanel
           ComboChannel
           ComboCall
@@ -89,7 +113,7 @@
         
     end
     
-    properties (Constant = true)
+    properties (Constant,Hidden)
         TopPanelMinSize    = [150,4.3];
         ActivePanelMinSize = [150,28];
         StaticPanelMinSize = [150,28];
@@ -118,8 +142,13 @@
                 'MenuBar','none',...
                 'Name','BATALEF - Channel Call Analysis',...
                 'NumberTitle','off',...
-                'CloseRequestFcn',@(~,~)me.Top.removeGui(me.Name),...
-                'SizeChangedFcn',@(~,~)me.resize());
+                'CloseRequestFcn',@(~,~)me.Top.removeGui(me.Name));
+            if verLessThan('matlab', bGuiDefinition.ResizeVersion)
+                set(me.Figure,'ResizeFcn',@(~,~)me.resize());
+            else
+                set(me.Figure,'SizeChangedFcn',@(~,~)me.resize()); 
+            end
+
             
             % The gui has 3 sections: 
             % TOP where the ribbon is + indices of channel and call +
@@ -517,7 +546,7 @@
         end
         
         % CONTEXT MENU
-        function buildContextMenu(me)
+        function buildContextMenu(~) % (me)
         end
         
         % RESIZE
@@ -645,7 +674,7 @@
         end
         
         % CHANGE DISPLAY TYPE
-        function disTypeChange(me,type,group)
+        function disTypeChange(me,~,~) %(me,type,group)
             if ~me.Build
                 me.showCall();
             end
