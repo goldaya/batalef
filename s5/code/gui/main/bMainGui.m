@@ -155,6 +155,12 @@ classdef bMainGui < bGuiDefinition
                 uimenu(me.Menus.ChannelCalls,'Label','Get calls table','Callback',@(~,~)me.getChannelCallsTable());
             
             
+            % file level processing
+            me.Menus.File = uimenu(me.Figure,'Label','File Level Proc.');
+            me.Menus.file.MicAdmin = uimenu(me.Menus.File,'Label','Mic Admin','Callback',@(~,~)me.Top.callGui('MicAdmin'));
+            me.Menus.file.Matching = uimenu(me.Menus.File,'Label','Matching & Localization','Callback',@(~,~)me.Top.callGui('Localization'));
+            me.Menus.file.Beam = uimenu(me.Menus.File,'Label','Beam Analysis','Callback',@(~,~)me.Top.callGui('Beam'));
+            
             % settings
             me.Menus.Settings = uimenu(me.Figure,'Label','Settings');
             me.Menus.settings.Display = ...

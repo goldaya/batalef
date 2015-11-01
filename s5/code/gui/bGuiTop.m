@@ -51,6 +51,13 @@ classdef bGuiTop < handle
                         g = bParamsGui(me,name);
                     case 'CallAnalysis'
                         g = bCallGui(me,name);
+                    case 'MicAdmin'
+                        g = bMicAdminGui(me,name);
+                    case 'MicLocator'
+                        
+                        
+                    otherwise
+                        fprintf('\nNo such gui: %s\n',name);
                 end
                 me.Guis.(name) = g;
             end

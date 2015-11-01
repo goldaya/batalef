@@ -24,6 +24,10 @@ classdef bMics < handle
             me.UseInMatching     = true(nMics,1);
             me.UseInLocalization = true(nMics,1);
             me.UseInBeam         = true(nMics,1);
+            me.Directionality.Manage       = false;
+            me.Directionality.Matrix       = zeros(0,3);
+            me.Directionality.FreqSpecific = {};
+            me.Directionality.Zero         = [0,0,0];
         end
         
         % TRANSLATE TO EXPORTABLE STRUCTURE
@@ -66,6 +70,13 @@ classdef bMics < handle
         
         % SET DIRECTIONALITY MATRIX
         function setDirectionalityData(me,directMatrix)
+            me.Directionality.Matrix       = zeros(0,3);
+            me.Directionality.FreqSpecific = {};
+            
+            if isempty(directMatrix)
+                return;
+            end
+            
             % [angle,freq,gain]
             s = size(directMatrix);
             if s(2) ~= 3
@@ -79,13 +90,17 @@ classdef bMics < handle
             C = cell(0,3); % {freq,vector,surface}
             % create a vector of angles-gains for each frequency
             for i = 1:size(directMatrix,1)
-                cellIdx = find(C{:,1}==directMatrix(i,1),1);
+                if isempty(C)
+                    cellIdx = [];
+                else
+                    cellIdx = find([C{:,1}]==directMatrix(i,1),1);
+                end
                 if isempty(cellIdx)
                     cellIdx = size(C,1)+1;
-                    C{cellIdx,1} = directMatrix(i,2);
+                    C{cellIdx,1} = directMatrix(i,1);
                 end
                 V = C{cellIdx,2};
-                V = [V; directMatrix(i,[1,3])];
+                V = [V; directMatrix(i,[2,3])];
                 C{cellIdx,2} = V;
             end
             

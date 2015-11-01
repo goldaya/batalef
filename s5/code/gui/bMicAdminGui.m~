@@ -65,7 +65,6 @@ classdef bMicAdminGui < bGuiDefinition & hgsetget
     %%%                  %%%
     %%%%%%%%%%%%%%%%%%%%%%%%    
     methods
-
         % CONSTRUCTOR
         function me = bMicAdminGui(guiTop,name)
             me = me@bGuiDefinition(guiTop,name);
@@ -102,6 +101,163 @@ classdef bMicAdminGui < bGuiDefinition & hgsetget
             me.setDisplayedFiles(me.DisplayVector)
             
         end
+        
+        % GET LOCALIZATION ARRAY DEPTHS
+        function V = getLocalizationArrayDepth(me)
+            A = get(me.AdminTable,'Data');
+            P = cell2mat(A(:,4:6));
+            U = cell2mat(A(:,1));
+            P = P(U,:);
+            V = max(P) - min(P);
+            me.CurrentLocalizationArrayDepth = V;
+        end
+        
+        % SET THE DISPLAYED FILES
+        function setDisplayedFiles(me,filesVector)
+            if isempty(filesVector)
+                me.MicsObject = [];
+                cellfun(@(m)set(m,'Enable','off'),me.InteractiveUis);
+            else
+                me.MicsObject = me.Application.file(filesVector).MicData;
+                cellfun(@(m)set(m,'Enable','on'),me.InteractiveUis);
+            end
+            me.refresh();
+        end
+        
+        % REFRESH
+        function refresh(me)
+            if isempty(me.MicsObject)
+                A = [];
+                dT = [0,0,0];
+                dM = false;
+                dZ = [0,0,0];
+            else
+                A = [...
+                    num2cell(me.MicsObject.UseInMatching),...
+                    num2cell(me.MicsObject.UseInLocalization),...
+                    num2cell(me.MicsObject.UseInBeam),...
+                    num2cell(me.MicsObject.Positions),...
+                    num2cell(me.MicsObject.GainVector)];
+                dT = me.MicsObject.Directionality.Matrix;
+                dM = me.MicsObject.Directionality.Manage;
+                dZ = me.MicsObject.Directionality.Zero;
+                
+            end
+            set(me.AdminTable,'Data',A);
+            me.changeDirect(dT);
+            me.directManageChange(dM);
+            set(me.TextDirectZeroVector,'String',num2str(dZ));
+        end  
+        
+        % SAVE
+        function save(me,withQuit)
+            
+            if withQuit
+                title = 'Save & Close';
+            else
+                title = 'Save';
+            end
+            if ~me.checkLocalizationArrayDepth()
+                q = 'Localization array is too flat. Continue ?';
+                if ~strcmp(questdlg(q,title,'Yes','No','No'),'Yes')
+                    return; % abort
+                end
+            end
+            
+            A = get(me.AdminTable,'Data');
+            D = get(me.DirectTable,'Data');
+            position = cell2mat(A(:,4:6));
+            gain     = cell2mat(A(:,7));
+            dManage  = get(me.CbManageDirect,'Value');
+            if dManage
+                dTable = D;
+            else
+                dTable = [];
+            end
+            dZero    = str2num(get(me.TextDirectZeroVector,'String'));%#ok<ST2NM>
+            uMatch   = cell2mat(A(:,1));
+            uLocal   = cell2mat(A(:,2));
+            uBeam    = cell2mat(A(:,3));
+            
+            ok = setMicData(me.Application,me.ProcessVector,size(position,1),position,gain,uMatch,uLocal,uBeam,dManage,dTable,dZero);
+            n = length(ok);
+            m = length(ok(ok==true));
+            if n ==m
+                msgbox(sprintf('Saved %i out of %i.',m,n));
+            else
+                msgbox(sprintf('Saved %i out of %i. Check channel counts or directionality data.',m,n));
+            end
+            
+            if withQuit
+                me.Top.removeGui(me.Name);
+            end
+                           
+        end
+        
+        %%%%%%%%%%%%%%%%%
+        % DATA HANDLING %
+        %%%%%%%%%%%%%%%%%
+        
+        % CHANGE POSITIONS
+        function changePositions(me,P)
+            if size(P,2) ~= 3
+                msgbox('Input is not a 3D matrix');
+                return;
+            elseif size(P,1) ~= me.MicsObject.N
+                msgbox(sprintf('Input does not have %i rows',me.MicsObject.N));
+                return;
+            else
+                C = num2cell(P);
+            end
+           
+            D = get(me.AdminTable,'Data');
+            D(:,4:6) = C;
+            set(me.AdminTable,'Data',D);
+        
+        end
+        
+        % CHANGE POSITIONS
+        function changeGains(me,G)
+            if size(G,2) ~= 1
+                msgbox('Input is not a 1D vector');
+                return;
+            elseif size(G,1) ~= me.MicsObject.N
+                msgbox(sprintf('Input does not have %i rows',me.MicsObject.N));
+                return;
+            else
+                C = num2cell(G);
+            end
+           
+            D = get(me.AdminTable,'Data');
+            D(:,7) = C;
+            set(me.AdminTable,'Data',D);
+        
+        end        
+        
+        % CHANGE DIRECTIONALITY
+        function changeDirect(me,D)
+            if size(D,2) ~= 3
+                msgbox('Input is not a 3D vector');
+                return;
+            else
+                set(me.DirectTable,'Data',D);
+                me.directTableCellEdit();
+            end
+        end        
+        
+        % DESIRED LOC ARRAY DEPTH
+        function setDesLocArrDep(me,V)
+            me.DesiredLocalizationArrayDepth = V;
+            asetParam('micAdmin_locArrayDepth',V);
+        end
+    end
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%                   %%%
+    %%%  PRIVATE METHODS  %%%
+    %%%                   %%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%
+    methods(Access = private)
         
         %%%%%%%%%%%
         %  BUILD  %
@@ -187,8 +343,6 @@ classdef bMicAdminGui < bGuiDefinition & hgsetget
         function buildMenus(me)
             m0 = uimenu(me.Figure,'Label','Mic Data');
             uimenu(m0,'Label','Save','Callback',@(~,~)me.save(false));
-            uimenu(m0,'Label','Import','Callback',@(~,~)me.import(),'Separator','on');
-            uimenu(m0,'Label','Export','Callback',@(~,~)me.export());
             m1 = uimenu(me.Figure,'Label','Positions');
             uimenu(m1,'Label','Load from file','Callback',@(~,~)me.loadFromFile('positions'));
             uimenu(m1,'Label','Load from var ','Callback',@(~,~)me.loadFromVar('positions'));
@@ -205,238 +359,10 @@ classdef bMicAdminGui < bGuiDefinition & hgsetget
         end
         
         % RESIZE
-        function resize(me) %#ok<MANU> % (me). no resize for this gui currently
-        end        
-        
-        %%%%%%%%%%%
-        % DISPLAY %
-        %%%%%%%%%%%
-                
-        % SET THE DISPLAYED FILES
-        function setDisplayedFiles(me,filesVector)
-            if isempty(filesVector)
-                me.MicsObject = [];
-                cellfun(@(m)set(m,'Enable','off'),me.InteractiveUis);
-            else
-                me.MicsObject = me.Application.file(filesVector).MicData;
-                cellfun(@(m)set(m,'Enable','on'),me.InteractiveUis);
-            end
-            me.refresh();
+        function resize(~) % (me). no resize for this gui currently
         end
         
-        % REFRESH
-        function refresh(me)
-            if isempty(me.MicsObject)
-                A = [];
-                dT = [0,0,0];
-                dM = false;
-                dZ = [0,0,0];
-            else
-                A = [...
-                    num2cell(me.MicsObject.UseInMatching),...
-                    num2cell(me.MicsObject.UseInLocalization),...
-                    num2cell(me.MicsObject.UseInBeam),...
-                    num2cell(me.MicsObject.Positions),...
-                    num2cell(me.MicsObject.GainVector)];
-                dT = me.MicsObject.Directionality.Matrix;
-                dM = me.MicsObject.Directionality.Manage;
-                dZ = me.MicsObject.Directionality.Zero;
-                
-            end
-            set(me.AdminTable,'Data',A);
-            me.changeDirect(dT);
-            me.directManageChange(dM);
-            set(me.TextDirectZeroVector,'String',num2str(dZ));
-        end  
-        
-        % PLOT DIRECTIVITY GRAPH
-        function directPlot(me,Dmat)
-
-            axobj = me.AxesDirect;
-            cla(axobj)    
-            if isempty(Dmat)
-                return;
-            end
-
-            % create different graph for each frequency
-            C = cell(1,2);
-            for i = 1:size(Dmat,1)
-                % cellIdx is the freq index for specific 
-                cellIdx = find(strcmp(num2str(Dmat(i,1)), C{1}));
-                if isempty(cellIdx)
-                    cellIdx = length(C{1}) + 1;
-                    C{1}{cellIdx} = num2str(Dmat(i,1));
-                    C{2}{cellIdx} = cell(1,2);
-                    C{2}{cellIdx} = zeros(1,2);
-                    n = 0;
-                else
-                    n = size(C{2}{cellIdx},1);
-                end
-
-                % the angle-gain vector for specific freq
-                C{2}{cellIdx}(n+1,1)=Dmat(i,2); % angle
-                C{2}{cellIdx}(n+1,2)=Dmat(i,3); % gain
-            end
-
-            col = graphColors();
-
-            N = length(C{1});
-            lString = cell(N,1);
-            for i = 1:N
-                color = col.getNext();
-                A = sortrows(C{2}{i},1);
-                x = deg2rad(A(:,1));
-                y = A(:,2) + 70;
-                polar(axobj,x,y,color);
-                hold(axobj,'on');
-                lString{i} = strcat([C{1}{i},' KHz']);
-            end
-            hold(axobj,'off');
-            set(axobj,'View',[270,90]);
-            legend(lString,'Location','NorthEast');
-
-        end        
-        
-       
-        %%%%%%%%%%%%%%%%%
-        % DATA HANDLING %
-        %%%%%%%%%%%%%%%%%
-        
-        % SAVE
-        function save(me,withQuit)
-            
-            if withQuit
-                title = 'Save & Close';
-            else
-                title = 'Save';
-            end
-            if ~me.checkLocalizationArrayDepth()
-                q = 'Localization array is too flat. Continue ?';
-                if ~strcmp(questdlg(q,title,'Yes','No','No'),'Yes')
-                    return; % abort
-                end
-            end
-            
-            A = get(me.AdminTable,'Data');
-            D = get(me.DirectTable,'Data');
-            position = cell2mat(A(:,4:6));
-            gain     = cell2mat(A(:,7));
-            dManage  = get(me.CbManageDirect,'Value');
-            if dManage
-                dTable = D(any(D,2),:);
-            else
-                dTable = [];
-            end
-            dZero    = str2num(get(me.TextDirectZeroVector,'String'));%#ok<ST2NM>
-            uMatch   = cell2mat(A(:,1));
-            uLocal   = cell2mat(A(:,2));
-            uBeam    = cell2mat(A(:,3));
-            
-            ok = setMicData(me.Application,me.ProcessVector,size(position,1),position,gain,uMatch,uLocal,uBeam,dManage,dTable,dZero);
-            n = length(ok);
-            m = length(ok(ok==true));
-            if n ==m
-                msgbox(sprintf('Saved %i out of %i.',m,n));
-            else
-                msgbox(sprintf('Saved %i out of %i. Check channel counts or directionality data.',m,n));
-            end
-            
-            if withQuit
-                me.Top.removeGui(me.Name);
-            end
-                           
-        end
-        
-        % IMPORT
-        function import(me)
-            [fname,fpath] = uigetfile();
-            if isnumeric(fname)
-                return; % abort
-            end            
-            X = importdata(strcat(fpath,fname));
-            me.MicsObject = bMics.buildObject(X);
-            me.refresh();
-            msgbox('Imported');
-        end
-        
-        % EXPORT
-        function export(me)
-            [fname,fpath] = uiputfile();
-            if isnumeric(fname)
-                return; % abort
-            end
-            X = me.MicsObject.toStruct(); %#ok<NASGU>
-            save(strcat(fpath,fname),'X');
-            msgbox('Exported');
-        end
-        
-        % CHANGE POSITIONS
-        function changePositions(me,P)
-            if size(P,2) ~= 3
-                msgbox('Input is not a 3D matrix');
-                return;
-            elseif size(P,1) ~= me.MicsObject.N
-                msgbox(sprintf('Input does not have %i rows',me.MicsObject.N));
-                return;
-            else
-                C = num2cell(P);
-            end
-           
-            D = get(me.AdminTable,'Data');
-            D(:,4:6) = C;
-            set(me.AdminTable,'Data',D);
-        
-        end
-        
-        % CHANGE POSITIONS
-        function changeGains(me,G)
-            if size(G,2) ~= 1
-                msgbox('Input is not a 1D vector');
-                return;
-            elseif size(G,1) ~= me.MicsObject.N
-                msgbox(sprintf('Input does not have %i rows',me.MicsObject.N));
-                return;
-            else
-                C = num2cell(G);
-            end
-           
-            D = get(me.AdminTable,'Data');
-            D(:,7) = C;
-            set(me.AdminTable,'Data',D);
-        
-        end        
-        
-        % CHANGE DIRECTIONALITY
-        function changeDirect(me,D)
-            if size(D,2) ~= 3
-                msgbox('Input is not a 3D vector');
-                return;
-            else
-                set(me.DirectTable,'Data',D);
-                me.directTableCellEdit();
-            end
-        end        
-        
-        % DESIRED LOC ARRAY DEPTH
-        function setDesLocArrDep(me,V)
-            me.DesiredLocalizationArrayDepth = V;
-            asetParam('micAdmin_locArrayDepth',V);
-        end
-    
-
-        %%%%%%%%%%%%%%%%%%%
-        % LOC ARRAY DEPTH %
-        %%%%%%%%%%%%%%%%%%%
-    
-        % GET LOCALIZATION ARRAY DEPTHS
-        function V = getLocalizationArrayDepth(me)
-            A = get(me.AdminTable,'Data');
-            P = cell2mat(A(:,4:6));
-            U = cell2mat(A(:,1));
-            P = P(U,:);
-            V = max(P) - min(P);
-            me.CurrentLocalizationArrayDepth = V;
-        end
+        %%%
         
         % CHECK LOCALIZATION ARRAY DEPTH
         function ok = checkLocalizationArrayDepth(me)
@@ -450,11 +376,6 @@ classdef bMicAdminGui < bGuiDefinition & hgsetget
                 ok = true;
             end
         end
-        
-
-        %%%%%%%%%%%%%%%%%%
-        % PULLS & LEVERS %
-        %%%%%%%%%%%%%%%%%%
         
         % LOAD FROM FILE
         function loadFromFile(me,type)
@@ -536,7 +457,53 @@ classdef bMicAdminGui < bGuiDefinition & hgsetget
             set(me.CbManageDirect,'Value',manage);
         end
         
+        % PLOT DIRECTIVITY GRAPH
+        function directPlot(me,Dmat)
 
+            axobj = me.AxesDirect;
+            cla(axobj)    
+            if isempty(Dmat)
+                return;
+            end
+
+            % create different graph for each frequency
+            C = cell(1,2);
+            for i = 1:size(Dmat,1)
+                % cellIdx is the freq index for specific 
+                cellIdx = find(strcmp(num2str(Dmat(i,1)), C{1}));
+                if isempty(cellIdx)
+                    cellIdx = length(C{1}) + 1;
+                    C{1}{cellIdx} = num2str(Dmat(i,1));
+                    C{2}{cellIdx} = cell(1,2);
+                    C{2}{cellIdx} = zeros(1,2);
+                    n = 0;
+                else
+                    n = size(C{2}{cellIdx},1);
+                end
+
+                % the angle-gain vector for specific freq
+                C{2}{cellIdx}(n+1,1)=Dmat(i,2); % angle
+                C{2}{cellIdx}(n+1,2)=Dmat(i,3); % gain
+            end
+
+            col = graphColors();
+
+            N = length(C{1});
+            lString = cell(N,1);
+            for i = 1:N
+                color = col.getNext();
+                A = sortrows(C{2}{i},1);
+                x = deg2rad(A(:,1));
+                y = A(:,2) + 70;
+                polar(axobj,x,y,color);
+                hold(axobj,'on');
+                lString{i} = strcat([C{1}{i},' KHz']);
+            end
+            hold(axobj,'off');
+            set(axobj,'View',[270,90]);
+            legend(lString,'Location','NorthEast');
+
+        end
     end
 end
 

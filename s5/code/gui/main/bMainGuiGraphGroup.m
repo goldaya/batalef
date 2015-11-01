@@ -195,8 +195,17 @@ classdef bMainGuiGraphGroup < handle
         end
         function set.FilesVector(me,val)
             me.FilesVectorInner = val;
-            me.resetSlider();
-            me.setChannels();
+            if isempty(val) || val == 0
+                me.clear();
+            else
+                me.resetSlider();
+                me.setChannels();
+            end
+        end
+        
+        % CLEAR 
+        function clear(me)
+            cellfun(@(g)g.clear(),me.Graphs);
         end
 
         % RESET SLIDER
