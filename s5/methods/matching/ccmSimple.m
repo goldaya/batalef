@@ -1,13 +1,8 @@
-function [ S ] = matchingBasic( fileObject,j,s,params )
-%MATCHINGBASIC Matching: Basic
+function [ seqs ] = ccmSimple( k,j,s,dev )
+%CCMSIMPLE -INTERNAL- match comparing only the base channel
 
-    S = {};
-    return;
-    
-    baseCall = fileObject.channel(j).call(s);
-    baseCall.loadCall('forLocalization');
-    nChannels = fileObject.ChannelsCount;
-    dev = params.error/100;
+    baseCall = channelCall(k,j,s,'forLocalization',false);
+    nChannels = fileData(k,'Channels','Count');
     M = fileData(k,'Mics','MaxDiff');
     U = fileData(k,'Mics','LocalizationUsage');
     U(j) = false;
@@ -16,7 +11,7 @@ function [ S ] = matchingBasic( fileObject,j,s,params )
     for i = 1 : nChannels
         
         if U(i)
-            window = M(j,i)*dev*[-1,1] + baseCall.Peak.Time;
+            window = M(j,i)*dev*[-1,1] + baseCall.PeakTime;
     
             % get times of all channelcalls in channel J(i)
             [T,I] = channelData(k,i,'Calls','ForLocalization','Times','Peak');
@@ -69,7 +64,6 @@ function [ S ] = matchingBasic( fileObject,j,s,params )
     end
     
     seqs = mat2cell(seqs,ones(size(seqs,1),1),nChannels);
-    
-    
+
 end
 

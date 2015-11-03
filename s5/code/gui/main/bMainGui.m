@@ -57,9 +57,13 @@ classdef bMainGui < bGuiDefinition
                 'MenuBar','none',...
                 'Name','BATALEF TT1',...
                 'NumberTitle','off',...
-                'SizeChangedFcn',@(~,~)me.resize(),...
                 'CloseRequestFcn',@(~,~)me.kill());
-                
+            if verLessThan('matlab', bGuiDefinition.ResizeVersion)
+                set(me.Figure,'ResizeFcn',@(~,~)me.resize());
+            else
+                set(me.Figure,'SizeChangedFcn',@(~,~)me.resize()); 
+            end
+            
             me.buildGui();
             
             % mouse motion
@@ -68,6 +72,11 @@ classdef bMainGui < bGuiDefinition
                 @(~,~)me.Graphs.mouseMotion(get(me.Figure,'CurrentPoint')));
         end
         
+        % DESTRUCTOR
+        function delete(me)
+            delete(me.Figure);
+        end
+            
         % KILL
         function kill(me)
             batalefGuiKill(me.Top);
@@ -181,7 +190,7 @@ classdef bMainGui < bGuiDefinition
             % file level processing
             me.Menus.File = uimenu(me.Figure,'Label','File Level Proc.');
             me.Menus.file.MicAdmin = uimenu(me.Menus.File,'Label','Mic Admin','Callback',@(~,~)me.Top.callGui('MicAdmin'));
-            me.Menus.file.Matching = uimenu(me.Menus.File,'Label','Matching & Localization','Callback',@(~,~)me.Top.callGui('Localization'));
+            me.Menus.file.Matching = uimenu(me.Menus.File,'Label','Matching & Localization','Callback',@(~,~)me.Top.callGui('FileCallsGui'));
             me.Menus.file.Beam = uimenu(me.Menus.File,'Label','Beam Analysis','Callback',@(~,~)me.Top.callGui('Beam'));
             
             % settings

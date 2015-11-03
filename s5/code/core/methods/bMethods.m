@@ -256,7 +256,7 @@ classdef bMethods < handle
         
         % SAVE PARAMS
         function saveParams(me,P,A) %#ok<INUSL>
-            for i = 1:length(P)
+            for i = 1:size(P,1)
                 o = P{i,1};
                 p = P{i,2};
                 if strcmp(o.getType(p),'string');

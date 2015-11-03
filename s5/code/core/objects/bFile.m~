@@ -176,16 +176,11 @@ classdef bFile < handle
             % power matrix here...
             
             % add and sort by time
-            n = me.CallsCount;
-            if n == 0
-                me.Calls = cstrct;
-            else
-                me.Calls(me.CallsCount+1) = cstrct;
-                A = [(1:me.CallsCount+1)',[me.Calls.time]'];
-                A = sortrows(A,1);
-                me.Calls = me.Calls(A(1,:));                
-            end
-
+            n = 
+            me.Calls(me.CallsCount+1) = cstrct;
+            A = [(1:me.CallsCount+1)',[me.Calls.time]'];
+            A = sortrows(A,1);
+            me.Calls = me.Calls(A(1,:));
         end
         
         % REMOVE

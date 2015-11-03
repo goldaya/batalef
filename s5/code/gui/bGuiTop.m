@@ -54,10 +54,12 @@ classdef bGuiTop < handle
                     case 'MicAdmin'
                         g = bMicAdminGui(me,name);
                     case 'MicLocator'
-                        
-                        
+                        g = [];
+                    case 'FileCallsGui'
+                        g = bFileCallsGui(me,name);                        
                     otherwise
-                        fprintf('\nNo such gui: %s\n',name);
+                        bcerr('Error',sprintf('No such gui: %s',name));
+                        return;
                 end
                 me.Guis.(name) = g;
             end
@@ -85,7 +87,7 @@ classdef bGuiTop < handle
         
         % REMOVE GUI
         function removeGui(me,guiName)
-            delete(me.Guis.(guiName).Figure);
+%             delete(me.Guis.(guiName).Figure);
             delete(me.Guis.(guiName));
             me.Guis = rmfield(me.Guis,guiName);
         end

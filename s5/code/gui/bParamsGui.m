@@ -117,6 +117,11 @@ classdef bParamsGui < bGuiDefinition
             me.showType('app');
         end
         
+        % DESTRUCTOR
+        function delete(me)
+            delete(me.Figure);
+        end
+        
         % SET THE DISPLAYED FILES
         function setDisplayedFiles(me,filesVector)
             if strcmp(me.Type,'file');

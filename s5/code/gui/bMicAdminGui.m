@@ -98,6 +98,11 @@ classdef bMicAdminGui < bGuiDefinition & hgsetget
             
         end
         
+        % DESTRUCTOR
+        function delete(me)
+            delete(me.Figure);
+        end
+        
         %%%%%%%%%%%
         %  BUILD  %
         %%%%%%%%%%%

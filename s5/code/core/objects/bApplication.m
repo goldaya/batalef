@@ -40,6 +40,8 @@ classdef bApplication < handle
             me.Methods.callAnalysisSpectrogram = bMethodSpectrogram('default','callAnalysisSpectrogram',me,[],false);
             me.Methods.callAnalysisSpectrum = bMethodSpectrum('default','callAnalysisSpectrum',me,[],false);
             me.Methods.callAnalysisRidge = bMethodRidge('default','callAnalysisRidge',me,[],false);
+            me.Methods.fileCallsMatching = bMethodMatching('default','fileCallsMatching',me,[],false);
+            me.Methods.fileCallLocalization = bMethodLocalization('default','fileCallsLocalization',me,[],false);
                 
         end
         
