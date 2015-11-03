@@ -11,7 +11,7 @@ classdef bMicAdminGui < bGuiDefinition & hgsetget
     properties (Hidden)
         Top
         SelectionRibbon
-        Build = false;
+        Build
     end
     
     properties (Dependent)
@@ -52,18 +52,13 @@ classdef bMicAdminGui < bGuiDefinition & hgsetget
     end
     
     properties (Constant,Hidden)
-        AdminTableLineHeight = 1.4;
+        TableLineHeight = 1.4;
         DirectPanelHeight = 22;
-        MinHeight = 13*bMicAdminGui.AdminTableLineHeight+3.2+bMicAdminGui.DirectPanelHeight+4.3 % (12 mics + 1 header) * line height + padding + directionality panel + ribbon, 
+        MinHeight = 13*bMicAdminGui.TableLineHeight+3.2+bMicAdminGui.DirectPanelHeight+4.3 % (12 mics + 1 header) * line height + padding + directionality panel + ribbon, 
         MinWidth  = 150;
     end
     
 
-    %%%%%%%%%%%%%%%%%%%%%%%%
-    %%%                  %%%
-    %%%  PUBLIC METHODS  %%%
-    %%%                  %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%    
     methods
 
         % CONSTRUCTOR
@@ -111,7 +106,7 @@ classdef bMicAdminGui < bGuiDefinition & hgsetget
         function buildAdminPanel(me)
             me.AdminPanel = uipanel(me.Figure,...
                 'Units','character',...
-                'Position',[0,me.DirectPanelHeight+0.2,150,13*me.AdminTableLineHeight+2.2],...
+                'Position',[0,me.DirectPanelHeight+0.2,150,13*me.TableLineHeight+2.2],...
                 'BorderType','none');
             
             uitabColNames = {'Matching','Local.','Beam','X','Y','Z','Gain'};
@@ -123,7 +118,7 @@ classdef bMicAdminGui < bGuiDefinition & hgsetget
                     'columnformat',uitabColFormats,...
                     'ColumnWidth',uitabColWidths,...
                     'ColumnEditable',true(1,7),...
-                    'Position',[2,2,146,13*me.AdminTableLineHeight]);
+                    'Position',[2,2,146,13*me.TableLineHeight]);
             
             uicontrol(me.AdminPanel,'Style','text','Units','character','Position',[2,0.5,39,1],'String','Desired Localization Array Depth','HorizontalAlignment','Left');
             me.TextArrayDepthDesired = uicontrol(me.AdminPanel,'Style','edit','Units','character','Position',[41,0.3,25,1.4],'HorizontalAlignment','center','Callback',@(h,~)me.setDesLocArrDep(str2num(get(h,'String'))),'String',agetParam('micAdmin_locArrayDepth','AsString'));%#ok<ST2NM>

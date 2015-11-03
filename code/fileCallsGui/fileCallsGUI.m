@@ -1,4 +1,4 @@
-'function varargout = fileCallsGUI(varargin)
+function varargout = fileCallsGUI(varargin)
 % FILECALLSGUI MATLAB code for fileCallsGUI.fig
 %      FILECALLSGUI, by itself, creates a new FILECALLSGUI or raises the existing
 %      singleton*.

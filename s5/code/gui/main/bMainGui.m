@@ -1,6 +1,29 @@
 classdef bMainGui < bGuiDefinition
 %BMAINGUI Object to handle batalef's main gui
 
+    % properties coming from gui definition:
+    %{
+    properties
+        Figure
+        Name
+    end
+    
+    properties (Hidden)
+        Top
+        SelectionRibbon
+        Build
+    end
+    
+    properties (Dependent)
+        RibbonsLinked    
+        Visible
+        Parameters
+        Application        
+        DisplayVector
+        ProcessVector
+    end
+    %}
+    
     properties (Access = private)
         FilesTable
         Menus
