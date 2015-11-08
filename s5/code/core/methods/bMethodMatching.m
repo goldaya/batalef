@@ -13,17 +13,22 @@ classdef bMethodMatching < bMethods
         end        
         
         % EXECUTE
-        function [possibleSequences] = execute(me,fileObject,baseChannel,baseCall)
+        function [seq,times,otherSeqs] = execute(me,fileObject,baseChannel,baseCall)
             m = me.getMethod(me.Default);
             if strcmp(m.id,'none')
-                possibleSequences = {};
+                seq = [];
+                times = [];
+                otherSeqs = {};
             else
                 [~,D,P] = me.buildParamList(m);
                 for i = 1:length(D)
                     params.(P{i,3}) = D{i};
                 end
                 methodFunc = str2func(m.func);
-                possibleSequences = methodFunc(fileObject,baseChannel,baseCall,params);
+                [seq,times,otherSeqs] = methodFunc(fileObject,baseChannel,baseCall,params);
+                if size(seq,1) > 1
+                    seq = seq';
+                end
             end
         end
        

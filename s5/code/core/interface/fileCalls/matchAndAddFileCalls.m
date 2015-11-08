@@ -1,0 +1,39 @@
+function ok = matchAndAddFileCalls( app,file )
+%MATCHANDADDFILECALLS find match (of channel calls) for file calls,
+%localize, find time, and save into data structure, or all possible calls
+%in a file
+
+    if isa(file,'bFile')
+        fobj = file;
+    elseif isnumeric(file)
+        fobj = app.file(file);
+    else
+        errid = 'batalef:fileCalls:matching:wrongInput';
+        errstr = '"file" should be either a bFile object or the file index';
+        throwAsCaller(MException(errid,errstr));
+    end
+    
+    % set base: use best SNR channel and start with first channel call
+    J = 1:fobj.ChannelsCount;
+    U = fobj.MicData.UseInLocalization;
+    J = J(U);
+    SNR = arrayfun(@(j)snr(fobj.channel(j).getTS([])),J);
+    [~,bestSNR] = max(SNR);
+    j = J(bestSNR);
+    s = 1;
+    if j == 0 || s == 0
+        ok = false;
+        return;
+    end
+    
+    % match
+    ok = true;
+    while j > 0
+        okw = matchAndAddFileCall(app,fobj,j,s);
+        [ j,s ] = getNextBase(fobj,j,s);
+        ok = min(ok,okw);
+    end
+
+
+end
+

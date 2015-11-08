@@ -1,75 +1,65 @@
-function [ S ] = matchingBasic( fileObject,j,s,params )
+function [ S,T,O ] = matchingBasic( fileObject,j,s,params )
 %MATCHINGBASIC Matching: Basic
-
-    S = {};
-    return;
+    
+    S = [];
+    T = [];
+    O = {};
     
     baseCall = fileObject.channel(j).call(s);
     baseCall.loadCall('forLocalization');
+    m = fileObject.MicData;
     nChannels = fileObject.ChannelsCount;
-    dev = params.error/100;
-    M = fileData(k,'Mics','MaxDiff');
-    U = fileData(k,'Mics','LocalizationUsage');
-    U(j) = false;
-    seqs = [];
+    dev = 1 + params.error/100;
+    M = m.Positions;
+    sonic = agetParam('defaultSoundSpeed');
     
-    for i = 1 : nChannels
-        
-        if U(i)
-            window = M(j,i)*dev*[-1,1] + baseCall.Peak.Time;
-    
-            % get times of all channelcalls in channel J(i)
-            [T,I] = channelData(k,i,'Calls','ForLocalization','Times','Peak');
-            T = cell2mat(T);
-
-            % filter out of range
-            I = I(T>=window(1));
-            T = T(T>=window(1));
-            I = I(T<=window(2));
-            T = T(T<=window(2));
-            
-            % remove "taken" calls
-            F = zeros(length(I),1);
-            for m = 1:length(I)
-                call = channelCall(k,i,I(m),'forLocalization',false);
-                F(m) = call.FileCall;
-            end
-            T = T(F==0);
-            I = I(F==0);
-            
-            % sort by closeness
-            if ~isempty(I)
-                A = abs(T - baseCall.PeakTime);
-                Q = [A I];
-                Q = sortrows(Q);
-                I = Q(:,2);
-            end
-            
-            % add wildcard
-            I = [I;0];
-        elseif i == j
-            I = s;
-        else
-            I = 0;
-        end
-        
-        % expand sequences matrix
-        nS = size(seqs,1);
-        if nS == 0
-            seqs = I;
-        else
-            seqsNext = [];
-            for n = 1:length(I)
-                S1 = [seqs ,ones(nS,1).*I(n)];
-                seqsNext = [seqsNext;S1];
-            end
-            seqs = seqsNext;
-        end
-        
+    U = m.UseInLocalization;
+    if ~U(j)
+        return; % base channel is not used in localization... pointless
+    else
+        U(j) = false; % will use U for looping through non base channels
     end
     
-    seqs = mat2cell(seqs,ones(size(seqs,1),1),nChannels);
+    A = zeros(nChannels,2);
+    A(j,:) = [s,baseCall.(params.time).Time];
     
+    for i = 1:nChannels
+        if U(i)
+            % find closest mic which was already added to X
+            Y = find(A(:,1));
+            Mi = M(Y,:) - ones(size(Y))*M(i,:);
+            [dX,l] = max(sqrt(sum(Mi.^2,2)));
+            Ji = Y(l);
+            
+            % get calls possibel for the matched call in channel Ji
+            dT = (dX*dev)/sonic;
+            timeInterval = A(Ji,2)+[-dT,+dT];
+            CHi = fileObject.channel(i);
+            [Ii,Ti] = CHi.getCalls('Index','Time','Type','forLocalization','TimePoint',params.time,'TimeInterval',timeInterval);
+            
+            % find the closest call which is not matched already
+            dTi = abs(Ti - A(Ji,2));
+            while ~isempty(Ii)
+                [valmin,argmin] = min(dTi);
+                if isnan(CHi.call(Ii(argmin)).FileCall)
+                    A(i,:) = [Ii(argmin),valmin+A(Ji,2)];
+                    break;
+                else
+                    dTi(argmin) = [];
+                    Ii(argmin) = [];
+                end
+            end
+            
+            % if while loop ended without a break, then there is no call to
+            % macth for this channel, do not change the matrix A.
+            
+        end
+    end
+    
+    S = A(:,1);
+    T = A(:,2);
+    O = {};
+      
     
 end
 

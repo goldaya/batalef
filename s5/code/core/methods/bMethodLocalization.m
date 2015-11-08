@@ -8,39 +8,33 @@ classdef bMethodLocalization < bMethods
         
         % CONSTRUCTOR
         function me = bMethodLocalization(type,paramPreamble,app,gui,withNone)
-            me = me@bMethods(type,paramPreamble,'filter',app,gui,withNone);
+            me = me@bMethods(type,paramPreamble,'localization',app,gui,withNone);
             me.RefreshGui = true;
         end        
         
         % EXECUTE
-        function [location,time] = execute(me,startTimes,MicPositions,extParams)
+        function [location,time] = execute(me,startTimes,MicPositions,sonic,extParams)
             m = me.getMethod(me.Default);
             if strcmp(m.id,'none')
                 location = [];
                 time = [];
             else
+                params = struct();
                 [~,D,P] = me.buildParamList(m);
                 for i = 1:length(D)
                     params.(P{i,3}) = D{i};
                 end
                 methodFunc = str2func(m.func);
                 [location,time] = ...
-                    methodFunc(startTimes,MicPositions,params,extParams);
+                    methodFunc(startTimes,MicPositions,sonic,params,extParams);
+                if size(location,2) < 3
+                    location = location';
+                end
             end
         end
        
         function executeGOD(me,gui)
-            P = gui.ProcessVector;
-            Files = me.Application.Files(P);
-            cellfun(@(f) me.augustinus(f),Files,'UniformOutput',false);
-            if me.RefreshGui
-                gui.refresh();
-            end            
-        end
         
-        function augustinus(me,File)
-            fTS = me.execute(File.RawData.getTS([],[]),File.RawData.Fs);
-            File.RawData.alter(fTS,{'Filter',NaN});
         end
         
         % PROPOGATE TO GUI

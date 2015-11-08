@@ -3,8 +3,16 @@ id   = 'basic';
 name = 'Basic';
 func = 'matchingBasic';
 
-params(1).ptype = 'app';
-params(1).id    = 'error';
-params(1).name  = 'Allowed Error (%)';
-params(1).value = 10;
-params(1).dtype = 'double';
+i=1;
+params(i).ptype = 'app';
+params(i).id    = 'error';
+params(i).name  = 'Allowed Error (%)';
+params(i).value = 10;
+params(i).dtype = 'double';
+
+i=i+1;
+params(i).ptype = 'app';
+params(i).id    = 'time';
+params(i).name  = 'Time Point [Start\Peak\End]';
+params(i).value = 'Start';
+params(i).dtype = 'string';

@@ -511,7 +511,7 @@ classdef bMicAdminGui < bGuiDefinition & hgsetget
             D = D(any(D,2),:);
 
             % plot when matrix is consistent
-            if min(min(abs(D(:,[1,3])))) > 0
+            if min(min(abs(D(:,1)))) > 0
                 me.directPlot(D);
             end
 

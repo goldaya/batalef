@@ -9,5 +9,5 @@ function channelCallsAnalyzeFile(appObject,fileIdx,channels,types,params)
         J = channels(channels<=nJ);
     end
     
-    arrayfun(@(j)channelCallsAnalyzeChannel(fileObject,j,types,params),J);
+    arrayfun(@(j)channelCallsAnalyzeChannel(fileIdx,fileObject,j,types,params),J);
 end

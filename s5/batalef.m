@@ -53,6 +53,7 @@ global batalefAlfred;
     control.app.initMethods();
     
     
+    
     % GUI
     if gui
         fprintf('\n  Initializing GUI\n')

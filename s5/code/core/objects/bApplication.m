@@ -10,6 +10,7 @@ classdef bApplication < handle
         Parameters
         GpuProcAllowed = false
         ParProcAllowed = false
+        Build
     end
     
     properties (Dependent = true)
@@ -22,6 +23,7 @@ classdef bApplication < handle
         
         % CONSTRUCTOR
         function me = bApplication(batalefDirectory,workingDirectory)
+            me.Build = true;
             me.BatalefDirectory = batalefDirectory;
             me.WorkingDirectory = workingDirectory;
             me.CommonParams.app  = me.batpath(strcat('common',filesep(),'common.bap'));
@@ -41,8 +43,9 @@ classdef bApplication < handle
             me.Methods.callAnalysisSpectrum = bMethodSpectrum('default','callAnalysisSpectrum',me,[],false);
             me.Methods.callAnalysisRidge = bMethodRidge('default','callAnalysisRidge',me,[],false);
             me.Methods.fileCallsMatching = bMethodMatching('default','fileCallsMatching',me,[],false);
+            me.Methods.fileCallsMatching.ensureParams();
             me.Methods.fileCallLocalization = bMethodLocalization('default','fileCallsLocalization',me,[],false);
-                
+            me.Build = false;
         end
         
         % DESTRUCTOR
@@ -78,6 +81,9 @@ classdef bApplication < handle
         function setParameters(me, paramsFile)
             me.Parameters = bParameters(me,'app');
             me.Parameters.loadFromFile(paramsFile);
+            if ~me.Build
+                me.Methods.fileCallsMatching.ensureParams();
+            end
         end
         
         % FILES PARAMETERS HANDLED BY SINGLE PARAMETERS FILE

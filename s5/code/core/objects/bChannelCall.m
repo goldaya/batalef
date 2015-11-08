@@ -18,6 +18,7 @@ classdef bChannelCall < handle
         TS
         Fs
         Application
+        FileCall
     end
     
     methods
@@ -85,7 +86,11 @@ classdef bChannelCall < handle
             me.End.Freq  = D(11);
             me.End.Power = D(12);
             
-            me.AnalysisParameters = me.Channel.CallsData.(strcat(type,'AP')){me.CallIdx};
+            try
+                me.AnalysisParameters = me.Channel.CallsData.(strcat(type,'AP')){me.CallIdx};
+            catch
+                me.AnalysisParameters = [];
+            end
             
         end
         
@@ -151,6 +156,12 @@ classdef bChannelCall < handle
         % APPLICATION
         function val = get.Application(me)
             val = me.Channel.Application;
+        end
+        
+        % FILE CALL
+        function val = get.FileCall(me)
+            out = me.Channel.File.getChannelFileCalls(me.Channel);
+            val = out(me.CallIdx);
         end
     end
     

@@ -1,6 +1,6 @@
 classdef bChannel < handle
 
-    properties (Access = private)
+    properties
         File
         j
     end
@@ -141,16 +141,64 @@ classdef bChannel < handle
         % GET CALLS IN TIME INTERVAL
         function varargout = getCalls(me,varargin)
             D = me.CallsData;
+            
+            [withType,~,type] = vHas(varargin,'Type');
+            if withType
+                switch type
+                    case 'features'
+                    case 'forLocalization'
+                    case 'forBeam'
+                    otherwise
+                        errid = 'batalef:channel:getCalls:wrongInput';
+                        errstr = 'On specific call type inquiry, use only types features, forLocalization, forBeam';
+                        throwAsCaller(MException(errid,errstr));
+                end
+                [hasTimePoint,~,timePoint] = vHas(varargin,'TimePoint');
+                if hasTimePoint
+                    M = D.(type);
+                    switch timePoint
+                        case 'Start'
+                            T = M(:,1);
+                        case 'Peak'
+                            T = M(:,5);
+                        case 'End'
+                            T = M(:,9);
+                    end
+                else
+                    errid = 'batalef:channel:getCalls:wrongInput';
+                    errstr = 'On specific call type inquiry, use TimePoint Start, Peak or End';
+                    throwAsCaller(MException(errid,errstr));
+                end
+                
+            else
+                
+                % when no call type requested, use detection
+                T = D.detection(:,1);
+                
+            end
+                
             [~,~,timeInterval] = vHas(varargin,'TimeInterval');
             if ~isempty(timeInterval)
-                U = logical(( D.detection(:,1) > timeInterval(1) ) .* ( D.detection(:,1) < timeInterval(2) ));
+                U = logical(( T > timeInterval(1) ) .* ( T < timeInterval(2) ));
             else
                 U = true(1,me.CallsCount);
             end
-            switch varargin{1}
-                case 'Index'
-                    I = 1:me.CallsCount;
-                    varargout{1} = I(U);
+            for i = 1:length(varargin)
+                try
+                    switch varargin{i}
+                        case 'Index'
+                            I = (1:me.CallsCount)';
+                            varargout{i} = I(U);
+                        case 'Time'
+                            varargout{i} = T(U);                        
+                    end
+                catch err
+                    if strcmp(err.identifier,'MATLAB:badSwitchExpression')
+                        break;
+                    else
+                        throwAsCaller(err);
+                    end
+                end
             end
         end
         

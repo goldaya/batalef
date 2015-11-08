@@ -40,11 +40,10 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
         ButtonsPanel
           ComboBaseChannel
           ComboBaseCall
+          ButtonMatch
           TextAllowedError
-          ButtonFindMatches
-          ComboSeqs
-          ButtonAccept
-          ButtonAcceptAll
+          ComboTimePoint
+          ButtonMatchAll
           ToggleAxes
           
         CallsTable
@@ -68,6 +67,7 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
     properties (Dependent)
         BaseChannel
         BaseCall
+        CallsVector
     end
     
     
@@ -78,7 +78,7 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
             me = me@bGuiDefinition(guiTop,name);
             me.Build = true;
             me.Matching = me.Application.Methods.fileCallsMatching;
-            me.Localization = me.Application.Methods.fileCallsLocalization;
+            me.Localization = me.Application.Methods.fileCallLocalization;
             
             % figure
             fpos = [0,0,me.MinWidth,me.MinHeight];
@@ -102,6 +102,7 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
             me.buildCallIdxPanel();
             me.buildButtonsPanel();
             me.buildTable();
+            me.buildMenus();
             
             % finish build
             me.Build = false;
@@ -121,7 +122,7 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
         
         % DESTRUCTOR
         function delete(me)
-            me.Matching.removeMenu(me.MenuMatchingMethods);
+%             me.Matching.removeMenu(me.MenuMatchingMethods);
             me.Localization.removeMenu(me.MenuLocalizationMethods);            
             me.showPathAxes(false);
             delete(me.Figure);
@@ -152,7 +153,7 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
                 'Position',[2,0.5,16,1.4],...
                 'HorizontalAlignment','center',...
                 'String','Select All',...
-                'Callback',@(~,~)set(me.TextCallIdx,'String',int2str_compact(me.Application.file(me.DisplayVector(1)).CallsCount)));
+                'Callback',@(~,~)set(me.TextCallIdx,'String',int2str_compact(1:me.Application.file(me.DisplayVector(1)).CallsCount)));
             
             me.ButtonX = uicontrol(me.CallIdxPanel,...
                 'Style','pushbutton',...
@@ -187,7 +188,7 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
             me.ComboBaseChannel = uicontrol(bp,...
                 'Style','popupmenu',...
                 'Units','character',...
-                'Position',[20,2.3,10,1.4],...
+                'Position',[20,2.3,13,1.4],...
                 'String','f00',...
                 'Value',1,...
                 'Callback',@(~,~)me.refreshBaseCallsList());
@@ -195,65 +196,61 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
             uicontrol(bp,...
                 'Style','text',...
                 'Units','character',...
-                'Position',[35,2.4,16,1.2],...
+                'Position',[2,0.4,16,1.2],...
                 'HorizontalAlignment','left',...
                 'String','Base Call');
             me.ComboBaseCall = uicontrol(bp,...
                 'Style','popupmenu',...
                 'Units','character',...
-                'Position',[53,2.3,10,1.4],...
+                'Position',[20,0.3,13,1.4],...
                 'String','f00',...
                 'Value',1);
             
             uicontrol(bp,...
                 'Style','text',...
                 'Units','character',...
-                'Position',[68,2.4,20,1.2],...
+                'Position',[38,2.4,20,1.2],...
                 'HorizontalAlignment','left',...
                 'String','Allowed Error (%)');
             me.TextAllowedError = uicontrol(bp,...
                 'Style','edit',...
                 'Units','character',...
-                'Position',[90,2.3,7,1.4],...
-                'String',agetParam('fileCalls_matchingError','AsString'));
-            
-            me.ButtonFindMatches = uicontrol(bp,...
-                'Style','pushbutton',...
-                'Units','character',...
-                'Position',[101,2.3,17,1.4],...
-                'String','Find Matches',...
-                'Callback',@(~,~)me.match());
+                'Position',[60,2.3,13,1.4],...
+                'String',agetParam('methods_fileCallsMatching_basic_error','AsString'),...
+                'Callback',@(h,~)asetParam('methods_fileCallsMatching_basic_error',str2double(get(h,'String'))));
             
             uicontrol(bp,...
                 'Style','text',...
                 'Units','character',...
-                'Position',[2,0.4,16,1.2],...
-                'String','Possible Seq.');
-            me.ComboSeqs = uicontrol(bp,...
+                'Position',[38,0.4,20,1.2],...
+                'HorizontalAlignment','left',...
+                'String','Time Point');
+            me.ComboTimePoint = uicontrol(bp,...
                 'Style','popupmenu',...
                 'Units','character',...
-                'Position',[20,0.3,43,1.4],...
-                'String','N/A',...
-                'Value',1);
-
-            me.ButtonAccept = uicontrol(bp,...
+                'Position',[60,0.3,13,1.4],...
+                'String',{'Start','Peak','End'},...
+                'Value',find(strcmp({'Start','Peak','End'},agetParam('methods_fileCallsMatching_basic_time')),1),...
+                'Callback',@(h,~)asetParam('methods_fileCallsMatching_basic_time',comboSelected(h)));
+            
+            me.ButtonMatch = uicontrol(bp,...
                 'Style','pushbutton',...
                 'Units','character',...
-                'Position',[68,0.3,12,1.4],...
-                'String','Accept',...
-                'Callback',@(~,~)me.accept());
-            me.ButtonAcceptAll = uicontrol(bp,...
+                'Position',[75,2.3,15,1.4],...
+                'String','Match',...
+                'Callback',@(~,~)me.match(false));
+            me.ButtonMatchAll = uicontrol(bp,...
                 'Style','pushbutton',...
                 'Units','character',...
-                'Position',[82,0.3,15,1.4],...
-                'String','Accept All',...
-                'Callback',@(~,~)me.acceptAll());
+                'Position',[75,0.3,15,1.4],...
+                'String','Match All',...
+                'Callback',@(~,~)me.match(true));
             
             me.ToggleAxes = uicontrol(bp,...
                 'Style','toggle',...
                 'Units','character',...
-                'Position',[101,0.3,17,1.4],...
-                'String','Loc. Graph',...
+                'Position',[95,0.3,23,1.4],...
+                'String','Show Loc. Graph',...
                 'Value',1,...
                 'Callback',@(h,~)me.showPathAxes(get(h,'Value')));
             
@@ -262,10 +259,9 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
                 {me.ComboBaseChannel,...
                 me.ComboBaseCall,...
                 me.TextAllowedError,...
-                me.ButtonFindMatches,...
-                me.ComboSeqs,...
-                me.ButtonAccept,...
-                me.ButtonAcceptAll}];
+                me.ComboTimePoint,...
+                me.ButtonMatch,...
+                me.ButtonMatchAll}];
         end
         
         % BUILD TABLE (this is just the frame, see me.setTableColums() for
@@ -274,18 +270,25 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
             tpos = [2,0.5,me.MinWidth-4,10*me.TableLineHeight];
             me.CallsTable = uitable(me.Figure,...
                 'Units','character',...
-                'Position',tpos);
+                'Position',tpos,...
+                'CellEditCallback',@(h,evt) me.onTableEdit(h,evt));
             me.InteractiveUis = [me.InteractiveUis,{me.CallsTable}];
+            
         end
         
         % MENUS
         function buildMenus(me)
+            %{
             me.MenuMatchingMethods = uimenu(me.Figure,'Label','Matching');
             me.Matching.createMenu(me.MenuMatchingMethods,me)
+            %}
             
             m1 = uimenu(me.Figure,'Label','Localization');
-            me.MenuLocalizationMenthods = uimenu(m1,'Label','Methods');
+            me.MenuLocalizationMethods = uimenu(m1,'Label','Methods');
             me.Localization.createMenu(me.MenuLocalizationMethods,me)
+            m2 = uimenu(m1,'Label','Relocate from known path');
+            uimenu(m2,'Label','From file','Callback',@(~,~)me.relocateFromPath('file'));
+            uimenu(m2,'Label','From var','Callback',@(~,~)me.relocateFromPath('var'));
             
             
         end
@@ -334,23 +337,21 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
                 cellfun(@(h)set(h,'Enable','on'),me.InteractiveUis);
                 D = [];
                 set(me.CallsTable,'Data',D);
-%                 set(me.ComboBaseChannel,'String',cellfun(@(i)num2str(i),(num2cell((1:50)')),'UniformOutput',false));
                 set(me.ComboBaseChannel,'Value',1);
                 set(me.ComboBaseChannel,'String','N/A');                
-%                 set(me.ComboBaseCall,'String',cellfun(@(i)num2str(i),(num2cell((1:100)')),'UniformOutput',false));
                 set(me.ComboBaseCall,'Value',1);
                 set(me.ComboBaseCall,'String','N/A');                                
-                set(me.ComboSeqs,'Value',1);
-                set(me.ComboSeqs,'String','N/A');                                                
+
             else
                 cellfun(@(h)set(h,'Enable','on'),me.InteractiveUis);
                 me.FileIdx = V(1);
                 me.File = me.Application.file(me.FileIdx);
-                set(me.ComboBaseChannel,'String',cellfun(@(i)num2str(i),(num2cell((1:50)')),'UniformOutput',false));
+%                 set(me.ComboBaseChannel,'String',cellfun(@(i)num2str(i),(num2cell((1:50)')),'UniformOutput',false));
                 set(me.ComboBaseChannel,'Value',1);
                 set(me.ComboBaseChannel,'String',cellfun(@(i)num2str(i),(num2cell((1:me.File.ChannelsCount)')),'UniformOutput',false));
-                me.refreshBaseCallsList();
+                me.refreshBaseValues(1,0);
                 me.setTableColumns();
+                me.refreshTableData();
             end
         end
         
@@ -359,9 +360,11 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
             baseChannel = me.BaseChannel;
             if isempty(baseChannel)
                 str = 'N/A';
+            elseif ~me.File.MicData.UseInLocalization(baseChannel)
+                str = 'N/A';
             else
                 v = me.File.getChannelFileCalls(baseChannel);
-                if isempty(v)
+                if isempty(find(isnan(v),1))
                     str = 'N/A';
                 else
                     str = arrayfun(@(i){num2str(i)},find(isnan(v)));
@@ -371,8 +374,71 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
             set(me.ComboBaseCall,'String',str);
         end
         
+        % REFRESH BASE SELECTED VALUES (AUTOMATION)
+        function refreshBaseValues(me,currBaseChannel,currBaseCall)
+            [j,s] = getNextBase(me.File,currBaseChannel,currBaseCall);
+            if j == 0
+                % did not find any new base, just refresh current channel's
+                % list. If there are no earlier channel calls, the display
+                % will be 'N/A'...
+                me.refreshBaseCallsList();
+            else
+                set(me.ComboBaseChannel,'Value',j);
+                me.refreshBaseCallsList();
+                S = get(me.ComboBaseCall,'String');
+                v = find(strcmp(S,num2str(s)),1);
+                set(me.ComboBaseCall,'Value',v);
+            end
+        end
+        
+        % REFRESH CALLS TABLE DISPLAY
+        function refreshTableData(me)
+            D = me.File.getCallsTable{:,:};
+            set(me.CallsTable,'Data',D);
+        end
+        
         % PLOT FLIGHT PATH
         function plotPath(me)
+            % init with mic positions
+            if isempty(me.Figure) || ~ishandle(me.Figure) || isempty(me.AxesObject) |
+            cla(me.AxesObject);
+            if isempty(me.File)
+                return;
+            else
+                axes(me.AxesObject);
+            end
+            P = me.File.MicData.Positions;
+            scatter3(me.AxesObject,P(:,1),P(:,2),P(:,3),'r*'); 
+            hold(me.AxesObject,'on');
+            texts = arrayfun(@(j){num2str(j)},1:size(P,1),'UniformOutput',false);
+            text(P(:,1),P(:,2),P(:,3),texts);
+            hold(me.AxesObject,'off');            
+            
+            % add calls data and path
+            Tab = me.File.getCallsTable(false);
+            if ~isempty(Tab)
+                % calls locations
+                T = Tab{:,1};
+                X = Tab{:,2};
+                Y = Tab{:,3};
+                Z = Tab{:,4};
+                
+                hold(me.AxesObject,'on');
+                scatter3(me.AxesObject,X,Y,Z,'o');
+                texts = arrayfun(@(i){num2str(i)},1:size(T,1),'UniformOutput',false);
+                text(X,Y,Z,texts);
+
+                % flight path
+                if length(T) >= 2
+                    Tspline = linspace(0, max(T), ggetParam('flightPath_spline_N'));
+                    sX = spline(T,X, Tspline);
+                    sY = spline(T,Y, Tspline);
+                    sZ = spline(T,Z, Tspline);    
+                    plot3(me.AxesObject, sX,sY,sZ);
+                end
+                hold( me.AxesObject, 'off' );     
+        
+            end
         end
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -381,26 +447,47 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
         %%%                      %%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 
+        % GET CALLS VECTOR
+        function v = get.CallsVector(me)
+            v = str2int_compact(get(me.TextCallIdx,'string'));
+        end
+        
         % DELETE CALLS
         function deleteCalls(me)
+            me.File.removeCall(me.CallsVector);
+            me.refreshTableData();
+            me.plotPath();
+            if isempty(me.BaseCall)
+                baseCall = 0;
+            else
+                baseCall = me.BaseCall - 1;
+            end
+            me.refreshBaseValues(me.BaseChannel,baseCall);
         end
         
         % MATCH
-        function match(me)
-            set(me.ComboSeqs,'Value',1);
+        function match(me,all)
             
-            S = me.Matching.execute(me.File,me.BaseChannel,me.BaseCall);
-            str = cellfun(@(s)seq2string(s),S,'UniformOutput',false);
-            
-            
-        end
-        
-        % ACCEPT
-        function accept(me)
-        end
-        
-        % ACCEPT ALL
-        function acceptAll(me)
+            if isempty(me.BaseChannel) || isempty(me.BaseCall)
+                msgbox('Wrong base values');
+            else
+                if all
+                    ok = matchAndAddFileCalls(me.Application,me.ProcessVector); 
+                else
+                    ok = matchAndAddFileCall(me.Application,me.FileIdx,me.BaseChannel,me.BaseCall); 
+                end
+                if ok
+                    % refresh table
+                    me.refreshTableData();
+                    % refresh plot
+                    me.plotPath();
+                    % get next base
+                    me.refreshBaseValues(me.BaseChannel,me.BaseCall);
+                else
+                    msgbox('Did not find match');
+                    return;
+                end
+            end            
         end
         
         % SET TABLE COLUMNS
@@ -410,17 +497,21 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
             end
             
             n = me.File.ChannelsCount;
-            uitabColNames = [{'Time','Location'},arrayfun(@(i){num2str(i)},1:n)];
-            uitabColWidths = arrayfun(@(i){50},1:n+2);
-            uitabColWidths{1} = 100;
-            uitabColWidths{2} = 100;
-            uitabColFormats = arrayfun(@(i){'numeric'},1:n);
+            uitabColNames      = [{'Time','X','Y','Z'},arrayfun(@(i){num2str(i)},1:n)];
+            uitabColWidths     = arrayfun(@(i){35},1:n+4);
+            uitabColWidths{1}  = 100;
+            uitabColWidths{2}  = 70;
+            uitabColWidths{3}  = 70;
+            uitabColWidths{4}  = 70;
+            uitabColFormats    = arrayfun(@(i){'numeric'},1:n);
+            uitabColEditable   = true(1,n+4);
+            uitabColEditable(1) = false;
             set(me.CallsTable,...
                     'Units','pixels',...
                     'columnname',uitabColNames,...
                     'columnformat',uitabColFormats,...
                     'ColumnWidth',uitabColWidths,...
-                    'ColumnEditable',false(1,n+2));
+                    'ColumnEditable',uitabColEditable);
             
         end
                 
@@ -436,6 +527,7 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
                     'ToolBar','figure',...
                     'NumberTitle','off',...
                     'CloseRequestFcn',@(~,~)me.showPathAxes(false));
+                me.AxesObject = axes('Parent',me.AxesFigure);
                 me.plotPath();
                 set(me.ToggleAxes,'Value',1);
             elseif show
@@ -471,6 +563,83 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
                 v = get(me.ComboBaseCall,'Value');
                 val = str2double(str{v});
             end
+        end
+        
+        % ON TABLE EDIT
+        function onTableEdit(me,~,evt)
+            if evt.Indices(2) > 1
+                if evt.Indices(2) > 4
+                    j = evt.Indices(2) - 4;
+                    % validate
+                    if ~isnumeric(evt.NewData)
+                        msgbox('Input should be the channel call index, or 0 to leave unassigned');
+                        return;
+                    elseif me.File.channel(j).CallsCount < evt.NewData
+                        msgbox('Call index is bigger than the channel''s calls count');
+                        return;
+                    end
+                    V = me.File.getChannelFileCalls(j);
+                    if evt.NewData > 0 && ~isnan(V(evt.NewData))
+                        msgbox(sprintf('Specified call is already assigned to file call #%i',V(evt.NewData)));
+                        return;
+                    end
+
+                    % relocate & time
+                    D = me.File.getCallsTable{:,:};
+                    seq = D(evt.Indices(1),5:me.File.ChannelsCount+4);
+                    seq(j) = evt.NewData;
+                    T = zeros(me.File.ChannelsCount,1);
+                    l = 1+(get(me.ComboTimePoint,'Value')-1)*4;
+                    for i = 1:me.File.ChannelsCount
+                        if seq(i) > 0
+                            T(i) = me.File.channel(i).CallsData.forLocalization(seq(i),l);
+                        end
+                    end
+                    M = me.File.MicData.Positions;
+                    Tl = T(seq~=0);
+                    Ml = M(seq~=0,:);                
+                    [x,t] = me.Localization.execute(Tl,Ml,agetParam('defaultSoundSpeed'),struct());
+
+                    % keep new data
+                    callData = me.File.getCall(evt.Indices(1));
+                    callData.location = x;
+    %                 callData.time = t; more dev needed for time change:
+    %                 re-sort file calls
+                    callData.sequence = seq;
+                    me.File.setCall(evt.Indices(1),callData);
+
+
+                    me.refreshTableData();
+                end
+                me.plotPath();
+            end
+        end
+        
+        % RELOCATE FROM KNOWN PATH
+        function relocateFromPath(me,intype)
+            switch intype
+                case 'file'
+                    [fname,fpath] = uigetfile();
+                    if isnumeric(fname)
+                        return; % user abort
+                    else
+                        D = importdata(strcat(fpath,fname));
+                    end
+                case 'var'
+                    A = inputdlg('Variable name');
+                    if isempty(A)
+                        return; %user abort
+                    else
+                        D = evalin('base',A{1});
+                    end
+                otherwise
+                    errid = 'batalef:fileCallsGui:relocate:wrongInputType';
+                    errstr = sprintf('Input type cannot be %s. Must be "file" or "var"',intype);
+                    throwAsCaller(MException(errid,errstr));
+            end
+            relocateFileCalls(me.Application,me.ProcessVector,D);
+            me.refreshTableData();
+            me.plotPath();
         end
         
     end

@@ -48,6 +48,10 @@ classdef bFile < handle
             
             % microphones data
             me.MicData = bMics(n);
+            
+            % create file calls structure
+            me.Calls = struct('time',[],'location',[],'sequence',[],'powers',[]);
+            me.Calls(1) = [];
         end
         
         % BUILD OBJECT FROM STRUCTURE (IMPORT)
@@ -173,7 +177,7 @@ classdef bFile < handle
             cstrct.time     = time;
             cstrct.sequence = sequence;
             cstrct.location = location;
-            % power matrix here...
+            cstrct.powers   = [];
             
             % add and sort by time
             n = me.CallsCount;
@@ -181,9 +185,9 @@ classdef bFile < handle
                 me.Calls = cstrct;
             else
                 me.Calls(me.CallsCount+1) = cstrct;
-                A = [(1:me.CallsCount+1)',[me.Calls.time]'];
-                A = sortrows(A,1);
-                me.Calls = me.Calls(A(1,:));                
+                A = [(1:me.CallsCount)',[me.Calls.time]'];
+                A = sortrows(A,2);
+                me.Calls = me.Calls(A(:,1));                
             end
 
         end
@@ -205,21 +209,51 @@ classdef bFile < handle
                 out = me.Calls(callIdx);
             end
         end
+        function out = getCall(me,callIdx)
+            if callIdx > me.CallsCount
+                out = [];
+            else
+                out = me.Calls(callIdx);
+            end
+        end
+        
+        % SET CALL (use call() to get data struct, then return changes with
+        % the set() function)
+        function setCall(me,callIdx,callStruct)
+            if callIdx > length(me.Calls)
+                errid = 'batalef:fileCalls:wrongIndex';
+                errstr = 'File call index is too large';
+                throwAsCaller(MException(errid,errstr));
+            end
+            me.Calls(callIdx) = callStruct;
+        end
         
         % CALLS COUNT
         function val = get.CallsCount(me)
             val = length(me.Calls);
         end
                 
-        % CHECK CHANNEL CALL IS ASSIGNED TO A SEQ
-        function out = getChannelFileCalls(me,channelIdx)
+        % GET FILE CALL MATCHING FOR A CHANNEL'S CALLS
+        function out = getChannelFileCalls(me,channel2check)
+            if isnumeric(channel2check)
+                channelObj = me.channel(channel2check);
+            elseif isa(channel2check,'bChannel')
+                channelObj = channel2check;
+                channel2check = channelObj.j;
+            else
+                errid = 'batalef:file:getChannelFileCalls:wrongInput';
+                errstr = 'channel2check should either the channel object or its index';
+                throwAsCaller(MException(errid,errstr));
+            end
+            
             if isempty(me.Calls)
                 V = zeros(me.ChannelsCount,1);
             else
                 S = vertcat(me.Calls.sequence);
-                V = S(:,channelIdx);
+                V = S(:,channel2check);
             end
-            n = me.channel(channelIdx).CallsCount;
+
+            n = channelObj.CallsCount;
             out = zeros(n,1);
             for s = 1:n
                 f = find(V==s,1);
@@ -228,6 +262,36 @@ classdef bFile < handle
                 end
                 out(s) = f;
             end
+        end
+        
+        % GET TABLE
+        function T = getCallsTable(me,withPowers)
+            
+            if isempty(me.Calls)
+                T = {[]};
+            else
+                Time = [me.Calls.time]';
+                L = vertcat(me.Calls.location);
+                X = L(:,1);
+                Y = L(:,2);
+                Z = L(:,3);
+                M = vertcat(me.Calls.sequence);
+
+                T = table(Time,X,Y,Z);
+                T.Properties.RowNames = arrayfun(@(i){num2str(i)},1:size(Time,1));
+
+                for i = 1:size(M,2)
+                    eval(sprintf('C%i = M(:,%i);T2 = table(C%i);',i,i,i));
+                    T = horzcat(T,T2); %#ok<NODEF,AGROW>
+                end
+
+                if exist('withPowers','var') && withPowers
+                    PowersMatrix = {me.Calls.powers}';
+                    T2 = table(PowersMatrix);
+                    T = horzcat(T,T2);
+                end
+            end
+            
         end
             
             

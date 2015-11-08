@@ -87,7 +87,6 @@ classdef bGuiTop < handle
         
         % REMOVE GUI
         function removeGui(me,guiName)
-%             delete(me.Guis.(guiName).Figure);
             delete(me.Guis.(guiName));
             me.Guis = rmfield(me.Guis,guiName);
         end

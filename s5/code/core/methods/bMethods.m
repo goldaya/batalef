@@ -180,6 +180,9 @@ classdef bMethods < handle
                     me.executeGOD(gui);
             end
             
+            % keep default method in the params registery
+            dpar = strcat('methods_',me.ParamPreamble,'_defMethod');
+            asetParam(dpar,methodID); 
         end
         
         % GUI PROMPT
@@ -205,6 +208,7 @@ classdef bMethods < handle
         
         % BUILD PARAMS LIST
         function [Q,D,P] = buildParamList(me,m,file)
+        %BUILDPARAMSLIST read the parameters values and adding what missing
             Q = cell(length(m.params),1);
             D = cell(length(m.params),1);
             P = cell(length(m.params),3);
@@ -266,6 +270,12 @@ classdef bMethods < handle
                 end
                 o.set(p,v); 
             end
+        end
+        
+        % ENSURE PARAMETERS ARE IN PARAMS LIST - good only without file
+        % params !!!
+        function ensureParams(me)
+            cellfun(@(m)buildParamList(me,m),me.Methods,'UniformOutput',false);
         end
         
     end
