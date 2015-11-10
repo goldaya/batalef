@@ -340,10 +340,7 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
                 set(me.ComboBaseChannel,'Value',1);
                 set(me.ComboBaseChannel,'String','N/A');                
                 set(me.ComboBaseCall,'Value',1);
-                set(me.ComboBaseCall,'String','N/A');
-                if ~isempty(me.AxesObject) && ishandle(me.AxesObject)
-                    cla(me.AxesObject);
-                end
+                set(me.ComboBaseCall,'String','N/A');                                
 
             else
                 cellfun(@(h)set(h,'Enable','on'),me.InteractiveUis);
@@ -355,9 +352,7 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
                 me.refreshBaseValues(1,0);
                 me.setTableColumns();
                 me.refreshTableData();
-                me.plotPath();
             end
-            
         end
         
         % REFRESH BASE CALLS LIST
@@ -475,7 +470,6 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
                 baseCall = me.BaseCall - 1;
             end
             me.refreshBaseValues(me.BaseChannel,baseCall);
-            set(me.TextCallIdx,'String','');
         end
         
         % MATCH
@@ -597,15 +591,12 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
                         return;
                     end
 
-                    % relocate & time (re-time needs more dev)
+                    % relocate & time
                     D = me.File.getCallsTable{:,:};
                     seq = D(evt.Indices(1),5:me.File.ChannelsCount+4);
                     seq(j) = evt.NewData;
-                    x = localizeFileCall(me.File,seq);
-                    %{
-                    %T = zeros(me.File.ChannelsCount,1);
+                    T = zeros(me.File.ChannelsCount,1);
                     l = 1+(get(me.ComboTimePoint,'Value')-1)*4;
-                    t = 0;
                     for i = 1:me.File.ChannelsCount
                         if seq(i) > 0
                             %T(i) = me.File.channel(i).CallsData.forLocalization(seq(i),l);
@@ -613,8 +604,10 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
                             break;
                         end
                     end
-                    %}
-                    
+                    M = me.File.MicData.Positions;
+                    Tl = T(seq~=0);
+                    Ml = M(seq~=0,:);                
+                    [x,t] = me.Localization.execute(Tl,Ml,agetParam('defaultSoundSpeed'),struct());
 
                     % keep new data
                     callData = me.File.getCall(evt.Indices(1));

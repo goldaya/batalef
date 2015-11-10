@@ -1,9 +1,7 @@
-function [ X,dT ] = locMLAT(times,micArray,sonic,~,~)
+function [ X ] = locMLAT(dT,micArray,sonic,~,~)
 %LOCMLAT Localization method: MLAT
 
-      
-    T = times - times(1);
-    X = MLAT( micArray, T, sonic );
+    X = MLAT( micArray, dT, sonic );
 
 end
 

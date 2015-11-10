@@ -9,8 +9,8 @@ function x = locateBatPrecomputedArray( dTX,X,dTm, usedMics )
     % compare
     F = repmat(dTm,1,size(dTX,2));
     A = sum(abs(dTX - F));
-    [minVal, minArg] = min(A);
+    [~,m] = min(A);
     
-    x = X(minArg,:);
+    x = X(m,:);
 end
 

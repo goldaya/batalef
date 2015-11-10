@@ -15,13 +15,11 @@ function [ok, t, x, seq] = matchAndAddFileCall( app,file,baseChannel,baseCall )
     % match
     [seq,T] = app.Methods.fileCallsMatching.execute(fileObj,baseChannel,baseCall);
     seq(isnan(seq))=0;
+    t = T(find(T,1));
     
     % localize
-    M = fileObj.MicData.Positions;
-    U = logical(fileObj.MicData.UseInLocalization .* seq'~=0);
-    Tl = T(U);
-    Ml = M(U,:);
-    [x,t] = app.Methods.fileCallLocalization.execute(Tl,Ml,agetParam('defaultSoundSpeed'),struct());
+    x = localizeFileCall(fileObj,seq);
+
     
     % add to data structures
     if ~isempty(x) && ~isempty(t)

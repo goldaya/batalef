@@ -27,11 +27,19 @@ function ok = matchAndAddFileCalls( app,file )
     end
     
     % match
-    ok = true;
+    ok = false;
+    passed = false(fobj.ChannelsCount,1);
     while j > 0
         okw = matchAndAddFileCall(app,fobj,j,s);
-        [ j,s ] = getNextBase(fobj,j,s);
-        ok = min(ok,okw);
+        [ j2,s ] = getNextBase(fobj,j,s);
+        if j2 ~= j
+            if passed(j2)
+                break;
+            end
+            passed(j) = true;
+            j = j2;
+        end
+        ok = max(ok,okw);
     end
 
 

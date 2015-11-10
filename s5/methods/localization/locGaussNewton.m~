@@ -1,0 +1,40 @@
+function [ x ] = locGaussNewton( dT,micArray,sonicSpeed,params,~  )
+%LOCGAUSSNEWTON Compute bat location using iterative Gauss-Newton method
+
+    % start with some estimated x0. We use mlat for that.
+    x = MLAT( micArray, dT, sonicSpeed );
+    
+    % iterations
+    [r,D,R] = ofun(x,micArray,dT,sonicSpeed);
+    while sum(r.^2) > params.accuracy
+        J = jack(x,D,R);
+        [r,D,R] = ofun(x,micArray,dT,sonicSpeed);
+        
+
+end
+
+% Jackobian
+function [J] = jack(x,D,R)
+%   J = jack(x,M) returns the computed jackobian, where x is the point
+%   in R3 where we want to compute the jackobian at, M is the matrix of mic
+%   positions
+%       J{i,j} = [x(1)-M(i,1)]/
+    
+    Nmics = length(R);
+    A = D(2:Nmics,:)./(R(2:Nmics)*ones(1,3));
+    B = ones(Nmics-1,1)*D(1,:)./R(1);
+    J = A - B;
+    
+end
+
+% objective function 
+function [r,D,R] = ofun(x,M,dT,sonic)
+
+    Nmics = size(M,1);
+    D = ones(Nmics,1)*x-M;  % Diff matrix
+    P = D.^2;                   % Powers of 2 of diff matrix
+    R = sqrt(sum(P,2));         % Distance between x and each mic    
+    r = R(2:N)-dT(2:N).*sonic-R(1);    
+
+end
+

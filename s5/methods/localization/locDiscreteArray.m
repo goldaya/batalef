@@ -1,4 +1,4 @@
-function [ x ] = locDiscreteArray( times,micArray,sonicSpeed,params,~ )
+function [ x ] = locDiscreteArray( dT,micArray,sonicSpeed,params,~ )
 %LOCDISCRETEARRAY Build array of positions and compute time diffs between
 %all channels if a bat was calling at each position. Compare to measured
 %diff to approximate bat location
@@ -6,8 +6,7 @@ function [ x ] = locDiscreteArray( times,micArray,sonicSpeed,params,~ )
     [dTX,X] = computeMicsTimeDiff( micArray, params.xRes, params.xLim, params.yRes, params.yLim, params.zRes, params.zLim, sonicSpeed );
 
     % compare
-    dTm = times - times(1);
-    F = repmat(dTm,1,size(dTX,2));
+    F = repmat(dT,1,size(dTX,2));
     A = sum(abs(dTX - F));
     [~, minArg] = min(A);
     x = X(minArg,:);   
