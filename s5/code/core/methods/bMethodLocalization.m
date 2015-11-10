@@ -13,11 +13,10 @@ classdef bMethodLocalization < bMethods
         end        
         
         % EXECUTE
-        function [location,time] = execute(me,startTimes,MicPositions,sonic,extParams)
+        function [location] = execute(me,dT,MicPositions,sonic,extParams)
             m = me.getMethod(me.Default);
             if strcmp(m.id,'none')
                 location = [];
-                time = [];
             else
                 params = struct();
                 [~,D,P] = me.buildParamList(m);
@@ -25,8 +24,8 @@ classdef bMethodLocalization < bMethods
                     params.(P{i,3}) = D{i};
                 end
                 methodFunc = str2func(m.func);
-                [location,time] = ...
-                    methodFunc(startTimes,MicPositions,sonic,params,extParams);
+                [location] = ...
+                    methodFunc(dT,MicPositions,sonic,params,extParams);
                 if size(location,2) < 3
                     location = location';
                 end

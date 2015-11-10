@@ -1,0 +1,9 @@
+MicData\sig.wav
+MicData\zero.wav
+MicData\speed.wav
+MicData\speaker.txt
+MicData\rec1.wav
+MicData\rec2.wav
+MicData\rec3.wav
+MicData\rec4.wav
+MicData\rec5.wav

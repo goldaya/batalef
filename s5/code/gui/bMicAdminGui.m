@@ -192,7 +192,7 @@ classdef bMicAdminGui < bGuiDefinition & hgsetget
             m1 = uimenu(me.Figure,'Label','Positions');
             uimenu(m1,'Label','Load from file','Callback',@(~,~)me.loadFromFile('positions'));
             uimenu(m1,'Label','Load from var ','Callback',@(~,~)me.loadFromVar('positions'));
-            uimenu(m1,'Label','Mic Locator','Callback',@(~,~)me.Top.callGui('MicLocator'),'Separator','on');
+            uimenu(m1,'Label','Mic Locator','Callback',@(~,~)MicLocator(me),'Separator','on');
             m2 = uimenu(me.Figure,'Label','Gains');
             uimenu(m2,'Label','Load from file','Callback',@(~,~)me.loadFromFile('gains'));
             uimenu(m2,'Label','Load from var ','Callback',@(~,~)me.loadFromVar('gains'));            
@@ -371,7 +371,8 @@ classdef bMicAdminGui < bGuiDefinition & hgsetget
         end
         
         % CHANGE POSITIONS
-        function changePositions(me,P)
+        function ok = changePositions(me,P)
+            ok = false;
             if size(P,2) ~= 3
                 msgbox('Input is not a 3D matrix');
                 return;
@@ -385,11 +386,13 @@ classdef bMicAdminGui < bGuiDefinition & hgsetget
             D = get(me.AdminTable,'Data');
             D(:,4:6) = C;
             set(me.AdminTable,'Data',D);
+            ok = true;
         
         end
         
         % CHANGE POSITIONS
-        function changeGains(me,G)
+        function ok = changeGains(me,G)
+            ok = false;
             if size(G,2) ~= 1
                 msgbox('Input is not a 1D vector');
                 return;
@@ -403,6 +406,7 @@ classdef bMicAdminGui < bGuiDefinition & hgsetget
             D = get(me.AdminTable,'Data');
             D(:,7) = C;
             set(me.AdminTable,'Data',D);
+            ok = true;
         
         end        
         

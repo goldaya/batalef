@@ -548,8 +548,12 @@ classdef bMainGui < bGuiDefinition
             if ~fname
                 return;
             else
-                hello = load(strcat(fpath,fname));
-                me.Application.addFilesFromStructre(hello.X)
+                try
+                    hello = load(strcat(fpath,fname));
+                    me.Application.addFilesFromStructre(hello.X)
+                catch
+                    msgbox('Error during import');
+                end
             end
             me.refreshFilesTable();
         end
