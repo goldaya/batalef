@@ -106,7 +106,7 @@ classdef bMics < handle
             
             % create interpolated surface for each frequency
             A = linspace(0,180,18000);
-            for i = size(C,1)
+            for i = 1:size(C,1)
                 V = C{i,2};
                 C{i,3} = interp1(V(:,1),V(:,2),A,'linear','extrap');
             end
@@ -125,7 +125,16 @@ classdef bMics < handle
                 vF(i) = me.Directionality.FreqSpecific{i,1};
                 vG(i) = me.Directionality.FreqSpecific{i,3}(angleIdx);
             end
-            gain = interp1(vF,vG,freq,'linear','extrap');
+            switch length(vF)
+                case 0
+                    errid = 'batalef:micAdmin:directionality:noData';
+                    errstr = 'No directionality data';
+                    throwAsCaller(MException(errid,errstr));
+                case 1
+                    gain = vG(1);
+                otherwise
+                    gain = interp1(vF,vG,freq,'linear','extrap');
+            end            
         end
         
     end

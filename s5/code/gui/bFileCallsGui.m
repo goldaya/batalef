@@ -442,7 +442,7 @@ classdef bFileCallsGui < bGuiDefinition & hgsetget
 
                 % flight path
                 if length(T) >= 2
-                    Tspline = linspace(0, max(T), ggetParam('flightPath_spline_N'));
+                    Tspline = linspace(min(T), max(T), ggetParam('flightPath_spline_N'));
                     sX = spline(T,X, Tspline);
                     sY = spline(T,Y, Tspline);
                     sZ = spline(T,Z, Tspline);    
