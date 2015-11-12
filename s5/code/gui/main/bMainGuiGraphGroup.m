@@ -5,9 +5,6 @@ classdef bMainGuiGraphGroup < handle
     properties
         DisplayType   = 1;
         DisplayWindow = 0;
-    end
-    
-    properties (Access = private)
         Graphs = {};
         Slider = NaN;
         Panel  = NaN;
@@ -18,10 +15,6 @@ classdef bMainGuiGraphGroup < handle
         LinkTime
         LinkYlim
         LinkDisplayType
-        
-    end
-    
-    properties (GetAccess = ?bMainGuiGraph, SetAccess = private)
         Gui
     end
     
@@ -195,7 +188,7 @@ classdef bMainGuiGraphGroup < handle
         end
         function set.FilesVector(me,val)
             me.FilesVectorInner = val;
-            if isempty(val) || val == 0
+            if isempty(val) || val(1) == 0
                 me.clear();
             else
                 me.resetSlider();

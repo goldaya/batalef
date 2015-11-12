@@ -177,7 +177,7 @@ classdef bFile < handle
             cstrct.time     = time;
             cstrct.sequence = sequence;
             cstrct.location = location;
-            cstrct.powers   = [];
+            cstrct.powers   = fileCallPowersMatrix(me,location,sequence);
             
             % add and sort by time
             n = me.CallsCount;
