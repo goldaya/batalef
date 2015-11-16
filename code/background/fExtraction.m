@@ -25,8 +25,8 @@ function [  ] = fExtraction( K )
     end
     
     for k = 1:length(K)
-       Fs = fileData(K(k),'Fs');
-       gapTolerance = rawGapTolerance*Fs;
+%        Fs = fileData(K(k),'Fs');
+%        gapTolerance = rawGapTolerance*Fs;
        for j = 1:fileData(K(k),'Channels','Count','NoValidation',true)
            dataset = channelData(K(k),j,'TS','Filter',filterStr);
            for s = 1:channelData(K(k),j,'Calls','Count','NoValidation',true)
@@ -35,7 +35,7 @@ function [  ] = fExtraction( K )
                window = [call.DetectionTime-dt/2, call.DetectionTime+dt/2];
                wip = channelCall.inPoints(call, window);
                     
-               [call] = channelCallAnalyze(K(k),j,s,'features',window,dataset(wip(1):wip(2)),[],detectionPeakWindow,dbStart,dbEnd,gapTolerance,[],true,false);
+               [call] = channelCallAnalyze(K(k),j,s,'features',window,dataset(wip(1):wip(2)),[],detectionPeakWindow,dbStart,dbEnd,rawGapTolerance,[],true,false);
                call.save( );
            end
        end
