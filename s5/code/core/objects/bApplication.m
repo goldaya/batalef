@@ -45,6 +45,7 @@ classdef bApplication < handle
             me.Methods.fileCallsMatching = bMethodMatching('default','fileCallsMatching',me,[],false);
             me.Methods.fileCallsMatching.ensureParams();
             me.Methods.fileCallLocalization = bMethodLocalization('default','fileCallsLocalization',me,[],false);
+            me.Methods.fileCallBeam = bMethodBeam('default','beam',me,[],false);
             me.Build = false;
         end
         

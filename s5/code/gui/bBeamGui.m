@@ -27,6 +27,7 @@ classdef bBeamGui < bGuiDefinition & hgsetget
     properties
         File
         FileIdx
+        BeamMethods
     end
     
     properties (Hidden) % BUILD
@@ -49,6 +50,8 @@ classdef bBeamGui < bGuiDefinition & hgsetget
         AxesPanel
           AxesRaw
           AxesBeam
+        
+        BeamMethodsMenu 
           
         InteractiveUis
     end
@@ -72,6 +75,7 @@ classdef bBeamGui < bGuiDefinition & hgsetget
         function me = bBeamGui(guiTop,name)
             me = me@bGuiDefinition(guiTop,name);
             me.Build = true;
+            me.BeamMethods = me.Application.Methods.fileCallBeam;
             
             % figure
             fpos = [0,0,me.MinWidth,me.MinHeight];
@@ -101,9 +105,8 @@ classdef bBeamGui < bGuiDefinition & hgsetget
             
             % end of build
             me.Build = false;
-            me.setDisplayedFiles(me.DisplayVector);
             set(me.Figure,'Visible','on');
-%             me.plotRaw();
+            me.setDisplayedFiles(me.DisplayVector);
             
         end
         
@@ -282,6 +285,13 @@ classdef bBeamGui < bGuiDefinition & hgsetget
             me.AxesBeam = axes('Parent',me.Figure,'Units','character','Position',bpos);
         end
         
+        % MENUS
+        function buildMenus(me)
+            m1 = uimenu(me.Figure,'Label','Beam Computation');
+            me.BeamMethodsMenu = uimenu(m1,'Label','Methods');
+            me.BeamMethods.createMenu(me.BeamMethodsMenu,me);
+        end            
+        
         % RESIZE
         function resize(me)
         end
@@ -324,6 +334,23 @@ classdef bBeamGui < bGuiDefinition & hgsetget
             set(me.TextRes ,'String',agetParam('beam_resolution','AsString'));            
         end
         
+        % COMPUTE BEAM
+        function compBeam(me,allCalls)
+            if allCalls
+                C = [];
+            else
+                C = me.CallIdx;
+            end
+            F = me.ProcessVector;
+            [batx,mics,powers,zero,azRange,elRange,res] = me.collectData();
+            surfParams.azRange = azRange;
+            surfParams.elRange = elRange;
+            surfParams.res     = res;
+            surfParams.zero    = zero;
+            computeBeam(me.Application,F,C,surfParams);
+            me.plotBeam();
+        end
+        
         %%%%%%%%%%%%%%%%%%%
         %%%             %%%
         %%%   DATASET   %%%
@@ -352,7 +379,8 @@ classdef bBeamGui < bGuiDefinition & hgsetget
                 set(me.ComboCallIdx,'Value',1);
                 set(me.ComboCallIdx,'String',arrayfun(@(i)num2str(i),1:me.File.CallsCount,'UniformOutput',false));
                 me.refreshTable();
-                % refresh plots
+                me.plotRaw();
+                me.plotBeam();
             end            
         end
         
@@ -368,7 +396,8 @@ classdef bBeamGui < bGuiDefinition & hgsetget
             else
                 set(me.ComboCallIdx,'Value',callIdx);
                 me.refreshTable();
-                % replot raw & beam
+                me.plotRaw();
+                me.plotBeam();
             end
         end
         
@@ -438,6 +467,22 @@ classdef bBeamGui < bGuiDefinition & hgsetget
                 % display image
                 axes(me.AxesRaw);
                 imagesc(M);
+            end
+        end
+        
+        % PLOT BEAM
+        function plotBeam(me)
+            cla(me.AxesBeam);
+            if ~isempty(me.File)
+                cdata = me.File.call(me.CallIdx);
+                if ~isempty(cdata.beam)
+                    if ~isempty(cdata.beam.surface.image)
+                        axes(me.AxesBeam);
+                        imagesc(cdata.beam.surface.image);
+                    else
+                        % create surface from d,w,i
+                    end
+                end
             end
         end
         

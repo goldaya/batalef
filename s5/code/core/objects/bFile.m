@@ -178,6 +178,7 @@ classdef bFile < handle
             cstrct.sequence = sequence;
             cstrct.location = location;
             cstrct.powers   = fileCallPowersMatrix(me,location,sequence);
+            cstrct.beam     = [];
             
             % add and sort by time
             n = me.CallsCount;
