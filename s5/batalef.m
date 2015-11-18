@@ -60,7 +60,7 @@ global batalefAlfred;
         guiParams = getParamsFileForDir( currFolder, 'gui');
         relGuiParamsPath = relativepath(guiParams,currFolder);
         control.gui = bGuiTop(control.app,relGuiParamsPath);
-        control.gui.mgInit();
+        control.gui.callGui('Main');
     end
             
         

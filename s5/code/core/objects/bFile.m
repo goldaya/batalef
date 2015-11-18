@@ -228,6 +228,29 @@ classdef bFile < handle
             me.Calls(callIdx) = callStruct;
         end
         
+        % GET FILE CALL'S POWERS TABLE
+        function T = getCallPowers(me,callIdx)
+            C = me.call(callIdx);
+            P = C.powers;
+            
+            ChannelCall     = C.sequence';
+            Measured        = [P.measured]';
+            MicAmplif       = [P.micAmplif]';
+            Distance        = [P.distMicBat]';
+            Freq            = [P.freq]';
+            AirAbsorbAmplif = [P.airAbsorbAmplif]';
+            DirectAngle     = [P.angle]';
+            DirectAmplif    = [P.directAmplif]';
+            MA              = MicAmplif + AirAbsorbAmplif;
+            MD              = MicAmplif + DirectAmplif;
+            AD              = AirAbsorbAmplif + DirectAmplif;
+            MDA             = MicAmplif + AirAbsorbAmplif + DirectAmplif;
+            PowerAtBat      = Measured - MDA;
+            PowerToUse      = [P.power2use]';
+            
+            T = table(ChannelCall,Measured,MicAmplif,Distance,Freq,AirAbsorbAmplif,DirectAngle,DirectAmplif,MA,MD,AD,MDA,PowerAtBat,PowerToUse);
+        end
+        
         % CALLS COUNT
         function val = get.CallsCount(me)
             val = length(me.Calls);

@@ -19,39 +19,31 @@ function [ x ] = locGaussNewton( dT,micArray,sonicSpeed,params,~ )
 %     end
     
     % iterations
-    n = 0;
-    [r,D,R] = ofun(x,micArray,dT,sonicSpeed);
-    while sum(r.^2) > params.accuracy
-        J = jack(D,R);
-        x = x-((J'*J)\J'*r)';
-        [r,D,R] = ofun(x,micArray,dT,sonicSpeed);
-        
-        n = n + 1;
-        if n >= params.maxn
-            break;
-        end
+    iter = 0;
+    N = size(micArray,1);
+    [D5,D4] = getMatrices(x,micArray);
+    r = objectiveR(D4,sonicSpeed,dT);
+    while sum(r.^2) > params.accuracy && iter < params.maxn
+        J = (D5(2:N,:) - ones(N-1,1)*D5(1,:))/sonicSpeed;
+        J1 = J';
+        J2 = J1*J;
+        y = x - J2\J1*r;
+        x = y;
+        [D5,D4] = getMatrices(x,micArray);
+        r = objectiveR(D4,sonicSpeed,dT);
+        iter = iter + 1;
     end
-
 end
-
-% Jacobian
-function [J] = jack(D,R)
-    
-    Nmics = length(R);
-    A = D(2:Nmics,:)./(R(2:Nmics)*ones(1,3));
-    B = ones(Nmics-1,1)*D(1,:)./R(1);
-    J = A - B;
-    
+ 
+function [D5,D4,D3,D2,D1] = getMatrices(x,M)
+    D1 = ones(size(M,1),1)*x - M;
+    D2 = D1.^2;
+    D3 = sum(D2,2);
+    D4 = sqrt(D3);
+    D5 = D1./(D4*ones(1,3));
 end
-
-% objective function 
-function [r,D,R] = ofun(x,M,dT,sonic)
-
-    N = size(M,1);
-    D = ones(N,1)*x-M;  % Diff matrix
-    P = D.^2;                   % Powers of 2 of diff matrix
-    R = sqrt(sum(P,2));         % Distance between x and each mic    
-    r = R(2:N)-dT(2:N).*sonic-R(1);    
-
+ 
+function r = objectiveR(D4,s,dT)
+    n = size(D4,1);
+    r = (D4(2:n)-ones(n-1,1)*D4(1))/s - dT(2:n);
 end
-

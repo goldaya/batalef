@@ -69,8 +69,8 @@ function doFeDir(dirPath, parametersFiles, recursive)
                 if toFile == k
                     break;
                 else
-		    fromFile = toFile+1;
-		end
+                    fromFile = toFile+1;
+                end
                 if size(parametersFiles,1) > p
                     toFile = min(parametersFiles{p+1,1}-1,k);
                 else

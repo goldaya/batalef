@@ -25,13 +25,22 @@ function P = fileCallPowersMatrix( fobj,xBat,seq )
         z = MD.Zero/norm(MD.Zero);
 
         for j=1:length(seq)
-            if seq(j) > 0
+            if seq(j) == 0
+                P(j).measured           = NaN;
+                P(j).freq               = NaN;
+                P(j).distMicBat         = NaN;
+                P(j).airAbsorbAmplif    = NaN;
+                P(j).angle              = NaN;
+                P(j).directAmplif       = NaN;
+                P(j).micAmplif          = NaN;
+                P(j).power2use          = NaN;
+            else
                 P(j).measured = fobj.ChannelCalls{j}.forBeam(seq(j),8); % power at peak
                 P(j).freq = fobj.ChannelCalls{j}.forBeam(seq(j),7)/1000; % freq at peak
                 P(j).distMicBat = norm(xBat-MP(j,:));
                 % air absorption
                 [~, alpha] = air_absorption(P(j).freq*1000,TM,RH,AP);
-                P(j).airAbsorbAmplif = alpha*P(j).distMicBat;
+                P(j).airAbsorbAmplif = -alpha*P(j).distMicBat;
                 % directionality
                 if MD.Manage
                     % find angle between bat and mic zero vector (from mic
@@ -41,8 +50,8 @@ function P = fileCallPowersMatrix( fobj,xBat,seq )
                     P(j).angle = rad2deg(acos(dot(n,z)));
                     P(j).directAmplif = fobj.MicData.directionalGain(P(j).angle,P(j).freq);
                 else
-                    P(j).angle = 0;
-                    P(j).directAmplif = 0;
+                    P(j).angle = NaN;
+                    P(j).directAmplif = NaN;
                 end
                 % mic gain amplification
                 P(j).micAmplif = MG(j);

@@ -34,12 +34,6 @@ classdef bGuiTop < handle
             cellfun(@(m) delete(m),M);
         end      
         
-        % SPAWN MAIN GUI
-        function mgInit(me)
-            name = 'Main';
-            me.Guis.(name) = bMainGui(me,name);
-        end
-
         % CALL GUI
         function g = callGui(me,name)
             if me.guiAlive(name)
@@ -47,16 +41,18 @@ classdef bGuiTop < handle
                 figure(me.Guis.(name).Figure);
             else
                 switch name
+                    case 'Main'
+                        g = bMainGui(me,name);
                     case 'Parameters'
                         g = bParamsGui(me,name);
                     case 'CallAnalysis'
                         g = bCallGui(me,name);
                     case 'MicAdmin'
                         g = bMicAdminGui(me,name);
-                    case 'MicLocator'
-                        g = [];
                     case 'FileCallsGui'
                         g = bFileCallsGui(me,name);                        
+                    case 'Beam'
+                        g = bBeamGui(me,name);                                                
                     otherwise
                         bcerr('Error',sprintf('No such gui: %s',name));
                         return;
@@ -64,27 +60,7 @@ classdef bGuiTop < handle
                 me.Guis.(name) = g;
             end
         end
-        
-        % SPAWN PARAMETERS VALUES MANAGEMENT GUI
-        function pgInit(me)
-            name = 'Parameters';
-            if me.guiAlive(name)
-                figure(me.Guis.(name).Figure);
-            else
-                me.Guis.(name) = bParamsGui(me,name);
-            end
-        end
-
-        % SPAWN CALL ANALYSIS GUI
-        function gui = cgInit(me)
-            if me.guiAlive('CallAnalysis')
-                figure(me.Guis.CallAnalysis.Figure);
-            else
-                me.Guis.CallAnalysis = bCallGui(me);
-            end
-            gui = me.Guis.CallAnalysis;
-        end
-        
+               
         % REMOVE GUI
         function removeGui(me,guiName)
             delete(me.Guis.(guiName));
